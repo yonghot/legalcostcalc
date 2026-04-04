@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import {
   Select,
   SelectContent,
@@ -30,8 +30,13 @@ export function CostCalculator({ initialCategory, initialState }: CostCalculator
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleCalculate = async () => {
+  // Track the latest request to prevent stale responses from overwriting newer ones
+  const requestIdRef = useRef(0);
+
+  const handleCalculate = useCallback(async () => {
     if (!category || !stateCode) return;
+
+    const currentRequestId = ++requestIdRef.current;
 
     setLoading(true);
     setError(null);
@@ -46,6 +51,9 @@ export function CostCalculator({ initialCategory, initialState }: CostCalculator
       const res = await fetch(`/api/costs?${params}`);
       const json = await res.json();
 
+      // Discard if a newer request was fired while this one was in flight
+      if (currentRequestId !== requestIdRef.current) return;
+
       if (json.error) {
         setError(json.error);
         setResults(null);
@@ -53,12 +61,15 @@ export function CostCalculator({ initialCategory, initialState }: CostCalculator
         setResults(json.data);
       }
     } catch {
+      if (currentRequestId !== requestIdRef.current) return;
       setError("Failed to calculate costs. Please try again.");
       setResults(null);
     } finally {
-      setLoading(false);
+      if (currentRequestId === requestIdRef.current) {
+        setLoading(false);
+      }
     }
-  };
+  }, [category, stateCode, complexity]);
 
   return (
     <div className="space-y-6">
@@ -131,7 +142,7 @@ export function CostCalculator({ initialCategory, initialState }: CostCalculator
       </Card>
 
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">
           {error}
         </div>
       )}

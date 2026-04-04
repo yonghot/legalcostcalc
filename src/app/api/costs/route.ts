@@ -3,8 +3,7 @@ import { getCosts } from "@/lib/services/cost-service";
 import { successResponse, errorResponse } from "@/lib/types";
 import { CATEGORIES } from "@/lib/constants/categories";
 import { STATES } from "@/lib/constants/states";
-
-const VALID_COMPLEXITIES = ["simple", "moderate", "complex"];
+import { VALID_COMPLEXITIES } from "@/lib/constants/costs";
 
 export async function GET(request: NextRequest) {
   try {
@@ -28,7 +27,12 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    if (complexity && !VALID_COMPLEXITIES.includes(complexity)) {
+    if (
+      complexity &&
+      !VALID_COMPLEXITIES.includes(
+        complexity as (typeof VALID_COMPLEXITIES)[number],
+      )
+    ) {
       return NextResponse.json(
         errorResponse(
           `Invalid complexity: ${complexity}. Must be one of: ${VALID_COMPLEXITIES.join(", ")}`,

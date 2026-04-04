@@ -5,6 +5,7 @@ import { CostDisplay } from "@/components/shared/cost-display";
 import { Disclaimer } from "@/components/shared/disclaimer";
 import { LegalCostData } from "@/lib/types";
 import { formatCurrency } from "@/lib/utils/format";
+import { isSafeUrl } from "@/lib/utils/sanitize";
 import { Clock, DollarSign, FileText, ExternalLink } from "lucide-react";
 
 interface CostResultProps {
@@ -83,12 +84,12 @@ export function CostResult({ results, stateName, categoryName }: CostResultProps
             </div>
           </div>
 
-          {/* Sources */}
-          {cost.sources.length > 0 && (
+          {/* Sources — only render verified safe URLs */}
+          {cost.sources.filter(isSafeUrl).length > 0 && (
             <div className="mt-6">
               <p className="mb-2 text-xs font-medium text-slate-500">Data Sources:</p>
               <div className="flex flex-wrap gap-2">
-                {cost.sources.map((source, i) => (
+                {cost.sources.filter(isSafeUrl).map((source, i) => (
                   <a
                     key={i}
                     href={source}

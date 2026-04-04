@@ -1,5 +1,16 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { LegalCostRow } from "@/lib/types";
+import { MAX_FILTER_PARAM_LENGTH } from "@/lib/constants/costs";
+
+function validateFilterParam(value: string, name: string): void {
+  if (value.length > MAX_FILTER_PARAM_LENGTH) {
+    throw new Error(`${name} exceeds maximum length of ${MAX_FILTER_PARAM_LENGTH}`);
+  }
+  // Reject characters that should never appear in category/state/complexity values
+  if (!/^[a-zA-Z0-9_-]+$/.test(value)) {
+    throw new Error(`${name} contains invalid characters`);
+  }
+}
 
 export async function findCostsByFilters(params: {
   category?: string;
@@ -10,12 +21,15 @@ export async function findCostsByFilters(params: {
   let query = supabase.from("legal_costs").select("*");
 
   if (params.category) {
+    validateFilterParam(params.category, "category");
     query = query.eq("category", params.category);
   }
   if (params.stateCode) {
+    validateFilterParam(params.stateCode, "stateCode");
     query = query.eq("state_code", params.stateCode);
   }
   if (params.complexity) {
+    validateFilterParam(params.complexity, "complexity");
     query = query.eq("complexity", params.complexity);
   }
 
@@ -32,6 +46,11 @@ export async function findCostsByStatesAndCategory(
   stateCodes: string[],
   category: string,
 ): Promise<LegalCostRow[]> {
+  validateFilterParam(category, "category");
+  for (const code of stateCodes) {
+    validateFilterParam(code, "stateCode");
+  }
+
   const supabase = await createServerSupabaseClient();
 
   const { data, error } = await supabase

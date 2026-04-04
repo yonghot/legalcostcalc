@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Scale, Menu } from "lucide-react";
+import { Scale } from "lucide-react";
 
 export function Header() {
   return (

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Scale } from "lucide-react";
 import { DISCLAIMER_TEXT } from "@/lib/constants/disclaimer";
 import { CATEGORIES } from "@/lib/constants/categories";
+import { DEFAULT_STATE_SLUG } from "@/lib/constants/costs";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -37,7 +38,7 @@ export function Footer() {
               {CATEGORIES.slice(0, 6).map((cat) => (
                 <li key={cat.slug}>
                   <Link
-                    href={`/california/${cat.slug}-cost`}
+                    href={`/${DEFAULT_STATE_SLUG}/${cat.slug}-cost`}
                     className="text-sm text-slate-400 hover:text-teal-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 rounded-sm"
                   >
                     {cat.displayName} Costs

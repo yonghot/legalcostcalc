@@ -2,6 +2,7 @@ import { CostCalculator } from "@/components/calculator/cost-calculator";
 import { Disclaimer } from "@/components/shared/disclaimer";
 import { CATEGORIES } from "@/lib/constants/categories";
 import { STATES } from "@/lib/constants/states";
+import { DEFAULT_STATE_SLUG } from "@/lib/constants/costs";
 import Link from "next/link";
 import {
   Scale,
@@ -11,9 +12,11 @@ import {
   ArrowRight,
 } from "lucide-react";
 
+const POPULAR_STATE_CODES = ["CA", "TX", "FL", "NY", "IL", "PA", "OH", "GA", "NC", "MI"] as const;
+
 export default function HomePage() {
   const popularStates = STATES.filter((s) =>
-    ["CA", "TX", "FL", "NY", "IL", "PA", "OH", "GA", "NC", "MI"].includes(s.code),
+    (POPULAR_STATE_CODES as readonly string[]).includes(s.code),
   );
 
   return (
@@ -94,7 +97,7 @@ export default function HomePage() {
             {CATEGORIES.map((cat) => (
               <Link
                 key={cat.slug}
-                href={`/california/${cat.slug}-cost`}
+                href={`/${DEFAULT_STATE_SLUG}/${cat.slug}-cost`}
                 className="group rounded-lg border border-slate-200 p-5 transition-all hover:border-teal-200 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
               >
                 <div className="flex items-center justify-between">

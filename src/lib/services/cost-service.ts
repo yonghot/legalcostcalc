@@ -2,7 +2,6 @@ import {
   findCostsByFilters,
   findCostsByStatesAndCategory,
 } from "@/lib/repositories/cost-repository";
-import { STATES } from "@/lib/constants/states";
 import { STATE_MAP } from "@/lib/constants/states";
 import { LegalCostData, LegalCostRow, CostComparisonResult } from "@/lib/types";
 

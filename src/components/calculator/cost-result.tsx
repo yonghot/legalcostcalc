@@ -45,13 +45,13 @@ export function CostResult({ results, stateName, categoryName }: CostResultProps
             {/* Hourly Rate */}
             <div className="rounded-lg border border-slate-100 bg-slate-50 p-4">
               <div className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-600">
-                <DollarSign className="h-4 w-4" />
+                <DollarSign className="h-4 w-4" aria-hidden="true" />
                 Hourly Rate
               </div>
               <p className="font-mono text-lg font-semibold text-slate-900">
                 {formatCurrency(cost.hourlyRate.low)} – {formatCurrency(cost.hourlyRate.high)}
               </p>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 font-mono text-xs text-slate-500">
                 Median: {formatCurrency(cost.hourlyRate.median)}/hr
               </p>
             </div>
@@ -59,7 +59,7 @@ export function CostResult({ results, stateName, categoryName }: CostResultProps
             {/* Duration */}
             <div className="rounded-lg border border-slate-100 bg-slate-50 p-4">
               <div className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-600">
-                <Clock className="h-4 w-4" />
+                <Clock className="h-4 w-4" aria-hidden="true" />
                 Typical Duration
               </div>
               <p className="text-lg font-semibold text-slate-900">
@@ -70,7 +70,7 @@ export function CostResult({ results, stateName, categoryName }: CostResultProps
             {/* Common Fees */}
             <div className="rounded-lg border border-slate-100 bg-slate-50 p-4">
               <div className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-600">
-                <FileText className="h-4 w-4" />
+                <FileText className="h-4 w-4" aria-hidden="true" />
                 Common Fees
               </div>
               <ul className="space-y-1">
@@ -94,10 +94,10 @@ export function CostResult({ results, stateName, categoryName }: CostResultProps
                     href={source}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-1 text-xs text-slate-600 hover:bg-slate-200 transition-colors"
+                    className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-1 text-xs text-slate-600 hover:bg-slate-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
                   >
                     Source {i + 1}
-                    <ExternalLink className="h-3 w-3" />
+                    <ExternalLink className="h-3 w-3" aria-hidden="true" />
                   </a>
                 ))}
               </div>

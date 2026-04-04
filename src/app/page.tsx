@@ -47,7 +47,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
             <div className="flex items-start gap-4">
               <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-teal-100">
-                <MapPin className="h-5 w-5 text-teal-600" />
+                <MapPin className="h-5 w-5 text-teal-600" aria-hidden="true" />
               </div>
               <div>
                 <h3 className="font-semibold text-slate-900">50 States + DC</h3>
@@ -58,7 +58,7 @@ export default function HomePage() {
             </div>
             <div className="flex items-start gap-4">
               <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-teal-100">
-                <Shield className="h-5 w-5 text-teal-600" />
+                <Shield className="h-5 w-5 text-teal-600" aria-hidden="true" />
               </div>
               <div>
                 <h3 className="font-semibold text-slate-900">Source-Verified Data</h3>
@@ -69,7 +69,7 @@ export default function HomePage() {
             </div>
             <div className="flex items-start gap-4">
               <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-teal-100">
-                <TrendingUp className="h-5 w-5 text-teal-600" />
+                <TrendingUp className="h-5 w-5 text-teal-600" aria-hidden="true" />
               </div>
               <div>
                 <h3 className="font-semibold text-slate-900">Regularly Updated</h3>
@@ -95,13 +95,13 @@ export default function HomePage() {
               <Link
                 key={cat.slug}
                 href={`/california/${cat.slug}-cost`}
-                className="group rounded-lg border border-slate-200 p-5 transition-all hover:border-teal-200 hover:shadow-md"
+                className="group rounded-lg border border-slate-200 p-5 transition-all hover:border-teal-200 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-teal-50 transition-colors group-hover:bg-teal-100">
-                    <Scale className="h-5 w-5 text-teal-600" />
+                    <Scale className="h-5 w-5 text-teal-600" aria-hidden="true" />
                   </div>
-                  <ArrowRight className="h-4 w-4 text-slate-300 transition-colors group-hover:text-teal-500" />
+                  <ArrowRight className="h-4 w-4 text-slate-300 transition-colors group-hover:text-teal-500" aria-hidden="true" />
                 </div>
                 <h3 className="mt-3 font-semibold text-slate-900">{cat.displayName}</h3>
                 <p className="mt-1 text-sm text-slate-500 line-clamp-2">
@@ -126,7 +126,7 @@ export default function HomePage() {
               <Link
                 key={state.code}
                 href={`/${state.slug}/divorce-cost`}
-                className="rounded-lg border border-slate-200 bg-white p-3 text-center text-sm font-medium text-slate-700 transition-all hover:border-teal-200 hover:text-teal-700 hover:shadow-sm"
+                className="rounded-lg border border-slate-200 bg-white p-3 text-center text-sm font-medium text-slate-700 transition-all hover:border-teal-200 hover:text-teal-700 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
               >
                 {state.name}
               </Link>

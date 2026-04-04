@@ -118,7 +118,7 @@ export default async function StateCategoryPage({ params }: PageProps) {
 
           <div className="mt-8">
             <nav className="mb-4 text-sm text-slate-500">
-              <Link href="/" className="hover:text-teal-600">Home</Link>
+              <Link href="/" className="hover:text-teal-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded-sm">Home</Link>
               <span className="mx-2">/</span>
               <span>{stateInfo.name}</span>
               <span className="mx-2">/</span>
@@ -163,7 +163,7 @@ export default async function StateCategoryPage({ params }: PageProps) {
                     <p className="font-mono text-2xl font-bold text-teal-600">
                       {formatCurrency(cost.costRange.median)}
                     </p>
-                    <p className="mt-1 text-sm text-slate-500">
+                    <p className="mt-1 font-mono text-sm text-slate-500">
                       Range: {formatCurrency(cost.costRange.low)} – {formatCurrency(cost.costRange.high)}
                     </p>
                   </CardContent>
@@ -201,10 +201,10 @@ export default async function StateCategoryPage({ params }: PageProps) {
                   <Link
                     key={cat.slug}
                     href={`/${stateInfo.slug}/${cat.slug}-cost`}
-                    className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3 text-sm transition-all hover:border-teal-200 hover:shadow-sm"
+                    className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3 text-sm transition-all hover:border-teal-200 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
                   >
                     <span className="font-medium text-slate-700">{cat.displayName} Cost</span>
-                    <ArrowRight className="h-4 w-4 text-slate-300" />
+                    <ArrowRight className="h-4 w-4 text-slate-300" aria-hidden="true" />
                   </Link>
                 ))}
               </div>
@@ -220,10 +220,10 @@ export default async function StateCategoryPage({ params }: PageProps) {
                   <Link
                     key={state.code}
                     href={`/${state.slug}/${categoryInfo.slug}-cost`}
-                    className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3 text-sm transition-all hover:border-teal-200 hover:shadow-sm"
+                    className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3 text-sm transition-all hover:border-teal-200 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
                   >
                     <span className="font-medium text-slate-700">{state.name}</span>
-                    <ArrowRight className="h-4 w-4 text-slate-300" />
+                    <ArrowRight className="h-4 w-4 text-slate-300" aria-hidden="true" />
                   </Link>
                 ))}
               </div>

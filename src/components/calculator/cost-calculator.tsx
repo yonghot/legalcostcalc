@@ -65,7 +65,7 @@ export function CostCalculator({ initialCategory, initialState }: CostCalculator
       <Card className="border-slate-200 shadow-sm">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-xl">
-            <Calculator className="h-5 w-5 text-teal-600" />
+            <Calculator className="h-5 w-5 text-teal-600" aria-hidden="true" />
             Legal Cost Calculator
           </CardTitle>
         </CardHeader>

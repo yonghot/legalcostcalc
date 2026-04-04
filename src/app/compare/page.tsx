@@ -88,7 +88,7 @@ export default function ComparePage() {
               </div>
 
               <div className="hidden lg:flex items-center justify-center">
-                <ArrowLeftRight className="h-5 w-5 text-slate-400" />
+                <ArrowLeftRight className="h-5 w-5 text-slate-400" aria-hidden="true" />
               </div>
 
               <div className="space-y-2">
@@ -165,10 +165,10 @@ export default function ComparePage() {
                                 <p className="font-mono text-2xl font-bold text-teal-600">
                                   {formatCurrency(cost.costRange.median)}
                                 </p>
-                                <p className="mt-1 text-sm text-slate-500">
+                                <p className="mt-1 font-mono text-sm text-slate-500">
                                   {formatCurrency(cost.costRange.low)} – {formatCurrency(cost.costRange.high)}
                                 </p>
-                                <p className="mt-2 text-xs text-slate-400">
+                                <p className="mt-2 font-mono text-xs text-slate-400">
                                   {formatCurrency(cost.hourlyRate.median)}/hr median rate
                                 </p>
                               </>

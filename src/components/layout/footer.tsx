@@ -22,7 +22,7 @@ export function Footer() {
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <Scale className="h-5 w-5 text-teal-400" />
+              <Scale className="h-5 w-5 text-teal-400" aria-hidden="true" />
               <span className="font-semibold text-white">LegalCostCalc</span>
             </div>
             <p className="text-sm text-slate-400">
@@ -38,7 +38,7 @@ export function Footer() {
                 <li key={cat.slug}>
                   <Link
                     href={`/california/${cat.slug}-cost`}
-                    className="text-sm text-slate-400 hover:text-teal-400 transition-colors"
+                    className="text-sm text-slate-400 hover:text-teal-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 rounded-sm"
                   >
                     {cat.displayName} Costs
                   </Link>
@@ -51,12 +51,12 @@ export function Footer() {
             <h3 className="mb-3 text-sm font-semibold text-white">Resources</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/" className="text-sm text-slate-400 hover:text-teal-400 transition-colors">
+                <Link href="/" className="text-sm text-slate-400 hover:text-teal-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 rounded-sm">
                   Cost Calculator
                 </Link>
               </li>
               <li>
-                <Link href="/compare" className="text-sm text-slate-400 hover:text-teal-400 transition-colors">
+                <Link href="/compare" className="text-sm text-slate-400 hover:text-teal-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 rounded-sm">
                   Compare States
                 </Link>
               </li>

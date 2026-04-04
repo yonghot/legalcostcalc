@@ -1,0 +1,243 @@
+import { Metadata } from "next";
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import { CostCalculator } from "@/components/calculator/cost-calculator";
+import { Disclaimer } from "@/components/shared/disclaimer";
+import { FaqSchema } from "@/components/seo/faq-schema";
+import { STATES, STATE_BY_SLUG } from "@/lib/constants/states";
+import { CATEGORIES, CATEGORY_MAP } from "@/lib/constants/categories";
+import { formatCurrency } from "@/lib/utils/format";
+import { getCostForPage } from "@/lib/services/cost-service";
+import { CostDisplay } from "@/components/shared/cost-display";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ArrowRight } from "lucide-react";
+
+interface PageProps {
+  params: Promise<{ state: string; slug: string }>;
+}
+
+function parseCategoryFromSlug(slug: string): string | null {
+  if (slug.endsWith("-cost")) {
+    return slug.replace(/-cost$/, "");
+  }
+  return null;
+}
+
+export async function generateStaticParams() {
+  const params: { state: string; slug: string }[] = [];
+  for (const state of STATES) {
+    for (const cat of CATEGORIES) {
+      params.push({
+        state: state.slug,
+        slug: `${cat.slug}-cost`,
+      });
+    }
+  }
+  return params;
+}
+
+export const revalidate = 604800; // 7 days
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { state: stateSlug, slug } = await params;
+  const categorySlug = parseCategoryFromSlug(slug);
+  const stateInfo = STATE_BY_SLUG.get(stateSlug);
+  const categoryInfo = categorySlug ? CATEGORY_MAP.get(categorySlug) : null;
+
+  if (!stateInfo || !categoryInfo) {
+    return { title: "Not Found" };
+  }
+
+  const year = new Date().getFullYear();
+  const title = categoryInfo.seoTitleTemplate
+    .replace("{state}", stateInfo.name)
+    .replace("{year}", String(year));
+  const description = categoryInfo.seoDescriptionTemplate
+    .replace("{state}", stateInfo.name)
+    .replace("{year}", String(year));
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "website",
+    },
+  };
+}
+
+export default async function StateCategoryPage({ params }: PageProps) {
+  const { state: stateSlug, slug } = await params;
+  const categorySlug = parseCategoryFromSlug(slug);
+  const stateInfo = STATE_BY_SLUG.get(stateSlug);
+  const categoryInfo = categorySlug ? CATEGORY_MAP.get(categorySlug) : null;
+
+  if (!stateInfo || !categoryInfo) {
+    notFound();
+  }
+
+  let costs: Awaited<ReturnType<typeof getCostForPage>> = [];
+  try {
+    costs = await getCostForPage(categoryInfo.slug, stateInfo.code);
+  } catch {
+    costs = [];
+  }
+
+  const moderateCost = costs.find((c) => c.complexity === "moderate");
+  const year = new Date().getFullYear();
+
+  // Build FAQ
+  const faqQuestions = [
+    {
+      question: `How much does a ${categoryInfo.displayName.toLowerCase()} cost in ${stateInfo.name}?`,
+      answer: moderateCost
+        ? `The average cost of a ${categoryInfo.displayName.toLowerCase()} in ${stateInfo.name} ranges from ${formatCurrency(moderateCost.costRange.low)} to ${formatCurrency(moderateCost.costRange.high)}, with a median cost of ${formatCurrency(moderateCost.costRange.median)}.`
+        : `Cost data for ${categoryInfo.displayName.toLowerCase()} in ${stateInfo.name} is currently being collected.`,
+    },
+    {
+      question: `How much does a ${categoryInfo.displayName.toLowerCase()} lawyer charge per hour in ${stateInfo.name}?`,
+      answer: moderateCost
+        ? `${categoryInfo.displayName} attorneys in ${stateInfo.name} typically charge between ${formatCurrency(moderateCost.hourlyRate.low)} and ${formatCurrency(moderateCost.hourlyRate.high)} per hour.`
+        : `Hourly rate data for ${stateInfo.name} is currently being collected.`,
+    },
+  ];
+
+  // Related links
+  const otherCategories = CATEGORIES.filter((c) => c.slug !== categoryInfo.slug);
+  const nearbyStates = STATES.filter((s) => s.code !== stateInfo.code).slice(0, 5);
+
+  return (
+    <div>
+      <FaqSchema questions={faqQuestions} />
+
+      <section className="bg-gradient-to-b from-teal-50 to-white py-12 sm:py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <Disclaimer />
+
+          <div className="mt-8">
+            <nav className="mb-4 text-sm text-slate-500">
+              <Link href="/" className="hover:text-teal-600">Home</Link>
+              <span className="mx-2">/</span>
+              <span>{stateInfo.name}</span>
+              <span className="mx-2">/</span>
+              <span>{categoryInfo.displayName}</span>
+            </nav>
+
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+              How Much Does a {categoryInfo.displayName} Cost in {stateInfo.name}?
+            </h1>
+            <p className="mt-3 text-lg text-slate-600">
+              {year} cost estimates for {categoryInfo.displayName.toLowerCase()} in {stateInfo.name},
+              including attorney fees, court costs, and other expenses.
+            </p>
+          </div>
+
+          {/* Quick stats */}
+          {moderateCost && (
+            <div className="mt-8">
+              <Card className="border-slate-200 shadow-sm">
+                <CardContent className="p-6">
+                  <CostDisplay
+                    costRange={moderateCost.costRange}
+                    label={`Estimated ${categoryInfo.displayName} Cost (Moderate Complexity)`}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* All complexity levels */}
+          {costs.length > 0 && (
+            <div className="mt-8 grid gap-4 sm:grid-cols-3">
+              {costs.map((cost) => (
+                <Card key={cost.complexity} className="border-slate-200">
+                  <CardContent className="p-5">
+                    <div className="mb-3 flex items-center justify-between">
+                      <Badge variant="outline" className="capitalize">
+                        {cost.complexity}
+                      </Badge>
+                      <span className="text-xs text-slate-400">{cost.typicalDuration}</span>
+                    </div>
+                    <p className="font-mono text-2xl font-bold text-teal-600">
+                      {formatCurrency(cost.costRange.median)}
+                    </p>
+                    <p className="mt-1 text-sm text-slate-500">
+                      Range: {formatCurrency(cost.costRange.low)} – {formatCurrency(cost.costRange.high)}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Interactive Calculator */}
+      <section className="py-12">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <h2 className="mb-6 text-2xl font-bold text-slate-900">
+            Calculate Your Estimated Cost
+          </h2>
+          <CostCalculator
+            initialCategory={categoryInfo.slug}
+            initialState={stateInfo.code}
+          />
+        </div>
+      </section>
+
+      {/* Internal Links */}
+      <section className="border-t border-slate-100 bg-slate-50 py-12">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid gap-8 lg:grid-cols-2">
+            {/* Other categories in this state */}
+            <div>
+              <h3 className="mb-4 text-lg font-semibold text-slate-900">
+                Other Legal Costs in {stateInfo.name}
+              </h3>
+              <div className="space-y-2">
+                {otherCategories.map((cat) => (
+                  <Link
+                    key={cat.slug}
+                    href={`/${stateInfo.slug}/${cat.slug}-cost`}
+                    className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3 text-sm transition-all hover:border-teal-200 hover:shadow-sm"
+                  >
+                    <span className="font-medium text-slate-700">{cat.displayName} Cost</span>
+                    <ArrowRight className="h-4 w-4 text-slate-300" />
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* Same category in other states */}
+            <div>
+              <h3 className="mb-4 text-lg font-semibold text-slate-900">
+                {categoryInfo.displayName} Cost in Other States
+              </h3>
+              <div className="space-y-2">
+                {nearbyStates.map((state) => (
+                  <Link
+                    key={state.code}
+                    href={`/${state.slug}/${categoryInfo.slug}-cost`}
+                    className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3 text-sm transition-all hover:border-teal-200 hover:shadow-sm"
+                  >
+                    <span className="font-medium text-slate-700">{state.name}</span>
+                    <ArrowRight className="h-4 w-4 text-slate-300" />
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Bottom Disclaimer */}
+      <section className="py-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <Disclaimer />
+        </div>
+      </section>
+    </div>
+  );
+}

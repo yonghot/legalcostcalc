@@ -1,0 +1,66 @@
+[
+  {
+    "slug": "divorce",
+    "display_name": "Divorce",
+    "description": "Legal costs and attorney fees for divorce proceedings, including contested and uncontested divorces, child custody, alimony, and property division.",
+    "seo_title_template": "How Much Does a Divorce Cost in {state}? ({year} Guide)",
+    "seo_description_template": "Find out the average cost of divorce in {state} for {year}. Compare attorney fees, court costs, and filing fees for simple to complex divorce cases.",
+    "sort_order": 1
+  },
+  {
+    "slug": "dui",
+    "display_name": "DUI Defense",
+    "description": "Legal costs for DUI/DWI defense including attorney fees, court costs, fines, and related expenses for first-time and repeat offenses.",
+    "seo_title_template": "How Much Does a DUI Lawyer Cost in {state}? ({year} Guide)",
+    "seo_description_template": "Learn about DUI attorney costs in {state} for {year}. Compare lawyer fees, court fines, and total costs for DUI defense cases.",
+    "sort_order": 2
+  },
+  {
+    "slug": "personal-injury",
+    "display_name": "Personal Injury",
+    "description": "Legal costs for personal injury claims including contingency fee structures, court costs, expert witness fees, and settlement expenses.",
+    "seo_title_template": "How Much Does a Personal Injury Lawyer Cost in {state}? ({year} Guide)",
+    "seo_description_template": "Understand personal injury attorney costs in {state} for {year}. Learn about contingency fees, court costs, and what to expect.",
+    "sort_order": 3
+  },
+  {
+    "slug": "bankruptcy",
+    "display_name": "Bankruptcy",
+    "description": "Legal costs for Chapter 7 and Chapter 13 bankruptcy filings including attorney fees, court filing fees, credit counseling, and trustee fees.",
+    "seo_title_template": "How Much Does Bankruptcy Cost in {state}? ({year} Guide)",
+    "seo_description_template": "Find out bankruptcy attorney costs in {state} for {year}. Compare Chapter 7 and Chapter 13 filing fees, lawyer costs, and total expenses.",
+    "sort_order": 4
+  },
+  {
+    "slug": "real-estate",
+    "display_name": "Real Estate",
+    "description": "Legal costs for real estate transactions including closing attorney fees, title searches, contract review, and property dispute resolution.",
+    "seo_title_template": "How Much Does a Real Estate Lawyer Cost in {state}? ({year} Guide)",
+    "seo_description_template": "Learn about real estate attorney costs in {state} for {year}. Compare fees for closings, title searches, and property transactions.",
+    "sort_order": 5
+  },
+  {
+    "slug": "estate-planning",
+    "display_name": "Estate Planning",
+    "description": "Legal costs for estate planning including wills, trusts, power of attorney, healthcare directives, and probate proceedings.",
+    "seo_title_template": "How Much Does Estate Planning Cost in {state}? ({year} Guide)",
+    "seo_description_template": "Find estate planning attorney costs in {state} for {year}. Compare fees for wills, trusts, power of attorney, and probate services.",
+    "sort_order": 6
+  },
+  {
+    "slug": "criminal-defense",
+    "display_name": "Criminal Defense",
+    "description": "Legal costs for criminal defense including misdemeanor and felony charges, attorney fees, bail bonds, court costs, and related expenses.",
+    "seo_title_template": "How Much Does a Criminal Defense Lawyer Cost in {state}? ({year} Guide)",
+    "seo_description_template": "Learn about criminal defense attorney costs in {state} for {year}. Compare lawyer fees for misdemeanor and felony cases.",
+    "sort_order": 7
+  },
+  {
+    "slug": "immigration",
+    "display_name": "Immigration",
+    "description": "Legal costs for immigration cases including visa applications, green card petitions, citizenship, deportation defense, and asylum proceedings.",
+    "seo_title_template": "How Much Does an Immigration Lawyer Cost in {state}? ({year} Guide)",
+    "seo_description_template": "Find immigration attorney costs in {state} for {year}. Compare fees for visas, green cards, citizenship, and deportation defense.",
+    "sort_order": 8
+  }
+]

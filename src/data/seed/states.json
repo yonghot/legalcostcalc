@@ -1,0 +1,359 @@
+[
+  {
+    "code": "AL",
+    "name": "Alabama",
+    "slug": "alabama",
+    "population": 5024279,
+    "median_household_income": 56950
+  },
+  {
+    "code": "AK",
+    "name": "Alaska",
+    "slug": "alaska",
+    "population": 733391,
+    "median_household_income": 77790
+  },
+  {
+    "code": "AZ",
+    "name": "Arizona",
+    "slug": "arizona",
+    "population": 7151502,
+    "median_household_income": 65913
+  },
+  {
+    "code": "AR",
+    "name": "Arkansas",
+    "slug": "arkansas",
+    "population": 3011524,
+    "median_household_income": 52528
+  },
+  {
+    "code": "CA",
+    "name": "California",
+    "slug": "california",
+    "population": 39538223,
+    "median_household_income": 84097
+  },
+  {
+    "code": "CO",
+    "name": "Colorado",
+    "slug": "colorado",
+    "population": 5773714,
+    "median_household_income": 80184
+  },
+  {
+    "code": "CT",
+    "name": "Connecticut",
+    "slug": "connecticut",
+    "population": 3605944,
+    "median_household_income": 83771
+  },
+  {
+    "code": "DE",
+    "name": "Delaware",
+    "slug": "delaware",
+    "population": 989948,
+    "median_household_income": 71091
+  },
+  {
+    "code": "DC",
+    "name": "District of Columbia",
+    "slug": "district-of-columbia",
+    "population": 689545,
+    "median_household_income": 90842
+  },
+  {
+    "code": "FL",
+    "name": "Florida",
+    "slug": "florida",
+    "population": 21538187,
+    "median_household_income": 63062
+  },
+  {
+    "code": "GA",
+    "name": "Georgia",
+    "slug": "georgia",
+    "population": 10711908,
+    "median_household_income": 65030
+  },
+  {
+    "code": "HI",
+    "name": "Hawaii",
+    "slug": "hawaii",
+    "population": 1455271,
+    "median_household_income": 84857
+  },
+  {
+    "code": "ID",
+    "name": "Idaho",
+    "slug": "idaho",
+    "population": 1839106,
+    "median_household_income": 62714
+  },
+  {
+    "code": "IL",
+    "name": "Illinois",
+    "slug": "illinois",
+    "population": 12812508,
+    "median_household_income": 72205
+  },
+  {
+    "code": "IN",
+    "name": "Indiana",
+    "slug": "indiana",
+    "population": 6790280,
+    "median_household_income": 61944
+  },
+  {
+    "code": "IA",
+    "name": "Iowa",
+    "slug": "iowa",
+    "population": 3190369,
+    "median_household_income": 65573
+  },
+  {
+    "code": "KS",
+    "name": "Kansas",
+    "slug": "kansas",
+    "population": 2937880,
+    "median_household_income": 64521
+  },
+  {
+    "code": "KY",
+    "name": "Kentucky",
+    "slug": "kentucky",
+    "population": 4505836,
+    "median_household_income": 55573
+  },
+  {
+    "code": "LA",
+    "name": "Louisiana",
+    "slug": "louisiana",
+    "population": 4657757,
+    "median_household_income": 52087
+  },
+  {
+    "code": "ME",
+    "name": "Maine",
+    "slug": "maine",
+    "population": 1362359,
+    "median_household_income": 64767
+  },
+  {
+    "code": "MD",
+    "name": "Maryland",
+    "slug": "maryland",
+    "population": 6177224,
+    "median_household_income": 87063
+  },
+  {
+    "code": "MA",
+    "name": "Massachusetts",
+    "slug": "massachusetts",
+    "population": 7029917,
+    "median_household_income": 89645
+  },
+  {
+    "code": "MI",
+    "name": "Michigan",
+    "slug": "michigan",
+    "population": 10077331,
+    "median_household_income": 63498
+  },
+  {
+    "code": "MN",
+    "name": "Minnesota",
+    "slug": "minnesota",
+    "population": 5706494,
+    "median_household_income": 77706
+  },
+  {
+    "code": "MS",
+    "name": "Mississippi",
+    "slug": "mississippi",
+    "population": 2961279,
+    "median_household_income": 46511
+  },
+  {
+    "code": "MO",
+    "name": "Missouri",
+    "slug": "missouri",
+    "population": 6154913,
+    "median_household_income": 60110
+  },
+  {
+    "code": "MT",
+    "name": "Montana",
+    "slug": "montana",
+    "population": 1084225,
+    "median_household_income": 60560
+  },
+  {
+    "code": "NE",
+    "name": "Nebraska",
+    "slug": "nebraska",
+    "population": 1961504,
+    "median_household_income": 66644
+  },
+  {
+    "code": "NV",
+    "name": "Nevada",
+    "slug": "nevada",
+    "population": 3104614,
+    "median_household_income": 63276
+  },
+  {
+    "code": "NH",
+    "name": "New Hampshire",
+    "slug": "new-hampshire",
+    "population": 1377529,
+    "median_household_income": 83449
+  },
+  {
+    "code": "NJ",
+    "name": "New Jersey",
+    "slug": "new-jersey",
+    "population": 9288994,
+    "median_household_income": 85245
+  },
+  {
+    "code": "NM",
+    "name": "New Mexico",
+    "slug": "new-mexico",
+    "population": 2117522,
+    "median_household_income": 53992
+  },
+  {
+    "code": "NY",
+    "name": "New York",
+    "slug": "new-york",
+    "population": 20201249,
+    "median_household_income": 74314
+  },
+  {
+    "code": "NC",
+    "name": "North Carolina",
+    "slug": "north-carolina",
+    "population": 10439388,
+    "median_household_income": 62891
+  },
+  {
+    "code": "ND",
+    "name": "North Dakota",
+    "slug": "north-dakota",
+    "population": 779094,
+    "median_household_income": 68131
+  },
+  {
+    "code": "OH",
+    "name": "Ohio",
+    "slug": "ohio",
+    "population": 11799448,
+    "median_household_income": 59855
+  },
+  {
+    "code": "OK",
+    "name": "Oklahoma",
+    "slug": "oklahoma",
+    "population": 3959353,
+    "median_household_income": 55826
+  },
+  {
+    "code": "OR",
+    "name": "Oregon",
+    "slug": "oregon",
+    "population": 4237256,
+    "median_household_income": 67058
+  },
+  {
+    "code": "PA",
+    "name": "Pennsylvania",
+    "slug": "pennsylvania",
+    "population": 13002700,
+    "median_household_income": 67587
+  },
+  {
+    "code": "RI",
+    "name": "Rhode Island",
+    "slug": "rhode-island",
+    "population": 1097379,
+    "median_household_income": 71169
+  },
+  {
+    "code": "SC",
+    "name": "South Carolina",
+    "slug": "south-carolina",
+    "population": 5118425,
+    "median_household_income": 59318
+  },
+  {
+    "code": "SD",
+    "name": "South Dakota",
+    "slug": "south-dakota",
+    "population": 886667,
+    "median_household_income": 63920
+  },
+  {
+    "code": "TN",
+    "name": "Tennessee",
+    "slug": "tennessee",
+    "population": 6910840,
+    "median_household_income": 59695
+  },
+  {
+    "code": "TX",
+    "name": "Texas",
+    "slug": "texas",
+    "population": 29145505,
+    "median_household_income": 67321
+  },
+  {
+    "code": "UT",
+    "name": "Utah",
+    "slug": "utah",
+    "population": 3271616,
+    "median_household_income": 74197
+  },
+  {
+    "code": "VT",
+    "name": "Vermont",
+    "slug": "vermont",
+    "population": 643077,
+    "median_household_income": 67674
+  },
+  {
+    "code": "VA",
+    "name": "Virginia",
+    "slug": "virginia",
+    "population": 8631393,
+    "median_household_income": 80615
+  },
+  {
+    "code": "WA",
+    "name": "Washington",
+    "slug": "washington",
+    "population": 7614893,
+    "median_household_income": 82228
+  },
+  {
+    "code": "WV",
+    "name": "West Virginia",
+    "slug": "west-virginia",
+    "population": 1793716,
+    "median_household_income": 48037
+  },
+  {
+    "code": "WI",
+    "name": "Wisconsin",
+    "slug": "wisconsin",
+    "population": 5893718,
+    "median_household_income": 67125
+  },
+  {
+    "code": "WY",
+    "name": "Wyoming",
+    "slug": "wyoming",
+    "population": 576851,
+    "median_household_income": 68002
+  }
+]

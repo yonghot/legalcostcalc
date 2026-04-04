@@ -54,6 +54,12 @@
 1. Initial Supabase insert via anon key — blocked by RLS INSERT policy. Fixed by temporarily disabling RLS for seeding.
 2. Seed data had extra fields (contingency_fee_*) — fixed by filtering to valid columns only.
 
+## Deployment
+- **Production URL**: https://legalcostcalc.vercel.app
+- **GitHub**: https://github.com/yonghot/legalcostcalc
+- **Supabase**: eeyqjdfwnizpsalbaaco (us-east-1)
+- **Deployed**: 2026-04-05
+
 ## Next Steps (Post-MVP)
 - [ ] Premium subscription (Stripe integration)
 - [ ] PDF report download

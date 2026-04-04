@@ -118,8 +118,9 @@
 - ✅ Build: 416/416 pages, 0 errors
 
 ### 배포
-- Git: (pending)
-- 프로덕션: (pending)
+- Git: push ✅ (6e2a1c3)
+- 프로덕션: ✅ https://legalcostcalc.vercel.app
+- 프로덕션 확인: ✅ HTTP 200
 
 ### 판단 필요
 (없음)

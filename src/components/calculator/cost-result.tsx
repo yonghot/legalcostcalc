@@ -115,14 +115,33 @@ export const CostResult = memo(function CostResult({
           )}
 
           {/* Data freshness */}
-          {cost.lastVerifiedAt && (
-            <p className="mt-4 text-xs text-slate-400">
-              Last verified: {new Date(cost.lastVerifiedAt).toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "long",
-              })}
-            </p>
-          )}
+          {cost.lastVerifiedAt && (() => {
+            const verifiedDate = new Date(cost.lastVerifiedAt);
+            const oneYearAgo = new Date();
+            oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+            const isStale = verifiedDate < oneYearAgo;
+
+            return (
+              <div className="mt-4">
+                {isStale && (
+                  <p className="mb-1 text-xs font-medium text-amber-600">
+                    This data may be outdated. Last verified over 1 year ago.
+                  </p>
+                )}
+                <p className="text-xs text-slate-400">
+                  Last verified: {verifiedDate.toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                  })}
+                </p>
+                {cost.sources.length < 2 && (
+                  <p className="mt-1 text-xs italic text-slate-400">
+                    Estimated range (single source)
+                  </p>
+                )}
+              </div>
+            );
+          })()}
         </CardContent>
       </Card>
     </div>

@@ -166,11 +166,35 @@ export default async function StateCategoryPage({ params }: PageProps) {
                     <p className="mt-1 font-mono text-sm text-slate-500">
                       Range: {formatCurrency(cost.costRange.low)} – {formatCurrency(cost.costRange.high)}
                     </p>
+                    {cost.sources.length < 2 && (
+                      <p className="mt-2 text-xs italic text-slate-400">Estimated range (single source)</p>
+                    )}
                   </CardContent>
                 </Card>
               ))}
             </div>
           )}
+
+          {/* Data freshness */}
+          {moderateCost?.lastVerifiedAt && (() => {
+            const verifiedDate = new Date(moderateCost.lastVerifiedAt);
+            const oneYearAgo = new Date();
+            oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+            const isStale = verifiedDate < oneYearAgo;
+
+            return (
+              <div className="mt-4 text-center">
+                {isStale && (
+                  <p className="text-xs font-medium text-amber-600">
+                    This data may be outdated. Last verified over 1 year ago.
+                  </p>
+                )}
+                <p className="text-xs text-slate-400">
+                  Last verified: {verifiedDate.toLocaleDateString("en-US", { year: "numeric", month: "long" })}
+                </p>
+              </div>
+            );
+          })()}
         </div>
       </section>
 

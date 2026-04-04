@@ -1,7 +1,7 @@
 {
   "project": "LegalCostCalc",
   "version": "0.1.0",
-  "lastUpdated": "2026-04-05T16:00:00Z",
+  "lastUpdated": "2026-04-05T02:50:00Z",
   "features": [
     {
       "id": "F1",
@@ -45,12 +45,14 @@
       "priority": "P1",
       "status": "pass",
       "description": "Side-by-side comparison of costs between states",
-      "evidence": "API /api/costs/compare?states=CA,TX&category=divorce returns 2 states with all complexity levels. Compare page renders.",
+      "evidence": "Cross-state: API /api/costs/compare?states=CA,TX&category=divorce works. Cross-category: /compare page supports same-state comparison of 2 different categories via /api/costs fetches. Mode toggle implemented.",
       "acceptance": [
-        "Select 2 states for comparison",
+        "Select 2 states for comparison (cross-state mode)",
         "Select category to compare",
         "Side-by-side cost range display",
-        "Visual difference indicator"
+        "Visual difference indicator",
+        "Same-state cross-category comparison mode",
+        "Mode toggle between state comparison and category comparison"
       ]
     },
     {

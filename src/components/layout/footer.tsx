@@ -58,7 +58,7 @@ export function Footer() {
               </li>
               <li>
                 <Link href="/compare" className="text-sm text-slate-400 hover:text-teal-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 rounded-sm">
-                  Compare States
+                  Compare Costs
                 </Link>
               </li>
             </ul>

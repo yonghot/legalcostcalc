@@ -66,6 +66,71 @@
 - Security findings fixed: 6 (2 P1, 4 P2)
 - Layer violations: 0
 
+---
+
+## [2026-04-05 02:42] 자동 개발 세션
+
+### 리서치
+- ⏭️ 스킵 (쿨다운 미만: 1.8h/6h)
+
+### 메인 태스크
+- F3 cross-category comparison 구현 (PRD F3 gap 해소)
+
+### 추가 작업
+1. DESIGN.md 정합성: Card 컴포넌트 `rounded-xl` → `rounded-lg`, `ring-1` → `border shadow-sm`
+2. Compare 페이지에 mode toggle 추가 (Compare States / Compare Categories)
+3. Compare 페이지 SEO metadata 추가 (layout.tsx)
+4. API routes console.error 제거 (4개 파일)
+5. Footer "Compare States" → "Compare Costs" 텍스트 갱신
+6. Data staleness warning 구현 (CLAUDE.md rule: 1년 초과 시 경고 표시)
+7. Single-source label 구현 (CLAUDE.md rule: 출처 1개 미만 시 "estimated range" 라벨)
+
+### 정합성 검증 (B-0.5)
+- [MUST] 위반: 없음 (REVIEW.md에 [MUST] 없음)
+- PRD 변경점: 없음
+- DESIGN.md 불일치: Card rounded-xl→rounded-lg 수정 완료
+- PRD F3 gap: cross-category comparison 미구현 → 구현 완료
+- CLAUDE.md data rules: staleness warning + single-source label 미구현 → 구현 완료
+
+### 구현 상세
+- 수정: `src/components/ui/card.tsx` — rounded-lg, border, shadow-sm
+- 수정: `src/app/compare/page.tsx` — mode toggle, cross-category comparison
+- 생성: `src/app/compare/layout.tsx` — SEO metadata
+- 수정: `src/app/api/costs/route.ts` — console.error 제거
+- 수정: `src/app/api/costs/compare/route.ts` — console.error 제거
+- 수정: `src/app/api/states/route.ts` — console.error 제거
+- 수정: `src/app/api/categories/route.ts` — console.error 제거
+- 수정: `src/components/layout/footer.tsx` — "Compare Costs" 텍스트
+- 수정: `src/components/calculator/cost-result.tsx` — staleness + single-source
+- 수정: `src/app/[state]/[slug]/page.tsx` — staleness + single-source on SEO pages
+
+### 아키텍처 메모
+- Cross-category comparison은 기존 /api/costs 엔드포인트 2회 호출로 구현 (API 변경 불필요)
+- Card 스타일 변경은 shadcn/ui 기본값 수정이므로 모든 Card 사용처에 자동 반영
+
+### 자가 검토
+- ✅ Disclaimer: 모든 페이지(Home, Compare, SEO Landing) top+bottom 확인
+- ✅ Card: rounded-lg, border, shadow-sm 확인
+- ✅ Compare: 두 모드(states/categories) 작동 확인
+- ✅ API: console.error 0개 확인
+- ✅ Data warnings: staleness + single-source 구현 확인
+- ✅ Layer 위반: 0개
+- ✅ Build: 416/416 pages, 0 errors
+
+### 배포
+- Git: (pending)
+- 프로덕션: (pending)
+
+### 판단 필요
+(없음)
+
+### 다음 세션 권장
+- Analytics 통합 (Plausible/GA4) — PRD에 명시되어 있으나 미구현
+- OG image generation for social sharing
+- PWA manifest + service worker
+
+---
+
 ## Next Steps (Post-MVP)
 - [ ] Premium subscription (Stripe)
 - [ ] PDF report download

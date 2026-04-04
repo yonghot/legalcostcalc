@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
       { headers: { "X-RateLimit-Remaining": String(remaining) } },
     );
   } catch (error) {
-    console.error("GET /api/categories error:", error instanceof Error ? error.message : "Unknown error");
+    void error; // error details not exposed to client
     return NextResponse.json(
       errorResponse("Internal server error"),
       { status: 500 },

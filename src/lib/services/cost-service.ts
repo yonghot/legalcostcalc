@@ -2,7 +2,8 @@ import {
   findCostsByFilters,
   findCostsByStatesAndCategory,
 } from "@/lib/repositories/cost-repository";
-import { findStateByCode } from "@/lib/repositories/state-repository";
+import { STATES } from "@/lib/constants/states";
+import { STATE_MAP } from "@/lib/constants/states";
 import { LegalCostData, LegalCostRow, CostComparisonResult } from "@/lib/types";
 
 function mapRowToData(row: LegalCostRow): LegalCostData {
@@ -59,16 +60,15 @@ export async function compareCosts(
     stateGroups.set(row.state_code, existing);
   }
 
-  const states = await Promise.all(
-    stateCodes.map(async (code) => {
-      const stateInfo = await findStateByCode(code);
-      return {
-        stateCode: code,
-        stateName: stateInfo?.name ?? code,
-        costs: stateGroups.get(code) || [],
-      };
-    }),
-  );
+  // Synchronous lookup from the in-memory map instead of N async calls
+  const states = stateCodes.map((code) => {
+    const stateInfo = STATE_MAP.get(code);
+    return {
+      stateCode: code,
+      stateName: stateInfo?.name ?? code,
+      costs: stateGroups.get(code) || [],
+    };
+  });
 
   return { category, states };
 }

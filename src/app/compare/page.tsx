@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import {
   Select,
   SelectContent,
@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Disclaimer } from "@/components/shared/disclaimer";
 import { CATEGORIES } from "@/lib/constants/categories";
 import { STATES } from "@/lib/constants/states";
+import { VALID_COMPLEXITIES } from "@/lib/constants/costs";
 import { CostComparisonResult, LegalCostData } from "@/lib/types";
 import { formatCurrency } from "@/lib/utils/format";
 import { ArrowLeftRight } from "lucide-react";
@@ -27,8 +28,13 @@ export default function ComparePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleCompare = async () => {
+  // Track the latest request to prevent stale responses from overwriting newer ones
+  const requestIdRef = useRef(0);
+
+  const handleCompare = useCallback(async () => {
     if (!state1 || !state2 || !category) return;
+
+    const currentRequestId = ++requestIdRef.current;
 
     setLoading(true);
     setError(null);
@@ -41,6 +47,9 @@ export default function ComparePage() {
       const res = await fetch(`/api/costs/compare?${params}`);
       const json = await res.json();
 
+      // Discard if a newer request was fired while this one was in flight
+      if (currentRequestId !== requestIdRef.current) return;
+
       if (json.error) {
         setError(json.error);
         setResult(null);
@@ -48,11 +57,14 @@ export default function ComparePage() {
         setResult(json.data);
       }
     } catch {
+      if (currentRequestId !== requestIdRef.current) return;
       setError("Failed to compare costs. Please try again.");
     } finally {
-      setLoading(false);
+      if (currentRequestId === requestIdRef.current) {
+        setLoading(false);
+      }
     }
-  };
+  }, [state1, state2, category]);
 
   const getCostByComplexity = (costs: LegalCostData[], complexity: string) =>
     costs.find((c) => c.complexity === complexity);
@@ -127,7 +139,7 @@ export default function ComparePage() {
         </Card>
 
         {error && (
-          <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">
             {error}
           </div>
         )}
@@ -139,7 +151,7 @@ export default function ComparePage() {
               {CATEGORIES.find((c) => c.slug === result.category)?.displayName} Cost Comparison
             </h2>
 
-            {(["simple", "moderate", "complex"] as const).map((complexity) => {
+            {VALID_COMPLEXITIES.map((complexity) => {
               const cost1 = getCostByComplexity(result.states[0].costs, complexity);
               const cost2 = getCostByComplexity(result.states[1].costs, complexity);
 
@@ -158,7 +170,7 @@ export default function ComparePage() {
                       {[result.states[0], result.states[1]].map((stateData, i) => {
                         const cost = getCostByComplexity(stateData.costs, complexity);
                         return (
-                          <div key={i} className="text-center">
+                          <div key={stateData.stateCode || i} className="text-center">
                             <h3 className="mb-3 font-semibold text-slate-700">{stateData.stateName}</h3>
                             {cost ? (
                               <>

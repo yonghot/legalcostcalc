@@ -1,0 +1,34 @@
+{
+  "hooks": {
+    "session-init": [
+      {
+        "command": "bash .claude/hooks/session-init.sh",
+        "description": "Load project context and verify environment"
+      }
+    ],
+    "pre-commit": [
+      {
+        "command": "bash .claude/hooks/pre-commit-gate.sh",
+        "description": "Run lint and typecheck before commit"
+      }
+    ],
+    "post-write": [
+      {
+        "command": "bash .claude/hooks/post-write-format.sh",
+        "description": "Format written files with prettier"
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(npx *)",
+      "Bash(git *)",
+      "Bash(node *)",
+      "Bash(ls *)",
+      "Bash(cat *)",
+      "Bash(mkdir *)",
+      "Bash(cp *)"
+    ]
+  }
+}

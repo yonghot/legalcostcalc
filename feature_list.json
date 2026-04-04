@@ -1,0 +1,68 @@
+{
+  "project": "LegalCostCalc",
+  "version": "0.1.0",
+  "lastUpdated": "2026-04-05",
+  "features": [
+    {
+      "id": "F1",
+      "name": "Legal Cost Calculator",
+      "priority": "P0",
+      "status": "pending",
+      "description": "Core calculator: category + state + complexity -> cost range",
+      "acceptance": [
+        "User selects legal category from 8 options",
+        "User selects state from 50 + DC",
+        "User selects complexity (simple/moderate/complex)",
+        "Results show cost range (low-median-high)",
+        "Results show hourly rate range",
+        "Results show typical duration",
+        "Results show common fees breakdown",
+        "Results show data sources",
+        "Disclaimer visible above and below results"
+      ]
+    },
+    {
+      "id": "F2",
+      "name": "Programmatic SEO Landing Pages",
+      "priority": "P0",
+      "status": "pending",
+      "description": "400 statically generated pages (50 states x 8 categories)",
+      "acceptance": [
+        "URL pattern: /[state]/[category]-cost",
+        "Each page has unique H1, title, meta description",
+        "Schema.org FAQPage structured data",
+        "Internal links to same-category other states",
+        "Internal links to same-state other categories",
+        "Embedded interactive calculator",
+        "ISR revalidation every 7 days"
+      ]
+    },
+    {
+      "id": "F3",
+      "name": "Cost Comparison",
+      "priority": "P1",
+      "status": "pending",
+      "description": "Side-by-side comparison of costs between states",
+      "acceptance": [
+        "Select 2 states for comparison",
+        "Select category to compare",
+        "Side-by-side cost range display",
+        "Visual difference indicator"
+      ]
+    },
+    {
+      "id": "F4",
+      "name": "Disclaimer System",
+      "priority": "P0",
+      "status": "pending",
+      "description": "Legal disclaimer on every page, UPL risk mitigation",
+      "acceptance": [
+        "Disclaimer at top of every page",
+        "Disclaimer at bottom of every page",
+        "No advice-type features implemented",
+        "No outcome prediction features",
+        "Consistent disclaimer text across all pages"
+      ]
+    }
+  ]
+}

@@ -11,8 +11,8 @@ export function Footer() {
     <footer className="border-t border-slate-800 bg-slate-900 text-slate-300">
       {/* Disclaimer */}
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <div className="rounded-lg border border-amber-900/30 bg-amber-950/30 p-4">
-          <p className="text-xs leading-relaxed text-amber-200/80">
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+          <p className="text-xs leading-relaxed text-amber-700">
             {DISCLAIMER_TEXT}
           </p>
         </div>

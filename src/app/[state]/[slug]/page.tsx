@@ -60,10 +60,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title,
     description,
+    alternates: {
+      canonical: `/${stateInfo.slug}/${categorySlug}-cost`,
+    },
     openGraph: {
       title,
       description,
       type: "website",
+      url: `https://legalcostcalc.vercel.app/${stateInfo.slug}/${categorySlug}-cost`,
     },
   };
 }
@@ -106,7 +110,9 @@ export default async function StateCategoryPage({ params }: PageProps) {
 
   // Related links
   const otherCategories = CATEGORIES.filter((c) => c.slug !== categoryInfo.slug);
-  const nearbyStates = STATES.filter((s) => s.code !== stateInfo.code).slice(0, 5);
+  const allOtherStates = STATES.filter((s) => s.code !== stateInfo.code);
+  const displayedStates = allOtherStates.slice(0, 10);
+  const remainingStatesCount = allOtherStates.length - displayedStates.length;
 
   return (
     <div>
@@ -240,7 +246,7 @@ export default async function StateCategoryPage({ params }: PageProps) {
                 {categoryInfo.displayName} Cost in Other States
               </h3>
               <div className="space-y-2">
-                {nearbyStates.map((state) => (
+                {displayedStates.map((state) => (
                   <Link
                     key={state.code}
                     href={`/${state.slug}/${categoryInfo.slug}-cost`}
@@ -250,6 +256,25 @@ export default async function StateCategoryPage({ params }: PageProps) {
                     <ArrowRight className="h-4 w-4 text-slate-300" aria-hidden="true" />
                   </Link>
                 ))}
+                {remainingStatesCount > 0 && (
+                  <details className="rounded-lg border border-slate-200 bg-white">
+                    <summary className="cursor-pointer p-3 text-sm font-medium text-teal-600 hover:text-teal-700">
+                      View {remainingStatesCount} more states
+                    </summary>
+                    <div className="space-y-2 p-3 pt-0">
+                      {allOtherStates.slice(10).map((state) => (
+                        <Link
+                          key={state.code}
+                          href={`/${state.slug}/${categoryInfo.slug}-cost`}
+                          className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3 text-sm transition-all hover:border-teal-200 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                        >
+                          <span className="font-medium text-slate-700">{state.name}</span>
+                          <ArrowRight className="h-4 w-4 text-slate-300" aria-hidden="true" />
+                        </Link>
+                      ))}
+                    </div>
+                  </details>
+                )}
               </div>
             </div>
           </div>

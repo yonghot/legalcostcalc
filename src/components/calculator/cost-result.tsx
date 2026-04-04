@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -14,9 +15,17 @@ interface CostResultProps {
   categoryName: string;
 }
 
-export function CostResult({ results, stateName, categoryName }: CostResultProps) {
+export const CostResult = memo(function CostResult({
+  results,
+  stateName,
+  categoryName,
+}: CostResultProps) {
   // Show the first result (filtered by complexity)
   const cost = results[0];
+
+  if (!cost) return null;
+
+  const safeSourceUrls = cost.sources.filter(isSafeUrl);
 
   return (
     <div className="space-y-4">
@@ -84,12 +93,12 @@ export function CostResult({ results, stateName, categoryName }: CostResultProps
             </div>
           </div>
 
-          {/* Sources — only render verified safe URLs */}
-          {cost.sources.filter(isSafeUrl).length > 0 && (
+          {/* Sources -- only render verified safe URLs */}
+          {safeSourceUrls.length > 0 && (
             <div className="mt-6">
               <p className="mb-2 text-xs font-medium text-slate-500">Data Sources:</p>
               <div className="flex flex-wrap gap-2">
-                {cost.sources.filter(isSafeUrl).map((source, i) => (
+                {safeSourceUrls.map((source, i) => (
                   <a
                     key={i}
                     href={source}
@@ -118,4 +127,4 @@ export function CostResult({ results, stateName, categoryName }: CostResultProps
       </Card>
     </div>
   );
-}
+});

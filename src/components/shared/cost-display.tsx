@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { formatCurrency } from "@/lib/utils/format";
 import { CostRange } from "@/lib/types";
 
@@ -6,7 +7,7 @@ interface CostDisplayProps {
   label?: string;
 }
 
-export function CostDisplay({ costRange, label }: CostDisplayProps) {
+export const CostDisplay = memo(function CostDisplay({ costRange, label }: CostDisplayProps) {
   return (
     <div className="text-center">
       {label && (
@@ -32,4 +33,4 @@ export function CostDisplay({ costRange, label }: CostDisplayProps) {
       </div>
     </div>
   );
-}
+});

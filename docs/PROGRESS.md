@@ -68,6 +68,85 @@
 
 ---
 
+## [2026-04-05 11:00] 자동 개발 세션
+
+### 리서치
+- ✅ 수행 (RESEARCH.md 10.1h 경과, 쿨다운 초과)
+- 서브에이전트 5개 병렬 분석: 사용자 플로우, 디자인 감사, 백엔드 감사, 코드 품질, 콘텐츠 분석
+- [자동 반영] 6개: A-1 Affiliate CTA, A-2 Auto-scroll, A-3 Compare breadcrumb, B-1 API dedup, B-2 Compare split, B-3 Error boundary consolidation
+- [오너 판단 필요] 2개: A-4 Blog/CMS 구조, A-5 Ad 통합 구조
+- [C] 외부 조사: 신규 3개 (C-1 데이터 정확성 검증, C-2 UPL 리스크 판례, C-3 Affiliate 프로그램 조건)
+- [D] 시장 인사이트 2개, [E] 개발 효율화 1개
+
+### 메인 태스크
+- A-1: Affiliate CTA 구조 구현 (PRD §3 수익 모델 반영)
+
+### 추가 작업
+1. A-2: Calculator 결과 자동 스크롤 (smooth scroll on result render)
+2. A-3: Compare 페이지 breadcrumb 추가 (UX 일관성)
+3. B-1: API route 중복 코드 추출 (getClientIp, rateLimitGuard)
+4. B-3: Error boundary 공유 컴포넌트 추출 (ErrorContent)
+5. Home page: 카테고리별 고유 아이콘 (Scale → Car/HeartPulse/Landmark/Home/FileText/ShieldAlert/Globe)
+6. About 페이지 생성 (E-E-A-T SEO: 미션, 데이터 소스, 방법론, 데이터 최신성)
+7. Header/Footer 네비게이션에 About 링크 추가
+8. Sitemap에 /about 추가
+9. Affiliate CTA 모바일 반응형 개선
+
+### 정합성 검증 (B-0.5)
+- [MUST] 위반: 없음 (REVIEW.md에 [MUST] 없음)
+- PRD 변경점: 없음
+- DESIGN.md 불일치: 없음 (이전 세션에서 해소)
+- PRD 갭: Affiliate 수익 모델 미구현 → A-1로 해소
+
+### 구현 상세
+- 생성: `src/lib/constants/affiliates.ts` — Affiliate 파트너 데이터 + 카테고리 매칭
+- 생성: `src/components/shared/affiliate-cta.tsx` — Affiliate CTA 컴포넌트 (반응형)
+- 생성: `src/components/shared/error-content.tsx` — 공유 에러 컨텐츠 컴포넌트
+- 생성: `src/app/about/page.tsx` — About & Methodology 페이지
+- 수정: `src/app/page.tsx` — Affiliate CTA 추가, 카테고리별 고유 아이콘
+- 수정: `src/app/[state]/[slug]/page.tsx` — Affiliate CTA 추가
+- 수정: `src/app/compare/page.tsx` — Breadcrumb 추가
+- 수정: `src/components/calculator/cost-calculator.tsx` — 결과 자동 스크롤
+- 수정: `src/lib/utils/api-security.ts` — getClientIp, rateLimitGuard 유틸
+- 수정: `src/app/api/*/route.ts` (4파일) — 새 유틸 사용
+- 수정: `src/app/error.tsx`, `src/app/[state]/[slug]/error.tsx` — ErrorContent 사용
+- 수정: `src/components/layout/header.tsx` — About 링크
+- 수정: `src/components/layout/footer.tsx` — About & Methodology 링크
+- 수정: `src/app/sitemap.ts` — /about 추가
+
+### 아키텍처 메모
+- Affiliate URL은 UTM 파라미터 방식 (utm_source=legalcostcalc, utm_medium=referral, utm_campaign=[category])
+- 실제 affiliate 가입 후 URL 교체 필요 (constants/affiliates.ts에서 관리)
+- rateLimitGuard는 Response 직접 반환으로 NextResponse 의존성 제거
+
+### 시도했으나 실패한 접근
+- 없음
+
+### 자가 검토
+- ✅ Disclaimer: 모든 페이지(Home, Compare, SEO, About, Error, Not-Found) top+bottom 확인
+- ✅ console.log: 0개
+- ✅ TypeScript any: 0개
+- ✅ Layer 위반: 0개
+- ✅ Build: 420 pages, 0 errors
+
+### 배포
+- Git: push (진행 중)
+- 프로덕션: (진행 중)
+
+### 판단 필요
+- Affiliate 프로그램 실제 가입 필요 (LegalZoom, Avvo, Rocket Lawyer)
+- Blog/CMS 구조 결정 필요 (MDX vs headless CMS) — RESEARCH.md A-4
+- Ad 통합 결정 필요 (AdSense 계정 필요) — RESEARCH.md A-5
+- C-1: 법률 비용 데이터 정확성 심층 연구 필요 (긴급)
+
+### 다음 세션 권장
+- C-1 데이터 검증 결과 반영 (오너 PRD 수정 대기)
+- Blog/CMS 구조 (오너 결정 후)
+- OG image generation
+- AdSense 통합 (오너 계정 준비 후)
+
+---
+
 ## [2026-04-05 03:05] 자동 개발 세션
 
 ### 리서치

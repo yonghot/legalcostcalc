@@ -27,6 +27,12 @@ export function Header() {
           >
             Compare
           </Link>
+          <Link
+            href="/about"
+            className="text-sm font-medium text-slate-600 transition-colors hover:text-teal-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded-sm"
+          >
+            About
+          </Link>
         </nav>
 
         {/* Mobile navigation */}
@@ -42,6 +48,12 @@ export function Header() {
             className="text-sm font-medium text-slate-600 transition-colors hover:text-teal-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded-sm"
           >
             Compare
+          </Link>
+          <Link
+            href="/about"
+            className="text-sm font-medium text-slate-600 transition-colors hover:text-teal-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded-sm"
+          >
+            About
           </Link>
         </nav>
       </div>

@@ -36,6 +36,37 @@ export function checkRateLimit(ip: string): { allowed: boolean; remaining: numbe
 }
 
 /**
+ * Extract client IP from request headers.
+ */
+export function getClientIp(request: { headers: { get(name: string): string | null } }): string {
+  return request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+}
+
+/**
+ * Rate limit guard. Returns null if allowed, or a 429 Response if blocked.
+ */
+export function rateLimitGuard(
+  ip: string,
+): { allowed: true; remaining: number } | { allowed: false; response: Response } {
+  const { allowed, remaining } = checkRateLimit(ip);
+  if (!allowed) {
+    const body = JSON.stringify({ data: null, error: "Too many requests. Please try again later.", meta: null });
+    return {
+      allowed: false,
+      response: new Response(body, {
+        status: 429,
+        headers: {
+          "Content-Type": "application/json",
+          "Retry-After": "60",
+          "X-RateLimit-Remaining": "0",
+        },
+      }),
+    };
+  }
+  return { allowed: true, remaining };
+}
+
+/**
  * Periodically clean up expired entries to prevent memory leaks.
  * This runs on a 5-minute interval.
  */

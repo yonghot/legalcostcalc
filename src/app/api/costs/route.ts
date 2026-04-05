@@ -4,24 +4,12 @@ import { successResponse, errorResponse } from "@/lib/types";
 import { CATEGORIES } from "@/lib/constants/categories";
 import { STATES } from "@/lib/constants/states";
 import { VALID_COMPLEXITIES } from "@/lib/constants/costs";
-import { sanitizeForErrorMessage, checkRateLimit } from "@/lib/utils/api-security";
+import { sanitizeForErrorMessage, getClientIp, rateLimitGuard } from "@/lib/utils/api-security";
 
 export async function GET(request: NextRequest) {
-  // Rate limiting
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-  const { allowed, remaining } = checkRateLimit(ip);
-  if (!allowed) {
-    return NextResponse.json(
-      errorResponse("Too many requests. Please try again later."),
-      {
-        status: 429,
-        headers: {
-          "Retry-After": "60",
-          "X-RateLimit-Remaining": "0",
-        },
-      },
-    );
-  }
+  const ip = getClientIp(request);
+  const guard = rateLimitGuard(ip);
+  if (!guard.allowed) return guard.response;
 
   try {
     const { searchParams } = request.nextUrl;
@@ -29,18 +17,17 @@ export async function GET(request: NextRequest) {
     const state = searchParams.get("state");
     const complexity = searchParams.get("complexity");
 
-    // Validation
     if (category && !CATEGORIES.some((c) => c.slug === category)) {
       return NextResponse.json(
         errorResponse(`Invalid category: ${sanitizeForErrorMessage(category)}`),
-        { status: 400, headers: { "X-RateLimit-Remaining": String(remaining) } },
+        { status: 400, headers: { "X-RateLimit-Remaining": String(guard.remaining) } },
       );
     }
 
     if (state && !STATES.some((s) => s.code === state.toUpperCase())) {
       return NextResponse.json(
         errorResponse(`Invalid state code: ${sanitizeForErrorMessage(state)}`),
-        { status: 400, headers: { "X-RateLimit-Remaining": String(remaining) } },
+        { status: 400, headers: { "X-RateLimit-Remaining": String(guard.remaining) } },
       );
     }
 
@@ -54,7 +41,7 @@ export async function GET(request: NextRequest) {
         errorResponse(
           `Invalid complexity. Must be one of: ${VALID_COMPLEXITIES.join(", ")}`,
         ),
-        { status: 400, headers: { "X-RateLimit-Remaining": String(remaining) } },
+        { status: 400, headers: { "X-RateLimit-Remaining": String(guard.remaining) } },
       );
     }
 
@@ -66,10 +53,10 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(
       successResponse(costs, { count: costs.length }),
-      { headers: { "X-RateLimit-Remaining": String(remaining) } },
+      { headers: { "X-RateLimit-Remaining": String(guard.remaining) } },
     );
   } catch (error) {
-    void error; // error details not exposed to client
+    void error;
     return NextResponse.json(
       errorResponse("Internal server error"),
       { status: 500 },

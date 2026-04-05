@@ -10,9 +10,29 @@ import {
   MapPin,
   TrendingUp,
   ArrowRight,
+  Car,
+  HeartPulse,
+  Landmark,
+  Home,
+  FileText,
+  ShieldAlert,
+  Globe,
+  type LucideIcon,
 } from "lucide-react";
+import { AffiliateCTA } from "@/components/shared/affiliate-cta";
 
 const POPULAR_STATE_CODES = ["CA", "TX", "FL", "NY", "IL", "PA", "OH", "GA", "NC", "MI"] as const;
+
+const CATEGORY_ICONS: Record<string, LucideIcon> = {
+  divorce: Scale,
+  dui: Car,
+  "personal-injury": HeartPulse,
+  bankruptcy: Landmark,
+  "real-estate": Home,
+  "estate-planning": FileText,
+  "criminal-defense": ShieldAlert,
+  immigration: Globe,
+};
 
 export default function HomePage() {
   const popularStates = STATES.filter((s) =>
@@ -94,7 +114,9 @@ export default function HomePage() {
           </p>
 
           <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {CATEGORIES.map((cat) => (
+            {CATEGORIES.map((cat) => {
+              const Icon = CATEGORY_ICONS[cat.slug] || Scale;
+              return (
               <Link
                 key={cat.slug}
                 href={`/${DEFAULT_STATE_SLUG}/${cat.slug}-cost`}
@@ -102,7 +124,7 @@ export default function HomePage() {
               >
                 <div className="flex items-center justify-between">
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-teal-50 transition-colors group-hover:bg-teal-100">
-                    <Scale className="h-5 w-5 text-teal-600" aria-hidden="true" />
+                    <Icon className="h-5 w-5 text-teal-600" aria-hidden="true" />
                   </div>
                   <ArrowRight className="h-4 w-4 text-slate-300 transition-colors group-hover:text-teal-500" aria-hidden="true" />
                 </div>
@@ -111,7 +133,8 @@ export default function HomePage() {
                   {cat.description}
                 </p>
               </Link>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -135,6 +158,13 @@ export default function HomePage() {
               </Link>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Affiliate CTAs */}
+      <section className="py-12">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <AffiliateCTA />
         </div>
       </section>
 

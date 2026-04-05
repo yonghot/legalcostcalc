@@ -19,6 +19,7 @@ import { VALID_COMPLEXITIES } from "@/lib/constants/costs";
 import { CostComparisonResult, LegalCostData } from "@/lib/types";
 import { formatCurrency } from "@/lib/utils/format";
 import { ArrowLeftRight, BarChart3, MapPin } from "lucide-react";
+import Link from "next/link";
 
 type CompareMode = "states" | "categories";
 
@@ -146,7 +147,13 @@ export default function ComparePage() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <Disclaimer />
 
-        <div className="mt-8 text-center">
+        <nav className="mt-8 text-sm text-slate-500">
+          <Link href="/" className="hover:text-teal-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded-sm">Home</Link>
+          <span className="mx-2">/</span>
+          <span>Compare Costs</span>
+        </nav>
+
+        <div className="mt-4 text-center">
           <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
             Compare Legal Costs
           </h1>

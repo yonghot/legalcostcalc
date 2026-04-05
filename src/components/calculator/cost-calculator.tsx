@@ -32,6 +32,7 @@ export function CostCalculator({ initialCategory, initialState }: CostCalculator
 
   // Track the latest request to prevent stale responses from overwriting newer ones
   const requestIdRef = useRef(0);
+  const resultRef = useRef<HTMLDivElement>(null);
 
   const handleCalculate = useCallback(async () => {
     if (!category || !stateCode) return;
@@ -59,6 +60,10 @@ export function CostCalculator({ initialCategory, initialState }: CostCalculator
         setResults(null);
       } else {
         setResults(json.data);
+        // Auto-scroll to results after render
+        setTimeout(() => {
+          resultRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }, 100);
       }
     } catch {
       if (currentRequestId !== requestIdRef.current) return;
@@ -148,11 +153,13 @@ export function CostCalculator({ initialCategory, initialState }: CostCalculator
       )}
 
       {results && results.length > 0 && (
+        <div ref={resultRef}>
         <CostResult
           results={results}
           stateName={STATES.find((s) => s.code === stateCode)?.name || stateCode}
           categoryName={CATEGORIES.find((c) => c.slug === category)?.displayName || category}
         />
+        </div>
       )}
 
       {results && results.length === 0 && (

@@ -12,6 +12,7 @@ import { CostDisplay } from "@/components/shared/cost-display";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight } from "lucide-react";
+import { AffiliateCTA } from "@/components/shared/affiliate-cta";
 
 interface PageProps {
   params: Promise<{ state: string; slug: string }>;
@@ -214,6 +215,13 @@ export default async function StateCategoryPage({ params }: PageProps) {
             initialCategory={categoryInfo.slug}
             initialState={stateInfo.code}
           />
+        </div>
+      </section>
+
+      {/* Affiliate CTAs */}
+      <section className="py-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <AffiliateCTA categorySlug={categoryInfo.slug} stateName={stateInfo.name} />
         </div>
       </section>
 

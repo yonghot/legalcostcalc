@@ -1,27 +1,16 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Disclaimer } from "@/components/shared/disclaimer";
+import { ComparisonForm, CompareMode } from "@/components/compare/comparison-form";
 import { CATEGORIES } from "@/lib/constants/categories";
 import { STATES } from "@/lib/constants/states";
 import { VALID_COMPLEXITIES } from "@/lib/constants/costs";
 import { CostComparisonResult, LegalCostData } from "@/lib/types";
 import { formatCurrency } from "@/lib/utils/format";
-import { ArrowLeftRight, BarChart3, MapPin } from "lucide-react";
 import Link from "next/link";
-
-type CompareMode = "states" | "categories";
 
 export default function ComparePage() {
   const [mode, setMode] = useState<CompareMode>("states");
@@ -162,132 +151,21 @@ export default function ComparePage() {
           </p>
         </div>
 
-        {/* Mode Toggle */}
-        <div className="mt-6 flex justify-center gap-2">
-          <Button
-            variant={mode === "states" ? "default" : "outline"}
-            onClick={() => handleModeChange("states")}
-            className={mode === "states" ? "bg-teal-600 hover:bg-teal-700" : ""}
-          >
-            <MapPin className="mr-2 h-4 w-4" aria-hidden="true" />
-            Compare States
-          </Button>
-          <Button
-            variant={mode === "categories" ? "default" : "outline"}
-            onClick={() => handleModeChange("categories")}
-            className={mode === "categories" ? "bg-teal-600 hover:bg-teal-700" : ""}
-          >
-            <BarChart3 className="mr-2 h-4 w-4" aria-hidden="true" />
-            Compare Categories
-          </Button>
-        </div>
-
-        {/* Comparison Form */}
-        <Card className="mt-6 border-slate-200 shadow-sm">
-          <CardContent className="p-6">
-            {mode === "states" ? (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5 items-end">
-                <div className="space-y-2">
-                  <Label>State 1</Label>
-                  <Select value={state1} onValueChange={(v) => setState1(v ?? "")}>
-                    <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
-                    <SelectContent>
-                      {STATES.map((s) => (
-                        <SelectItem key={s.code} value={s.code}>{s.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="hidden lg:flex items-center justify-center">
-                  <ArrowLeftRight className="h-5 w-5 text-slate-400" aria-hidden="true" />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>State 2</Label>
-                  <Select value={state2} onValueChange={(v) => setState2(v ?? "")}>
-                    <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
-                    <SelectContent>
-                      {STATES.map((s) => (
-                        <SelectItem key={s.code} value={s.code}>{s.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Category</Label>
-                  <Select value={category} onValueChange={(v) => setCategory(v ?? "")}>
-                    <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
-                    <SelectContent>
-                      {CATEGORIES.map((c) => (
-                        <SelectItem key={c.slug} value={c.slug}>{c.displayName}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <Button
-                  onClick={handleCompare}
-                  disabled={!isFormValid || loading}
-                  className="bg-teal-600 hover:bg-teal-700"
-                >
-                  {loading ? "Comparing..." : "Compare"}
-                </Button>
-              </div>
-            ) : (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5 items-end">
-                <div className="space-y-2">
-                  <Label>State</Label>
-                  <Select value={state1} onValueChange={(v) => setState1(v ?? "")}>
-                    <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
-                    <SelectContent>
-                      {STATES.map((s) => (
-                        <SelectItem key={s.code} value={s.code}>{s.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Category 1</Label>
-                  <Select value={category} onValueChange={(v) => setCategory(v ?? "")}>
-                    <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
-                    <SelectContent>
-                      {CATEGORIES.map((c) => (
-                        <SelectItem key={c.slug} value={c.slug}>{c.displayName}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="hidden lg:flex items-center justify-center">
-                  <ArrowLeftRight className="h-5 w-5 text-slate-400" aria-hidden="true" />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Category 2</Label>
-                  <Select value={category2} onValueChange={(v) => setCategory2(v ?? "")}>
-                    <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
-                    <SelectContent>
-                      {CATEGORIES.filter((c) => c.slug !== category).map((c) => (
-                        <SelectItem key={c.slug} value={c.slug}>{c.displayName}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <Button
-                  onClick={handleCompare}
-                  disabled={!isFormValid || loading}
-                  className="bg-teal-600 hover:bg-teal-700"
-                >
-                  {loading ? "Comparing..." : "Compare"}
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <ComparisonForm
+          mode={mode}
+          onModeChange={handleModeChange}
+          state1={state1}
+          onState1Change={setState1}
+          state2={state2}
+          onState2Change={setState2}
+          category={category}
+          onCategoryChange={setCategory}
+          category2={category2}
+          onCategory2Change={setCategory2}
+          onCompare={handleCompare}
+          isFormValid={isFormValid}
+          loading={loading}
+        />
 
         {error && (
           <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">

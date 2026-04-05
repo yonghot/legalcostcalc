@@ -68,7 +68,7 @@
 - **제안**: `src/lib/utils/api-helpers.ts`에 `getClientIp()` 유틸 + `withRateLimit()` 미들웨어 추출.
 - **위험도**: 낮음 (기능 변경 없음, 리팩토링만)
 
-### B-2: Compare 페이지 컴포넌트 분리 [자동 반영]
+### B-2: Compare 페이지 컴포넌트 분리 [자동 반영] [반영]
 - **대상 파일**: `src/app/compare/page.tsx`
 - **문제**: 파일 크기가 큼 (코드 분석 결과). 비교 폼 UI가 인라인으로 구현되어 있어 가독성 낮음.
 - **제안**: `ComparisonForm` 컴포넌트를 `src/components/compare/comparison-form.tsx`로 분리.

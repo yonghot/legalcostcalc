@@ -20,6 +20,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { AffiliateCTA } from "@/components/shared/affiliate-cta";
+import { OrganizationSchema } from "@/components/seo/organization-schema";
 
 const POPULAR_STATE_CODES = ["CA", "TX", "FL", "NY", "IL", "PA", "OH", "GA", "NC", "MI"] as const;
 
@@ -41,6 +42,7 @@ export default function HomePage() {
 
   return (
     <div>
+      <OrganizationSchema />
       {/* Hero Section */}
       <section className="bg-gradient-to-b from-teal-50 to-white py-16 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -120,7 +122,7 @@ export default function HomePage() {
               <Link
                 key={cat.slug}
                 href={`/${DEFAULT_STATE_SLUG}/${cat.slug}-cost`}
-                className="group rounded-lg border border-slate-200 p-5 transition-all hover:border-teal-200 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                className="group rounded-lg border border-slate-200 p-6 transition-all hover:border-teal-200 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-teal-50 transition-colors group-hover:bg-teal-100">

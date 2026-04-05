@@ -68,6 +68,82 @@
 
 ---
 
+## [2026-04-05 11:20] 자동 개발 세션
+
+### 리서치
+- ⏭️ 스킵 (이전 리서치 13분 전 수행, 쿨다운 미달)
+
+### 메인 태스크
+- OG 이미지 생성 (PRD 소셜 공유 갭 해소)
+
+### 추가 작업
+1. PWA 아이콘 생성 (icon-192.svg, icon-512.svg, favicon.svg) — manifest.ts 참조 파일 누락 해소
+2. About/Compare 페이지 OG 이미지 추가
+3. B-2: Compare 페이지 ComparisonForm 컴포넌트 분리 (RESEARCH.md [자동 반영])
+4. Organization + WebSite 스키마 추가 (E-E-A-T SEO 강화)
+5. BreadcrumbList 스키마 추가 (SEO 랜딩 페이지)
+6. DESIGN.md p-5 → p-6 일관성 수정 (3개 파일)
+7. favicon (icon.tsx) + apple-icon.tsx 동적 생성
+8. Twitter card 메타데이터 추가
+
+### 정합성 검증 (B-0.5)
+- [MUST] 위반: 없음 (REVIEW.md에 [MUST] 없음)
+- PRD 변경점: 없음
+- DESIGN.md 불일치: p-5 → p-6 수정 완료
+- PRD 갭: OG 이미지 미구현 → 해소, PWA 아이콘 누락 → 해소
+
+### 구현 상세
+- 생성: `src/app/opengraph-image.tsx` — 홈페이지 OG 이미지 (1200x630, teal 브랜딩)
+- 생성: `src/app/[state]/[slug]/opengraph-image.tsx` — 동적 SEO 페이지 OG 이미지 (state + category)
+- 생성: `src/app/about/opengraph-image.tsx` — About 페이지 OG 이미지
+- 생성: `src/app/compare/opengraph-image.tsx` — Compare 페이지 OG 이미지
+- 생성: `src/app/icon.tsx` — 동적 favicon (32x32, teal $)
+- 생성: `src/app/apple-icon.tsx` — Apple Touch 아이콘 (180x180)
+- 생성: `src/components/compare/comparison-form.tsx` — ComparisonForm 분리 (모드 토글 + 폼)
+- 생성: `src/components/seo/organization-schema.tsx` — WebSite + Organization 스키마
+- 생성: `src/components/seo/breadcrumb-schema.tsx` — BreadcrumbList 스키마
+- 생성: `scripts/generate-icons.mjs` — PWA SVG 아이콘 생성 스크립트
+- 생성: `public/icon-192.svg`, `public/icon-512.svg`, `public/favicon.svg`
+- 수정: `src/app/layout.tsx` — OG image + Twitter card 메타데이터
+- 수정: `src/app/manifest.ts` — SVG 아이콘 참조로 변경
+- 수정: `src/app/compare/page.tsx` — ComparisonForm 사용, 코드 간소화
+- 수정: `src/app/page.tsx` — OrganizationSchema 추가, p-5 → p-6
+- 수정: `src/app/[state]/[slug]/page.tsx` — BreadcrumbSchema 추가, p-5 → p-6
+- 수정: `src/app/[state]/[slug]/loading.tsx` — p-5 → p-6
+
+### 아키텍처 메모
+- OG 이미지는 Next.js ImageResponse (edge runtime) 사용 — 동적 생성, 별도 이미지 파일 불필요
+- PWA 아이콘은 SVG 형식 — 벡터이므로 모든 해상도에서 선명
+- BreadcrumbSchema는 state 첫 번째 카테고리를 state 링크로 사용 (state 전용 페이지 없음)
+
+### 시도했으나 실패한 접근
+- 없음
+
+### 자가 검토
+- ✅ Disclaimer: 모든 페이지 top+bottom 확인
+- ✅ console.log: 0개
+- ✅ TypeScript any: 0개
+- ✅ Layer 위반: 0개
+- ✅ p-5 잔여: 0개
+- ✅ Build: 420 pages, 0 errors
+
+### 배포
+- Git: push ✅/❌ (아래 확인)
+- 프로덕션: ✅/❌ (아래 확인)
+
+### 판단 필요
+- (기존 유지) Affiliate 프로그램 실제 가입 필요
+- (기존 유지) Blog/CMS 구조 결정 필요 — RESEARCH.md A-4
+- (기존 유지) C-1 데이터 검증 심층 연구 필요
+
+### 다음 세션 권장
+- C-1 데이터 검증 결과 반영 (오너 PRD 수정 대기)
+- Blog/CMS 구조 (오너 결정 후)
+- AdSense 통합 (오너 계정 준비 후)
+- 404 페이지 SEO 개선 (유사 페이지 추천)
+
+---
+
 ## [2026-04-05 11:00] 자동 개발 세션
 
 ### 리서치

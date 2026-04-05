@@ -37,6 +37,20 @@ export const metadata: Metadata = {
     locale: "en_US",
     siteName: "LegalCostCalc",
     url: "https://legalcostcalc.vercel.app",
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "LegalCostCalc — How Much Will Your Legal Matter Really Cost?",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "LegalCostCalc — How Much Will Your Legal Matter Really Cost?",
+    description:
+      "Free legal cost calculator for all 50 US states. Get estimated costs for divorce, DUI, bankruptcy, personal injury, and more.",
   },
   robots: {
     index: true,

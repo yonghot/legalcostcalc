@@ -43,7 +43,7 @@ export default function Loading() {
           <div className="mt-8 grid gap-4 sm:grid-cols-3">
             {[1, 2, 3].map((i) => (
               <Card key={i} className="border-slate-200">
-                <CardContent className="p-5">
+                <CardContent className="p-6">
                   <div className="mb-3 flex items-center justify-between">
                     <div className="h-5 w-20 animate-pulse rounded bg-slate-200" />
                     <div className="h-3 w-16 animate-pulse rounded bg-slate-100" />

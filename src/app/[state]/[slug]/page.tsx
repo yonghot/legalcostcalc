@@ -13,6 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight } from "lucide-react";
 import { AffiliateCTA } from "@/components/shared/affiliate-cta";
+import { BreadcrumbSchema } from "@/components/seo/breadcrumb-schema";
 
 interface PageProps {
   params: Promise<{ state: string; slug: string }>;
@@ -118,6 +119,13 @@ export default async function StateCategoryPage({ params }: PageProps) {
   return (
     <div>
       <FaqSchema questions={faqQuestions} />
+      <BreadcrumbSchema
+        items={[
+          { name: "Home", href: "/" },
+          { name: stateInfo.name, href: `/${stateInfo.slug}/${CATEGORIES[0].slug}-cost` },
+          { name: `${categoryInfo.displayName} Cost`, href: `/${stateInfo.slug}/${categoryInfo.slug}-cost` },
+        ]}
+      />
 
       <section className="bg-gradient-to-b from-teal-50 to-white py-12 sm:py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -160,7 +168,7 @@ export default async function StateCategoryPage({ params }: PageProps) {
             <div className="mt-8 grid gap-4 sm:grid-cols-3">
               {costs.map((cost) => (
                 <Card key={cost.complexity} className="border-slate-200">
-                  <CardContent className="p-5">
+                  <CardContent className="p-6">
                     <div className="mb-3 flex items-center justify-between">
                       <Badge variant="outline" className="capitalize">
                         {cost.complexity}

@@ -128,8 +128,9 @@
 - ✅ Build: 420 pages, 0 errors
 
 ### 배포
-- Git: push ✅/❌ (아래 확인)
-- 프로덕션: ✅/❌ (아래 확인)
+- Git: push ✅ (c0553ab)
+- 프로덕션: ✅ https://legalcostcalc.vercel.app
+- 프로덕션 확인: ✅ HTTP 200 (/, /about, /compare, /opengraph-image)
 
 ### 판단 필요
 - (기존 유지) Affiliate 프로그램 실제 가입 필요

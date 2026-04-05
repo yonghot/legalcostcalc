@@ -130,8 +130,9 @@
 - ✅ Build: 420 pages, 0 errors
 
 ### 배포
-- Git: push (진행 중)
-- 프로덕션: (진행 중)
+- Git: push ✅ (6989f38)
+- 프로덕션: ✅ https://legalcostcalc.vercel.app
+- 프로덕션 확인: ✅ HTTP 200 (/, /about, /compare, /sitemap.xml)
 
 ### 판단 필요
 - Affiliate 프로그램 실제 가입 필요 (LegalZoom, Avvo, Rocket Lawyer)

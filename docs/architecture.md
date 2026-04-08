@@ -18,14 +18,30 @@
 legalcostcalc/
 ├── src/
 │   ├── app/
-│   │   ├── layout.tsx                    # Root layout with fonts, metadata
-│   │   ├── page.tsx                      # Home page (hero + calculator)
+│   │   ├── layout.tsx                    # Root layout with fonts, metadata, analytics
+│   │   ├── page.tsx                      # Home page (hero + calculator + trust signals)
 │   │   ├── globals.css                   # Tailwind + custom styles
+│   │   ├── error.tsx                     # Root error boundary
+│   │   ├── not-found.tsx                 # Smart 404 with popular page recommendations
+│   │   ├── icon.tsx                      # Dynamic favicon (32x32)
+│   │   ├── apple-icon.tsx                # Apple Touch icon (180x180)
+│   │   ├── opengraph-image.tsx           # Home OG image (1200x630)
+│   │   ├── manifest.ts                   # PWA manifest
+│   │   ├── robots.ts                     # robots.txt
+│   │   ├── sitemap.ts                    # XML sitemap (410+ URLs)
+│   │   ├── about/
+│   │   │   ├── page.tsx                  # About & Methodology (E-E-A-T)
+│   │   │   └── opengraph-image.tsx
 │   │   ├── [state]/
-│   │   │   └── [category]-cost/
-│   │   │       └── page.tsx              # SEO landing page (SSG)
+│   │   │   └── [slug]/
+│   │   │       ├── page.tsx              # SEO landing page (SSG, 408 pages)
+│   │   │       ├── error.tsx             # SEO page error boundary
+│   │   │       ├── loading.tsx           # Skeleton loading state
+│   │   │       └── opengraph-image.tsx   # Dynamic OG image
 │   │   ├── compare/
-│   │   │   └── page.tsx                  # Comparison page
+│   │   │   ├── page.tsx                  # Cross-state & cross-category comparison
+│   │   │   ├── layout.tsx                # Compare metadata + WebPage schema
+│   │   │   └── opengraph-image.tsx
 │   │   └── api/
 │   │       ├── costs/
 │   │       │   ├── route.ts              # GET /api/costs
@@ -36,26 +52,31 @@ legalcostcalc/
 │   │       └── states/
 │   │           └── route.ts              # GET /api/states
 │   ├── components/
-│   │   ├── ui/                           # shadcn/ui primitives
+│   │   ├── ui/                           # shadcn/ui primitives (card, button, select, etc.)
 │   │   ├── calculator/
 │   │   │   ├── cost-calculator.tsx        # Main calculator form
-│   │   │   ├── cost-result.tsx           # Results display
-│   │   │   ├── cost-breakdown.tsx        # Fee breakdown
-│   │   │   └── cost-chart.tsx            # Comparison bar chart
+│   │   │   └── cost-result.tsx           # Results display with fees, rates, sources
+│   │   ├── compare/
+│   │   │   └── comparison-form.tsx       # Compare mode toggle + form controls
 │   │   ├── layout/
-│   │   │   ├── header.tsx
-│   │   │   ├── footer.tsx
-│   │   │   └── navigation.tsx
+│   │   │   ├── header.tsx                # Sticky header with mobile hamburger (Sheet)
+│   │   │   └── footer.tsx                # Dark footer with disclaimer + links
 │   │   ├── seo/
 │   │   │   ├── faq-schema.tsx            # Schema.org FAQPage
-│   │   │   └── page-meta.tsx             # Dynamic meta tags
+│   │   │   ├── breadcrumb-schema.tsx     # BreadcrumbList schema
+│   │   │   ├── organization-schema.tsx   # WebSite + Organization schema
+│   │   │   ├── cost-details-section.tsx  # Common fees + cost factors section
+│   │   │   └── related-links.tsx         # Internal cross-links (state/category)
 │   │   └── shared/
 │   │       ├── disclaimer.tsx            # Legal disclaimer banner
-│   │       ├── cost-display.tsx          # Large cost range display
-│   │       └── state-selector.tsx        # State dropdown
+│   │       ├── cost-display.tsx          # Large cost range display (memoized)
+│   │       ├── affiliate-cta.tsx         # Affiliate partner CTA section
+│   │       └── error-content.tsx         # Shared error boundary content
 │   ├── lib/
+│   │   ├── hooks/
+│   │   │   └── use-request-tracker.ts    # Race condition prevention for async requests
 │   │   ├── services/
-│   │   │   ├── cost-service.ts           # Cost calculation logic
+│   │   │   ├── cost-service.ts           # Cost calculation + page data logic
 │   │   │   ├── category-service.ts       # Category operations
 │   │   │   └── state-service.ts          # State operations
 │   │   ├── repositories/
@@ -63,38 +84,51 @@ legalcostcalc/
 │   │   │   ├── category-repository.ts    # Supabase category queries
 │   │   │   └── state-repository.ts       # Supabase state queries
 │   │   ├── types/
-│   │   │   ├── cost.ts                   # LegalCostData, CostRange
-│   │   │   ├── state.ts                  # USState, StateInfo
-│   │   │   ├── category.ts              # LegalCategory, CategoryInfo
-│   │   │   └── api.ts                    # ApiResponse envelope
+│   │   │   ├── index.ts                  # Re-exports
+│   │   │   ├── cost.ts                   # LegalCostData, CostRange, CostComparisonResult
+│   │   │   ├── state.ts                  # StateInfo, USStateCode
+│   │   │   ├── category.ts              # CategoryInfo, LegalCategorySlug
+│   │   │   └── api.ts                    # ApiResponse<T> envelope
 │   │   ├── supabase/
 │   │   │   ├── client.ts                 # Browser client
 │   │   │   └── server.ts                 # Server client
 │   │   ├── constants/
 │   │   │   ├── disclaimer.ts             # Disclaimer text
-│   │   │   ├── states.ts                 # State data (code, name, slug)
-│   │   │   └── categories.ts             # Category definitions
-│   │   └── utils/
-│   │       ├── format.ts                 # Currency/number formatting
-│   │       ├── seo.ts                    # SEO helper functions
-│   │       └── cn.ts                     # Tailwind class merge utility
+│   │   │   ├── states.ts                 # 51 states (code, name, slug, population)
+│   │   │   ├── categories.ts             # 8 category definitions
+│   │   │   ├── costs.ts                  # Default state, complexity levels
+│   │   │   └── affiliates.ts             # Affiliate partner URLs + categories
+│   │   ├── utils/
+│   │   │   ├── format.ts                 # Currency/number formatting
+│   │   │   ├── seo.ts                    # SEO helper functions
+│   │   │   ├── sanitize.ts              # Input sanitization
+│   │   │   └── api-security.ts           # Rate limiting, IP extraction
+│   │   └── utils.ts                      # cn() Tailwind class merge
 │   └── data/
 │       └── seed/
-│           ├── states.json               # 51 state records
-│           ├── categories.json           # 8 category records
-│           └── costs.json                # Legal cost data
+│           └── costs.json                # 1,224 seed records (51 states x 8 cats x 3 complexity)
 ├── scripts/
-│   └── seed.ts                           # Database seed script
+│   └── generate-icons.mjs               # PWA icon generation
 ├── public/
-│   ├── manifest.json                     # PWA manifest
-│   └── icons/                            # App icons
-├── docs/                                 # Project documentation
-├── .claude/                              # Claude Code configuration
-├── package.json
-├── tsconfig.json
-├── tailwind.config.ts
-├── next.config.ts
-└── .env.local                            # Supabase keys (gitignored)
+│   ├── icon-192.svg                      # PWA icon 192px
+│   ├── icon-512.svg                      # PWA icon 512px
+│   └── favicon.svg                       # SVG favicon
+├── docs/
+│   ├── architecture.md                   # This file
+│   ├── prd-analysis.md                   # P0/P1/P2 feature breakdown
+│   └── PROGRESS.md                       # Development session log
+└── Configuration
+    ├── package.json
+    ├── tsconfig.json
+    ├── tailwind.config.ts
+    ├── next.config.ts
+    ├── .env.local                         # Supabase keys (gitignored)
+    ├── PRD.md                             # Product requirements
+    ├── DESIGN.md                          # Design system specification
+    ├── REVIEW.md                          # Code review log
+    ├── RESEARCH.md                        # Technical research log
+    ├── CLAUDE.md                          # Project rules for AI
+    └── feature_list.json                  # Feature acceptance tracking
 ```
 
 ## Database Schema
@@ -164,7 +198,20 @@ interface ApiResponse<T> {
 | GET /api/categories | categoryService.getAll() | categoryRepo.findAll() |
 | GET /api/states | stateService.getAll() | stateRepo.findAll() |
 
+### Security
+- Rate limiting: 100 requests/min/IP (shared utility in api-security.ts)
+- Input validation: validateFilterParam() sanitizes query params
+- CSP + HSTS + X-Frame-Options headers (next.config.ts)
+- Sanitized error messages (no stack traces in production)
+
 ## Static Generation Strategy
-- `generateStaticParams()` produces 400 paths (51 states x 8 categories with slug format)
+- `generateStaticParams()` produces 408 paths (51 states x 8 categories)
 - ISR revalidation: 604800 seconds (7 days)
-- Fallback: 'blocking' for any missing combinations
+- Schema.org structured data: FAQPage, BreadcrumbList, Organization, WebSite
+- OG images: dynamically generated per page via ImageResponse (edge runtime)
+
+## Key Patterns
+- **useRequestTracker hook**: Prevents stale async responses from overwriting newer results
+- **ComparisonResultSection**: Shared rendering for cross-state and cross-category comparisons
+- **Memoized CostDisplay**: React.memo for large cost range rendering performance
+- **Affiliate constants**: Centralized partner data in affiliates.ts for easy URL management

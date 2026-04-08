@@ -68,6 +68,86 @@
 
 ---
 
+## [2026-04-08 20:04] 자동 개발 세션
+
+### 리서치
+- ⏭️ 스킵 (쿨다운 미만: 19분/6시간)
+
+### 메인 태스크
+- 코드 품질 개선: Refactor-on-Touch + 임계치 트리거 (300줄 초과 파일 분리)
+
+### 사전 리팩토링 (B-3)
+- `src/app/[state]/[slug]/page.tsx`: 387줄 → 289줄 (Common Fees 섹션 + Related Links 섹션 추출)
+- `src/app/compare/page.tsx`: 308줄 → 256줄 (request tracking 훅 추출 + ComparisonResultSection 추출)
+- `src/components/calculator/cost-calculator.tsx`: request tracking 패턴 훅으로 교체
+
+### 추가 작업
+1. `docs/architecture.md` 전체 업데이트 — 실제 파일 구조와 동기화 (비존재 파일 제거, 신규 파일 추가, Security/Key Patterns 섹션 추가)
+
+### 정합성 검증 (B-0.5)
+- [MUST] 위반: 없음 (REVIEW.md에 [MUST] 없음)
+- PRD 변경점: 없음
+- DESIGN.md 불일치: Card padding py-4 vs p-6 (사용처에서 p-6 override하여 실질적 일치)
+- feature_list.json AC: 전체 PASS (10/10 항목 확인)
+
+### 구현 상세
+- 생성: `src/components/seo/cost-details-section.tsx` — Common Fees + Cost Factors 섹션 (56줄)
+- 생성: `src/components/seo/related-links.tsx` — 내부 크로스링크 (86줄)
+- 생성: `src/lib/hooks/use-request-tracker.ts` — 비동기 요청 race condition 방지 훅 (47줄)
+- 수정: `src/app/[state]/[slug]/page.tsx` — 추출된 컴포넌트 사용, ArrowRight import 제거
+- 수정: `src/app/compare/page.tsx` — useRequestTracker 훅 사용, ComparisonResultSection 추출
+- 수정: `src/components/calculator/cost-calculator.tsx` — useRequestTracker 훅 사용
+- 수정: `docs/architecture.md` — 전체 구조 동기화
+
+### 아키텍처 메모
+- useRequestTracker: requestIdRef 기반 race condition 방지. execute() 함수가 { data, stale } 반환하여 stale 응답 자동 무시.
+- ComparisonResultSection: cross-state와 cross-category 결과 렌더링의 중복 코드를 공통 함수로 추출. items 배열로 추상화.
+- CostDetailsSection/RelatedLinks: 서버 컴포넌트 (server component)로 추출하여 SEO 페이지 가독성 향상.
+
+### 시도했으나 실패한 접근
+- 없음
+
+### Refactor-on-Touch 결과
+- 300줄 초과 파일 2개 → 0개 (임계치 해소)
+- 중복 request tracking 패턴 2곳 → 1개 훅으로 통합
+- 미사용 import 제거 (ArrowRight from SEO page)
+
+### 자가 검토
+- ✅ console.log: 0개
+- ✅ TypeScript any: 0개
+- ✅ Layer 위반: 0개
+- ✅ Disclaimer: 수정 안 함 (기존 유지)
+- ✅ Build: 420 pages, 0 errors
+
+### gstack 검증 결과
+- /review: ⏭️ 스킵 (gstack 미설치)
+- /qa --quick: ⏭️ 스킵 (gstack 미설치)
+
+### 기술 부채 현황
+- 이번 세션 발견: 300줄 초과 2개, 중복 패턴 1개, architecture.md 비동기
+- 이번 세션 해소: 전체 해소
+- 잔여: Card 컴포넌트 기본 padding (py-4) vs DESIGN.md (p-6) — 사용처에서 override하여 실질적 영향 없음
+
+### 배포
+- Git: push ✅ (브랜치: feature/mvp-prototype)
+- 배포 방식: GitHub push 자동 배포 (Vercel)
+- 프로덕션 확인: 빌드 성공 420 pages
+
+### 판단 필요
+- (기존 유지) Affiliate 프로그램 실제 가입 필요
+- (기존 유지) Blog/CMS 구조 결정 필요 — RESEARCH.md A-4
+- (기존 유지) C-1 데이터 검증 심층 연구 필요 (긴급)
+- (기존 유지) C-2 UPL 리스크 판례 심층 연구 필요
+- (기존 유지) C-3 Affiliate 프로그램 조건 심층 연구 필요
+
+### 다음 세션 권장
+- C-1/C-2/C-3 데이터 검증 결과 반영 (오너 PRD 수정 대기)
+- Blog/CMS 구조 (오너 결정 후)
+- 성능 최적화 (LCP, CLS 측정 + 개선)
+- 접근성 심층 감사 (스크린 리더 테스트)
+
+---
+
 ## [2026-04-08 19:25] 자동 개발 세션
 
 ### 리서치

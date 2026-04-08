@@ -11,9 +11,10 @@ import { getCostForPage } from "@/lib/services/cost-service";
 import { CostDisplay } from "@/components/shared/cost-display";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight } from "lucide-react";
 import { AffiliateCTA } from "@/components/shared/affiliate-cta";
 import { BreadcrumbSchema } from "@/components/seo/breadcrumb-schema";
+import { CostDetailsSection } from "@/components/seo/cost-details-section";
+import { RelatedLinks } from "@/components/seo/related-links";
 
 interface PageProps {
   params: Promise<{ state: string; slug: string }>;
@@ -131,8 +132,6 @@ export default async function StateCategoryPage({ params }: PageProps) {
   // Related links
   const otherCategories = CATEGORIES.filter((c) => c.slug !== categoryInfo.slug);
   const allOtherStates = STATES.filter((s) => s.code !== stateInfo.code);
-  const displayedStates = allOtherStates.slice(0, 10);
-  const remainingStatesCount = allOtherStates.length - displayedStates.length;
 
   return (
     <div>
@@ -244,52 +243,11 @@ export default async function StateCategoryPage({ params }: PageProps) {
 
       {/* Common Fees & Duration */}
       {moderateCost && moderateCost.commonFees.length > 0 && (
-        <section className="border-t border-slate-100 bg-slate-50 py-12">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid gap-8 lg:grid-cols-2">
-              <div>
-                <h2 className="mb-4 text-xl font-bold text-slate-900">
-                  Common {categoryInfo.displayName} Fees in {stateInfo.name}
-                </h2>
-                <ul className="space-y-2">
-                  {moderateCost.commonFees.map((fee, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-slate-700">
-                      <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-teal-500" />
-                      {fee}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <h2 className="mb-4 text-xl font-bold text-slate-900">
-                  What Affects {categoryInfo.displayName} Cost?
-                </h2>
-                <ul className="space-y-2 text-sm text-slate-700">
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-teal-500" />
-                    Case complexity (simple, moderate, or complex)
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-teal-500" />
-                    Attorney experience and reputation
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-teal-500" />
-                    Local market rates in {stateInfo.name}
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-teal-500" />
-                    Whether the case goes to trial or is settled
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-teal-500" />
-                    Court filing fees and administrative costs
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </section>
+        <CostDetailsSection
+          categoryName={categoryInfo.displayName}
+          stateName={stateInfo.name}
+          commonFees={moderateCost.commonFees}
+        />
       )}
 
       {/* Interactive Calculator */}
@@ -313,68 +271,12 @@ export default async function StateCategoryPage({ params }: PageProps) {
       </section>
 
       {/* Internal Links */}
-      <section className="border-t border-slate-100 bg-slate-50 py-12">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid gap-8 lg:grid-cols-2">
-            {/* Other categories in this state */}
-            <div>
-              <h3 className="mb-4 text-lg font-semibold text-slate-900">
-                Other Legal Costs in {stateInfo.name}
-              </h3>
-              <div className="space-y-2">
-                {otherCategories.map((cat) => (
-                  <Link
-                    key={cat.slug}
-                    href={`/${stateInfo.slug}/${cat.slug}-cost`}
-                    className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3 text-sm transition-all hover:border-teal-200 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
-                  >
-                    <span className="font-medium text-slate-700">{cat.displayName} Cost</span>
-                    <ArrowRight className="h-4 w-4 text-slate-300" aria-hidden="true" />
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            {/* Same category in other states */}
-            <div>
-              <h3 className="mb-4 text-lg font-semibold text-slate-900">
-                {categoryInfo.displayName} Cost in Other States
-              </h3>
-              <div className="space-y-2">
-                {displayedStates.map((state) => (
-                  <Link
-                    key={state.code}
-                    href={`/${state.slug}/${categoryInfo.slug}-cost`}
-                    className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3 text-sm transition-all hover:border-teal-200 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
-                  >
-                    <span className="font-medium text-slate-700">{state.name}</span>
-                    <ArrowRight className="h-4 w-4 text-slate-300" aria-hidden="true" />
-                  </Link>
-                ))}
-                {remainingStatesCount > 0 && (
-                  <details className="rounded-lg border border-slate-200 bg-white">
-                    <summary className="cursor-pointer p-3 text-sm font-medium text-teal-600 hover:text-teal-700">
-                      View {remainingStatesCount} more states
-                    </summary>
-                    <div className="space-y-2 p-3 pt-0">
-                      {allOtherStates.slice(10).map((state) => (
-                        <Link
-                          key={state.code}
-                          href={`/${state.slug}/${categoryInfo.slug}-cost`}
-                          className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3 text-sm transition-all hover:border-teal-200 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
-                        >
-                          <span className="font-medium text-slate-700">{state.name}</span>
-                          <ArrowRight className="h-4 w-4 text-slate-300" aria-hidden="true" />
-                        </Link>
-                      ))}
-                    </div>
-                  </details>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <RelatedLinks
+        stateInfo={stateInfo}
+        categoryInfo={categoryInfo}
+        otherCategories={otherCategories}
+        allOtherStates={allOtherStates}
+      />
 
       {/* Bottom Disclaimer */}
       <section className="py-8">

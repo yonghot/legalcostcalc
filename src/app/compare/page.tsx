@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Disclaimer } from "@/components/shared/disclaimer";
@@ -10,7 +10,14 @@ import { STATES } from "@/lib/constants/states";
 import { VALID_COMPLEXITIES } from "@/lib/constants/costs";
 import { CostComparisonResult, LegalCostData } from "@/lib/types";
 import { formatCurrency } from "@/lib/utils/format";
+import { useRequestTracker } from "@/lib/hooks/use-request-tracker";
 import Link from "next/link";
+
+interface CategoryComparisonResult {
+  state: string;
+  stateName: string;
+  categories: { category: string; categoryName: string; costs: LegalCostData[] }[];
+}
 
 export default function ComparePage() {
   const [mode, setMode] = useState<CompareMode>("states");
@@ -19,100 +26,66 @@ export default function ComparePage() {
   const [category, setCategory] = useState("");
   const [category2, setCategory2] = useState("");
   const [result, setResult] = useState<CostComparisonResult | null>(null);
-  const [categoryResult, setCategoryResult] = useState<{
-    state: string;
-    stateName: string;
-    categories: { category: string; categoryName: string; costs: LegalCostData[] }[];
-  } | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [categoryResult, setCategoryResult] = useState<CategoryComparisonResult | null>(null);
 
-  const requestIdRef = useRef(0);
+  const { loading, error, execute } = useRequestTracker();
 
   const handleCompareStates = useCallback(async () => {
     if (!state1 || !state2 || !category) return;
 
-    const currentRequestId = ++requestIdRef.current;
-    setLoading(true);
-    setError(null);
+    const outcome = await execute(
+      async () => {
+        const params = new URLSearchParams({ states: `${state1},${state2}`, category });
+        const res = await fetch(`/api/costs/compare?${params}`);
+        return res.json();
+      },
+      { errorMessage: "Failed to compare costs. Please try again." }
+    );
 
-    try {
-      const params = new URLSearchParams({
-        states: `${state1},${state2}`,
-        category,
-      });
-      const res = await fetch(`/api/costs/compare?${params}`);
-      const json = await res.json();
-
-      if (currentRequestId !== requestIdRef.current) return;
-
-      if (json.error) {
-        setError(json.error);
-        setResult(null);
-      } else {
-        setResult(json.data);
-        setCategoryResult(null);
-      }
-    } catch {
-      if (currentRequestId !== requestIdRef.current) return;
-      setError("Failed to compare costs. Please try again.");
-    } finally {
-      if (currentRequestId === requestIdRef.current) {
-        setLoading(false);
-      }
+    if (outcome.stale) return;
+    if (outcome.data?.error) {
+      setResult(null);
+    } else if (outcome.data?.data) {
+      setResult(outcome.data.data);
+      setCategoryResult(null);
     }
-  }, [state1, state2, category]);
+  }, [state1, state2, category, execute]);
 
   const handleCompareCategories = useCallback(async () => {
     if (!state1 || !category || !category2) return;
 
-    const currentRequestId = ++requestIdRef.current;
-    setLoading(true);
-    setError(null);
+    const outcome = await execute(
+      async () => {
+        const [res1, res2] = await Promise.all([
+          fetch(`/api/costs?state=${state1}&category=${category}`),
+          fetch(`/api/costs?state=${state1}&category=${category2}`),
+        ]);
+        return Promise.all([res1.json(), res2.json()]);
+      },
+      { errorMessage: "Failed to compare costs. Please try again." }
+    );
 
-    try {
-      const [res1, res2] = await Promise.all([
-        fetch(`/api/costs?state=${state1}&category=${category}`),
-        fetch(`/api/costs?state=${state1}&category=${category2}`),
-      ]);
-      const [json1, json2] = await Promise.all([res1.json(), res2.json()]);
+    if (outcome.stale) return;
+    if (!outcome.data) return;
 
-      if (currentRequestId !== requestIdRef.current) return;
-
-      if (json1.error || json2.error) {
-        setError(json1.error || json2.error);
-        setCategoryResult(null);
-      } else {
-        const stateInfo = STATES.find((s) => s.code === state1);
-        const cat1Info = CATEGORIES.find((c) => c.slug === category);
-        const cat2Info = CATEGORIES.find((c) => c.slug === category2);
-        setCategoryResult({
-          state: state1,
-          stateName: stateInfo?.name ?? state1,
-          categories: [
-            {
-              category,
-              categoryName: cat1Info?.displayName ?? category,
-              costs: json1.data as LegalCostData[],
-            },
-            {
-              category: category2,
-              categoryName: cat2Info?.displayName ?? category2,
-              costs: json2.data as LegalCostData[],
-            },
-          ],
-        });
-        setResult(null);
-      }
-    } catch {
-      if (currentRequestId !== requestIdRef.current) return;
-      setError("Failed to compare costs. Please try again.");
-    } finally {
-      if (currentRequestId === requestIdRef.current) {
-        setLoading(false);
-      }
+    const [json1, json2] = outcome.data;
+    if (json1.error || json2.error) {
+      setCategoryResult(null);
+    } else {
+      const stateInfo = STATES.find((s) => s.code === state1);
+      const cat1Info = CATEGORIES.find((c) => c.slug === category);
+      const cat2Info = CATEGORIES.find((c) => c.slug === category2);
+      setCategoryResult({
+        state: state1,
+        stateName: stateInfo?.name ?? state1,
+        categories: [
+          { category, categoryName: cat1Info?.displayName ?? category, costs: json1.data },
+          { category: category2, categoryName: cat2Info?.displayName ?? category2, costs: json2.data },
+        ],
+      });
+      setResult(null);
     }
-  }, [state1, category, category2]);
+  }, [state1, category, category2, execute]);
 
   const handleCompare = mode === "states" ? handleCompareStates : handleCompareCategories;
 
@@ -128,7 +101,6 @@ export default function ComparePage() {
     setMode(newMode);
     setResult(null);
     setCategoryResult(null);
-    setError(null);
   };
 
   return (
@@ -175,134 +147,110 @@ export default function ComparePage() {
 
         {/* Cross-State Results */}
         {result && result.states.length === 2 && (
-          <div className="mt-8 space-y-6">
-            <h2 className="text-xl font-bold text-slate-900">
-              {CATEGORIES.find((c) => c.slug === result.category)?.displayName} Cost Comparison
-            </h2>
-
-            {VALID_COMPLEXITIES.map((complexity) => {
-              const cost1 = getCostByComplexity(result.states[0].costs, complexity);
-              const cost2 = getCostByComplexity(result.states[1].costs, complexity);
-
-              if (!cost1 && !cost2) return null;
-
-              return (
-                <Card key={complexity} className="border-slate-200">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="flex items-center gap-2 text-base">
-                      <Badge variant="outline" className="capitalize">{complexity}</Badge>
-                      Complexity
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-2 gap-6">
-                      {[result.states[0], result.states[1]].map((stateData, i) => {
-                        const cost = getCostByComplexity(stateData.costs, complexity);
-                        const stateInfo = STATES.find((s) => s.code === stateData.stateCode);
-                        return (
-                          <div key={stateData.stateCode || i} className="text-center">
-                            <h3 className="mb-3 font-semibold text-slate-700">{stateData.stateName}</h3>
-                            {cost ? (
-                              <>
-                                <p className="font-mono text-2xl font-bold text-teal-600">
-                                  {formatCurrency(cost.costRange.median)}
-                                </p>
-                                <p className="mt-1 font-mono text-sm text-slate-500">
-                                  {formatCurrency(cost.costRange.low)} – {formatCurrency(cost.costRange.high)}
-                                </p>
-                                <p className="mt-2 font-mono text-xs text-slate-400">
-                                  {formatCurrency(cost.hourlyRate.median)}/hr median rate
-                                </p>
-                              </>
-                            ) : (
-                              <p className="text-sm text-slate-400">No data available</p>
-                            )}
-                            {stateInfo && (
-                              <Link
-                                href={`/${stateInfo.slug}/${result.category}-cost`}
-                                className="mt-3 inline-block text-xs font-medium text-teal-600 hover:text-teal-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded-sm"
-                              >
-                                View full details →
-                              </Link>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
+          <ComparisonResultSection
+            title={`${CATEGORIES.find((c) => c.slug === result.category)?.displayName} Cost Comparison`}
+            items={result.states.map((s) => ({
+              key: s.stateCode,
+              label: s.stateName,
+              costs: s.costs,
+              linkSlug: STATES.find((st) => st.code === s.stateCode)?.slug,
+              linkCategory: result.category,
+            }))}
+          />
         )}
 
         {/* Cross-Category Results */}
         {categoryResult && categoryResult.categories.length === 2 && (
-          <div className="mt-8 space-y-6">
-            <h2 className="text-xl font-bold text-slate-900">
-              Cost Comparison in {categoryResult.stateName}
-            </h2>
-
-            {VALID_COMPLEXITIES.map((complexity) => {
-              const cost1 = getCostByComplexity(categoryResult.categories[0].costs, complexity);
-              const cost2 = getCostByComplexity(categoryResult.categories[1].costs, complexity);
-
-              if (!cost1 && !cost2) return null;
-
-              return (
-                <Card key={complexity} className="border-slate-200">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="flex items-center gap-2 text-base">
-                      <Badge variant="outline" className="capitalize">{complexity}</Badge>
-                      Complexity
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-2 gap-6">
-                      {categoryResult.categories.map((catData, i) => {
-                        const cost = getCostByComplexity(catData.costs, complexity);
-                        const stateInfo = STATES.find((s) => s.code === categoryResult.state);
-                        return (
-                          <div key={catData.category || i} className="text-center">
-                            <h3 className="mb-3 font-semibold text-slate-700">{catData.categoryName}</h3>
-                            {cost ? (
-                              <>
-                                <p className="font-mono text-2xl font-bold text-teal-600">
-                                  {formatCurrency(cost.costRange.median)}
-                                </p>
-                                <p className="mt-1 font-mono text-sm text-slate-500">
-                                  {formatCurrency(cost.costRange.low)} – {formatCurrency(cost.costRange.high)}
-                                </p>
-                                <p className="mt-2 font-mono text-xs text-slate-400">
-                                  {formatCurrency(cost.hourlyRate.median)}/hr median rate
-                                </p>
-                              </>
-                            ) : (
-                              <p className="text-sm text-slate-400">No data available</p>
-                            )}
-                            {stateInfo && (
-                              <Link
-                                href={`/${stateInfo.slug}/${catData.category}-cost`}
-                                className="mt-3 inline-block text-xs font-medium text-teal-600 hover:text-teal-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded-sm"
-                              >
-                                View full details →
-                              </Link>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
+          <ComparisonResultSection
+            title={`Cost Comparison in ${categoryResult.stateName}`}
+            items={categoryResult.categories.map((c) => ({
+              key: c.category,
+              label: c.categoryName,
+              costs: c.costs,
+              linkSlug: STATES.find((s) => s.code === categoryResult.state)?.slug,
+              linkCategory: c.category,
+            }))}
+          />
         )}
 
         <div className="mt-12">
           <Disclaimer />
         </div>
       </div>
+    </div>
+  );
+}
+
+function ComparisonResultSection({
+  title,
+  items,
+}: {
+  title: string;
+  items: {
+    key: string;
+    label: string;
+    costs: LegalCostData[];
+    linkSlug?: string;
+    linkCategory: string;
+  }[];
+}) {
+  const getCostByComplexity = (costs: LegalCostData[], complexity: string) =>
+    costs.find((c) => c.complexity === complexity);
+
+  return (
+    <div className="mt-8 space-y-6">
+      <h2 className="text-xl font-bold text-slate-900">{title}</h2>
+
+      {VALID_COMPLEXITIES.map((complexity) => {
+        const hasData = items.some((item) => getCostByComplexity(item.costs, complexity));
+        if (!hasData) return null;
+
+        return (
+          <Card key={complexity} className="border-slate-200">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Badge variant="outline" className="capitalize">{complexity}</Badge>
+                Complexity
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-6">
+                {items.map((item, i) => {
+                  const cost = getCostByComplexity(item.costs, complexity);
+                  return (
+                    <div key={item.key || i} className="text-center">
+                      <h3 className="mb-3 font-semibold text-slate-700">{item.label}</h3>
+                      {cost ? (
+                        <>
+                          <p className="font-mono text-2xl font-bold text-teal-600">
+                            {formatCurrency(cost.costRange.median)}
+                          </p>
+                          <p className="mt-1 font-mono text-sm text-slate-500">
+                            {formatCurrency(cost.costRange.low)} – {formatCurrency(cost.costRange.high)}
+                          </p>
+                          <p className="mt-2 font-mono text-xs text-slate-400">
+                            {formatCurrency(cost.hourlyRate.median)}/hr median rate
+                          </p>
+                        </>
+                      ) : (
+                        <p className="text-sm text-slate-400">No data available</p>
+                      )}
+                      {item.linkSlug && (
+                        <Link
+                          href={`/${item.linkSlug}/${item.linkCategory}-cost`}
+                          className="mt-3 inline-block text-xs font-medium text-teal-600 hover:text-teal-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded-sm"
+                        >
+                          View full details →
+                        </Link>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
   );
 }

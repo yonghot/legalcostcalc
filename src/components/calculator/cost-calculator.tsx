@@ -16,6 +16,7 @@ import { STATES } from "@/lib/constants/states";
 import { LegalCostData } from "@/lib/types";
 import { CostResult } from "./cost-result";
 import { Calculator } from "lucide-react";
+import { useRequestTracker } from "@/lib/hooks/use-request-tracker";
 
 interface CostCalculatorProps {
   initialCategory?: string;
@@ -27,54 +28,40 @@ export function CostCalculator({ initialCategory, initialState }: CostCalculator
   const [stateCode, setStateCode] = useState(initialState || "");
   const [complexity, setComplexity] = useState("moderate");
   const [results, setResults] = useState<LegalCostData[] | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  // Track the latest request to prevent stale responses from overwriting newer ones
-  const requestIdRef = useRef(0);
+  const { loading, error, execute } = useRequestTracker();
   const resultRef = useRef<HTMLDivElement>(null);
 
   const handleCalculate = useCallback(async () => {
     if (!category || !stateCode) return;
 
-    const currentRequestId = ++requestIdRef.current;
+    const params = new URLSearchParams({
+      category,
+      state: stateCode,
+      ...(complexity && { complexity }),
+    });
 
-    setLoading(true);
-    setError(null);
+    const outcome = await execute(
+      async () => {
+        const res = await fetch(`/api/costs?${params}`);
+        return res.json();
+      },
+      { errorMessage: "Failed to calculate costs. Please try again." }
+    );
 
-    try {
-      const params = new URLSearchParams({
-        category,
-        state: stateCode,
-        ...(complexity && { complexity }),
-      });
+    if (outcome.stale) return;
 
-      const res = await fetch(`/api/costs?${params}`);
-      const json = await res.json();
-
-      // Discard if a newer request was fired while this one was in flight
-      if (currentRequestId !== requestIdRef.current) return;
-
-      if (json.error) {
-        setError(json.error);
-        setResults(null);
-      } else {
-        setResults(json.data);
-        // Auto-scroll to results after render
-        setTimeout(() => {
-          resultRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-        }, 100);
-      }
-    } catch {
-      if (currentRequestId !== requestIdRef.current) return;
-      setError("Failed to calculate costs. Please try again.");
+    if (outcome.data?.error) {
       setResults(null);
-    } finally {
-      if (currentRequestId === requestIdRef.current) {
-        setLoading(false);
-      }
+    } else if (outcome.data?.data) {
+      setResults(outcome.data.data);
+      setTimeout(() => {
+        resultRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }, 100);
+    } else {
+      setResults(null);
     }
-  }, [category, stateCode, complexity]);
+  }, [category, stateCode, complexity, execute]);
 
   return (
     <div className="space-y-6">

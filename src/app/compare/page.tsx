@@ -104,7 +104,7 @@ export default function ComparePage() {
   };
 
   return (
-    <div className="py-12">
+    <div className="py-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <Disclaimer />
 

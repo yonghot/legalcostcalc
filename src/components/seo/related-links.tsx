@@ -20,7 +20,7 @@ export function RelatedLinks({ stateInfo, categoryInfo, otherCategories, allOthe
   const remainingStatesCount = allOtherStates.length - displayedStates.length;
 
   return (
-    <section className="border-t border-slate-100 bg-slate-50 py-12">
+    <section className="border-t border-slate-100 bg-slate-50 py-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid gap-8 lg:grid-cols-2">
           {/* Other categories in this state */}

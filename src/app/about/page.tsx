@@ -44,7 +44,7 @@ export default function AboutPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: safeJsonLd(schema) }}
       />
-      <section className="bg-gradient-to-b from-teal-50 to-white py-12 sm:py-16">
+      <section className="bg-gradient-to-b from-teal-50 to-white py-16 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <Disclaimer />
 
@@ -71,7 +71,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section className="py-12">
+      <section className="py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-8 lg:grid-cols-2">
             <div className="space-y-8">

@@ -7,6 +7,7 @@ import { Disclaimer } from "@/components/shared/disclaimer";
 import { LegalCostData } from "@/lib/types";
 import { formatCurrency } from "@/lib/utils/format";
 import { isSafeUrl } from "@/lib/utils/sanitize";
+import { checkDataFreshness } from "@/lib/utils/data-freshness";
 import { Clock, DollarSign, FileText, ExternalLink } from "lucide-react";
 
 interface CostResultProps {
@@ -55,7 +56,7 @@ export const CostResult = memo(function CostResult({
             {/* Hourly Rate */}
             <div className="rounded-lg border border-slate-100 bg-slate-50 p-4">
               <div className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-600">
-                <DollarSign className="h-4 w-4" aria-hidden="true" />
+                <DollarSign className="h-5 w-5" aria-hidden="true" />
                 Hourly Rate
               </div>
               <p className="font-mono text-lg font-semibold text-slate-900">
@@ -69,7 +70,7 @@ export const CostResult = memo(function CostResult({
             {/* Duration */}
             <div className="rounded-lg border border-slate-100 bg-slate-50 p-4">
               <div className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-600">
-                <Clock className="h-4 w-4" aria-hidden="true" />
+                <Clock className="h-5 w-5" aria-hidden="true" />
                 Typical Duration
               </div>
               <p className="text-lg font-semibold text-slate-900">
@@ -80,7 +81,7 @@ export const CostResult = memo(function CostResult({
             {/* Common Fees */}
             <div className="rounded-lg border border-slate-100 bg-slate-50 p-4">
               <div className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-600">
-                <FileText className="h-4 w-4" aria-hidden="true" />
+                <FileText className="h-5 w-5" aria-hidden="true" />
                 Common Fees
               </div>
               <ul className="space-y-1">
@@ -116,10 +117,7 @@ export const CostResult = memo(function CostResult({
 
           {/* Data freshness */}
           {cost.lastVerifiedAt && (() => {
-            const verifiedDate = new Date(cost.lastVerifiedAt);
-            const oneYearAgo = new Date();
-            oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-            const isStale = verifiedDate < oneYearAgo;
+            const { isStale, formattedDate } = checkDataFreshness(cost.lastVerifiedAt);
 
             return (
               <div className="mt-4">
@@ -129,10 +127,7 @@ export const CostResult = memo(function CostResult({
                   </p>
                 )}
                 <p className="text-xs text-slate-400">
-                  Last verified: {verifiedDate.toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "long",
-                  })}
+                  Last verified: {formattedDate}
                 </p>
                 {cost.sources.length < 2 && (
                   <p className="mt-1 text-xs italic text-slate-400">

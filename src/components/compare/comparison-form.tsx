@@ -56,7 +56,7 @@ export function ComparisonForm({
           onClick={() => onModeChange("states")}
           className={mode === "states" ? "bg-teal-600 hover:bg-teal-700" : ""}
         >
-          <MapPin className="mr-2 h-4 w-4" aria-hidden="true" />
+          <MapPin className="mr-2 h-5 w-5" aria-hidden="true" />
           Compare States
         </Button>
         <Button
@@ -64,7 +64,7 @@ export function ComparisonForm({
           onClick={() => onModeChange("categories")}
           className={mode === "categories" ? "bg-teal-600 hover:bg-teal-700" : ""}
         >
-          <BarChart3 className="mr-2 h-4 w-4" aria-hidden="true" />
+          <BarChart3 className="mr-2 h-5 w-5" aria-hidden="true" />
           Compare Categories
         </Button>
       </div>

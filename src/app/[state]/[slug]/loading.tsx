@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 export default function Loading() {
   return (
     <div>
-      <section className="bg-gradient-to-b from-teal-50 to-white py-12 sm:py-16">
+      <section className="bg-gradient-to-b from-teal-50 to-white py-16 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           {/* Disclaimer skeleton */}
           <div className="animate-pulse rounded-lg bg-amber-50 p-4">

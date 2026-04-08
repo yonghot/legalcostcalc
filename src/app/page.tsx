@@ -67,7 +67,7 @@ export default function HomePage() {
       </section>
 
       {/* Trust Signals */}
-      <section className="border-y border-slate-100 bg-slate-50 py-12">
+      <section className="border-y border-slate-100 bg-slate-50 py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
             <div className="flex items-start gap-4">
@@ -185,7 +185,7 @@ export default function HomePage() {
       </section>
 
       {/* Affiliate CTAs */}
-      <section className="py-12">
+      <section className="py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <AffiliateCTA />
         </div>

@@ -31,7 +31,7 @@ export default function NotFound() {
           href="/"
           className="mt-6 inline-flex items-center gap-2 rounded-md bg-teal-600 px-6 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-teal-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
         >
-          <Home className="h-4 w-4" aria-hidden="true" />
+          <Home className="h-5 w-5" aria-hidden="true" />
           Back to Calculator
         </Link>
       </div>

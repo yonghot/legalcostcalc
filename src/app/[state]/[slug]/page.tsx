@@ -7,6 +7,7 @@ import { FaqSchema } from "@/components/seo/faq-schema";
 import { STATES, STATE_BY_SLUG } from "@/lib/constants/states";
 import { CATEGORIES, CATEGORY_MAP } from "@/lib/constants/categories";
 import { formatCurrency } from "@/lib/utils/format";
+import { checkDataFreshness } from "@/lib/utils/data-freshness";
 import { getCostForPage } from "@/lib/services/cost-service";
 import { CostDisplay } from "@/components/shared/cost-display";
 import { Card, CardContent } from "@/components/ui/card";
@@ -144,7 +145,7 @@ export default async function StateCategoryPage({ params }: PageProps) {
         ]}
       />
 
-      <section className="bg-gradient-to-b from-teal-50 to-white py-12 sm:py-16">
+      <section className="bg-gradient-to-b from-teal-50 to-white py-16 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <Disclaimer />
 
@@ -220,10 +221,7 @@ export default async function StateCategoryPage({ params }: PageProps) {
 
           {/* Data freshness */}
           {moderateCost?.lastVerifiedAt && (() => {
-            const verifiedDate = new Date(moderateCost.lastVerifiedAt);
-            const oneYearAgo = new Date();
-            oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-            const isStale = verifiedDate < oneYearAgo;
+            const { isStale, formattedDate } = checkDataFreshness(moderateCost.lastVerifiedAt);
 
             return (
               <div className="mt-4 text-center">
@@ -233,7 +231,7 @@ export default async function StateCategoryPage({ params }: PageProps) {
                   </p>
                 )}
                 <p className="text-xs text-slate-400">
-                  Last verified: {verifiedDate.toLocaleDateString("en-US", { year: "numeric", month: "long" })}
+                  Last verified: {formattedDate}
                 </p>
               </div>
             );
@@ -251,7 +249,7 @@ export default async function StateCategoryPage({ params }: PageProps) {
       )}
 
       {/* Interactive Calculator */}
-      <section className="py-12">
+      <section className="py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h2 className="mb-6 text-2xl font-bold text-slate-900">
             Calculate Your Estimated Cost

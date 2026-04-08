@@ -37,7 +37,7 @@ export function AffiliateCTA({ categorySlug, stateName }: AffiliateCTAProps) {
             </div>
             <div className="flex flex-shrink-0 items-center justify-center gap-2 rounded-md bg-teal-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-teal-700">
               {partner.ctaText}
-              <ExternalLink className="h-4 w-4" aria-hidden="true" />
+              <ExternalLink className="h-5 w-5" aria-hidden="true" />
             </div>
           </a>
         ))}

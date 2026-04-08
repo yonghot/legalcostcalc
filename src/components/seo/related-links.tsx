@@ -36,7 +36,7 @@ export function RelatedLinks({ stateInfo, categoryInfo, otherCategories, allOthe
                   className={linkClassName}
                 >
                   <span className="font-medium text-slate-700">{cat.displayName} Cost</span>
-                  <ArrowRight className="h-4 w-4 text-slate-300" aria-hidden="true" />
+                  <ArrowRight className="h-5 w-5 text-slate-300" aria-hidden="true" />
                 </Link>
               ))}
             </div>
@@ -55,7 +55,7 @@ export function RelatedLinks({ stateInfo, categoryInfo, otherCategories, allOthe
                   className={linkClassName}
                 >
                   <span className="font-medium text-slate-700">{state.name}</span>
-                  <ArrowRight className="h-4 w-4 text-slate-300" aria-hidden="true" />
+                  <ArrowRight className="h-5 w-5 text-slate-300" aria-hidden="true" />
                 </Link>
               ))}
               {remainingStatesCount > 0 && (
@@ -71,7 +71,7 @@ export function RelatedLinks({ stateInfo, categoryInfo, otherCategories, allOthe
                         className={linkClassName}
                       >
                         <span className="font-medium text-slate-700">{state.name}</span>
-                        <ArrowRight className="h-4 w-4 text-slate-300" aria-hidden="true" />
+                        <ArrowRight className="h-5 w-5 text-slate-300" aria-hidden="true" />
                       </Link>
                     ))}
                   </div>

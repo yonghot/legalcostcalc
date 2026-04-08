@@ -139,6 +139,7 @@ export function CostCalculator({ initialCategory, initialState }: CostCalculator
         </div>
       )}
 
+      <div aria-live="polite" aria-label="Cost calculation results">
       {results && results.length > 0 && (
         <div ref={resultRef}>
         <CostResult
@@ -156,6 +157,7 @@ export function CostCalculator({ initialCategory, initialState }: CostCalculator
           </CardContent>
         </Card>
       )}
+      </div>
     </div>
   );
 }

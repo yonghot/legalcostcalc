@@ -52,7 +52,7 @@ export default function NotFound() {
                 <span className="font-medium text-slate-700">
                   Legal Costs in {state.name}
                 </span>
-                <ArrowRight className="h-4 w-4 text-slate-300" aria-hidden="true" />
+                <ArrowRight className="h-5 w-5 text-slate-300" aria-hidden="true" />
               </Link>
             ))}
           </div>
@@ -72,7 +72,7 @@ export default function NotFound() {
                 <span className="font-medium text-slate-700">
                   {cat.displayName} Cost
                 </span>
-                <ArrowRight className="h-4 w-4 text-slate-300" aria-hidden="true" />
+                <ArrowRight className="h-5 w-5 text-slate-300" aria-hidden="true" />
               </Link>
             ))}
           </div>

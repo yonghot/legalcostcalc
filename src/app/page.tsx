@@ -67,8 +67,9 @@ export default function HomePage() {
       </section>
 
       {/* Trust Signals */}
-      <section className="border-y border-slate-100 bg-slate-50 py-16">
+      <section className="border-y border-slate-100 bg-slate-50 py-16" aria-label="Why trust our data">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <h2 className="sr-only">Why Trust Our Data</h2>
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
             <div className="flex items-start gap-4">
               <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-teal-100">
@@ -128,7 +129,7 @@ export default function HomePage() {
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-teal-50 transition-colors group-hover:bg-teal-100">
                     <Icon className="h-5 w-5 text-teal-600" aria-hidden="true" />
                   </div>
-                  <ArrowRight className="h-4 w-4 text-slate-300 transition-colors group-hover:text-teal-500" aria-hidden="true" />
+                  <ArrowRight className="h-5 w-5 text-slate-300 transition-colors group-hover:text-teal-500" aria-hidden="true" />
                 </div>
                 <h3 className="mt-3 font-semibold text-slate-900">{cat.displayName}</h3>
                 <p className="mt-1 text-sm text-slate-500 line-clamp-2">

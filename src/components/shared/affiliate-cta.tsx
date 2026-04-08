@@ -1,5 +1,3 @@
-"use client";
-
 import { ExternalLink } from "lucide-react";
 import { getPartnersForCategory, type AffiliatePartner } from "@/lib/constants/affiliates";
 

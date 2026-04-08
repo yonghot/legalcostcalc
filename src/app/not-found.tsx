@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Scale, Home, ArrowRight } from "lucide-react";
 import { Disclaimer } from "@/components/shared/disclaimer";
+import { Smart404Suggestions } from "@/components/shared/smart-404-suggestions";
 import { CATEGORIES } from "@/lib/constants/categories";
 import { STATES } from "@/lib/constants/states";
 
@@ -34,6 +35,8 @@ export default function NotFound() {
           <Home className="h-5 w-5" aria-hidden="true" />
           Back to Calculator
         </Link>
+
+        <Smart404Suggestions />
       </div>
 
       {/* Popular Pages */}

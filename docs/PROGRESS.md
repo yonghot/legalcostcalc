@@ -68,6 +68,85 @@
 
 ---
 
+## [2026-04-08 19:25] 자동 개발 세션
+
+### 리서치
+- ✅ 수행 (RESEARCH.md 80시간 경과, 쿨다운 초과)
+- 서브에이전트 5개 병렬 분석: 사용자 플로우, 디자인 감사, 백엔드 감사, 코드 품질, 콘텐츠 분석
+- [자동 반영] 5개: A-6 SEO 콘텐츠 강화, A-7 FAQ 확장, A-8 스마트 404, A-9 모바일 햄버거, B-4 Compare 스키마
+- [오너 판단 필요] 0개
+- [C] 외부 조사: 신규 0개, 기존 3개 모두 [미반영 — 오너 확인 대기]
+- [D] 시장 인사이트 1개 (SEO 콘텐츠 깊이)
+- [E] 개발 효율화 1개 (shadcn Sheet 설치)
+
+### 메인 태스크
+- A-6: SEO 랜딩 페이지 콘텐츠 강화 (시간당 요율 + 일반 수수료 + 비용 영향 요인)
+
+### 추가 작업
+1. A-7: FAQ 스키마 2→4개 질문 확장 (duration, common fees, complexity, cost saving)
+2. A-8: 스마트 404 페이지 — 인기 주/카테고리 추천 링크
+3. A-9: 모바일 햄버거 메뉴 (shadcn Sheet 기반, 기존 인라인 중복 네비 교체)
+4. B-4: Compare 페이지 WebPage 스키마 + canonical URL 추가
+5. About 페이지 AboutPage 스키마 추가
+6. Compare 결과에 "View full details →" 내부 링크 추가 (cross-state + cross-category)
+7. 홈페이지 "View all 51 states" 확장 가능 섹션 추가
+8. Footer 카테고리 목록 6개→8개 전체 표시
+9. SEO 랜딩 주요 카드에 시간당 요율 추가
+
+### 정합성 검증 (B-0.5)
+- [MUST] 위반: 없음 (REVIEW.md에 [MUST] 없음)
+- PRD 변경점: 없음
+- DESIGN.md 불일치: 없음
+- PRD 갭: SEO 페이지에서 hourly rate/common fees 미노출 → A-6으로 해소
+
+### 구현 상세
+- 수정: `src/app/[state]/[slug]/page.tsx` — complexity 카드에 hourly rate, common fees 섹션, cost factors 섹션, FAQ 4개 확장, 주요 카드에 hourly rate 표시
+- 수정: `src/app/not-found.tsx` — 인기 주/카테고리 추천 링크 추가
+- 수정: `src/components/layout/header.tsx` — Sheet 기반 모바일 햄버거 메뉴
+- 수정: `src/app/compare/layout.tsx` — WebPage 스키마, canonical URL 추가
+- 수정: `src/app/compare/page.tsx` — 결과에 "View full details" 내부 링크 추가
+- 수정: `src/app/about/page.tsx` — AboutPage 스키마 추가
+- 수정: `src/app/page.tsx` — "View all states" 확장 섹션 추가
+- 수정: `src/components/layout/footer.tsx` — 카테고리 8개 전체 표시
+- 생성: `src/components/ui/sheet.tsx` — shadcn Sheet 컴포넌트
+- 수정: `src/components/ui/button.tsx` — shadcn 업데이트
+- 수정: `RESEARCH.md` — 2026-04-08 리서치 추가
+
+### 아키텍처 메모
+- Sheet 컴포넌트는 @base-ui/react Dialog 기반 (asChild 대신 직접 className)
+- SEO 랜딩 페이지 콘텐츠 깊이 증가로 crawlable text 양 크게 증가
+- FAQ 스키마 4개 질문은 데이터에서 자동 생성 (duration, commonFees, complexity costs)
+
+### 시도했으나 실패한 접근
+- SheetTrigger asChild prop → base-ui는 asChild 미지원, 직접 className으로 변경
+
+### 자가 검토
+- ✅ Disclaimer: 모든 페이지(Home, Compare, SEO, About, Not-Found) top+bottom 확인
+- ✅ console.log: 0개
+- ✅ TypeScript any: 0개
+- ✅ Layer 위반: 0개
+- ✅ Build: 420 pages, 0 errors
+
+### 배포
+- Git: push (진행중)
+- 프로덕션: (진행중)
+
+### 판단 필요
+- (기존 유지) Affiliate 프로그램 실제 가입 필요
+- (기존 유지) Blog/CMS 구조 결정 필요 — RESEARCH.md A-4
+- (기존 유지) C-1 데이터 검증 심층 연구 필요 (긴급)
+- (기존 유지) C-2 UPL 리스크 판례 심층 연구 필요
+- (기존 유지) C-3 Affiliate 프로그램 조건 심층 연구 필요
+
+### 다음 세션 권장
+- C-1/C-2/C-3 데이터 검증 결과 반영 (오너 PRD 수정 대기)
+- Blog/CMS 구조 (오너 결정 후)
+- AdSense 통합 (오너 계정 준비 후)
+- 성능 최적화 (LCP, CLS 측정 + 개선)
+- 접근성 심층 감사 (스크린 리더 테스트)
+
+---
+
 ## [2026-04-05 11:20] 자동 개발 세션
 
 ### 리서치

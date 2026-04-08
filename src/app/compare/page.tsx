@@ -198,6 +198,7 @@ export default function ComparePage() {
                     <div className="grid grid-cols-2 gap-6">
                       {[result.states[0], result.states[1]].map((stateData, i) => {
                         const cost = getCostByComplexity(stateData.costs, complexity);
+                        const stateInfo = STATES.find((s) => s.code === stateData.stateCode);
                         return (
                           <div key={stateData.stateCode || i} className="text-center">
                             <h3 className="mb-3 font-semibold text-slate-700">{stateData.stateName}</h3>
@@ -215,6 +216,14 @@ export default function ComparePage() {
                               </>
                             ) : (
                               <p className="text-sm text-slate-400">No data available</p>
+                            )}
+                            {stateInfo && (
+                              <Link
+                                href={`/${stateInfo.slug}/${result.category}-cost`}
+                                className="mt-3 inline-block text-xs font-medium text-teal-600 hover:text-teal-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded-sm"
+                              >
+                                View full details →
+                              </Link>
                             )}
                           </div>
                         );
@@ -252,6 +261,7 @@ export default function ComparePage() {
                     <div className="grid grid-cols-2 gap-6">
                       {categoryResult.categories.map((catData, i) => {
                         const cost = getCostByComplexity(catData.costs, complexity);
+                        const stateInfo = STATES.find((s) => s.code === categoryResult.state);
                         return (
                           <div key={catData.category || i} className="text-center">
                             <h3 className="mb-3 font-semibold text-slate-700">{catData.categoryName}</h3>
@@ -269,6 +279,14 @@ export default function ComparePage() {
                               </>
                             ) : (
                               <p className="text-sm text-slate-400">No data available</p>
+                            )}
+                            {stateInfo && (
+                              <Link
+                                href={`/${stateInfo.slug}/${catData.category}-cost`}
+                                className="mt-3 inline-block text-xs font-medium text-teal-600 hover:text-teal-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded-sm"
+                              >
+                                View full details →
+                              </Link>
                             )}
                           </div>
                         );

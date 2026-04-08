@@ -35,7 +35,7 @@ export function Footer() {
           <div>
             <h3 className="mb-3 text-sm font-semibold text-white">Legal Categories</h3>
             <ul className="space-y-2">
-              {CATEGORIES.slice(0, 6).map((cat) => (
+              {CATEGORIES.map((cat) => (
                 <li key={cat.slug}>
                   <Link
                     href={`/${DEFAULT_STATE_SLUG}/${cat.slug}-cost`}

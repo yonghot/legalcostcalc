@@ -108,6 +108,24 @@ export default async function StateCategoryPage({ params }: PageProps) {
         ? `${categoryInfo.displayName} attorneys in ${stateInfo.name} typically charge between ${formatCurrency(moderateCost.hourlyRate.low)} and ${formatCurrency(moderateCost.hourlyRate.high)} per hour.`
         : `Hourly rate data for ${stateInfo.name} is currently being collected.`,
     },
+    {
+      question: `How long does a ${categoryInfo.displayName.toLowerCase()} take in ${stateInfo.name}?`,
+      answer: moderateCost
+        ? `A typical ${categoryInfo.displayName.toLowerCase()} case of moderate complexity in ${stateInfo.name} takes approximately ${moderateCost.typicalDuration}. Simple cases may resolve faster, while complex cases can take significantly longer.`
+        : `Duration data for ${categoryInfo.displayName.toLowerCase()} in ${stateInfo.name} is currently being collected.`,
+    },
+    {
+      question: `What are common ${categoryInfo.displayName.toLowerCase()} fees in ${stateInfo.name}?`,
+      answer: moderateCost && moderateCost.commonFees.length > 0
+        ? `Common fees for a ${categoryInfo.displayName.toLowerCase()} in ${stateInfo.name} include: ${moderateCost.commonFees.slice(0, 4).join(", ")}. Actual fees vary based on your specific situation.`
+        : `Fee breakdown data for ${stateInfo.name} is currently being collected.`,
+    },
+    {
+      question: `Does ${categoryInfo.displayName.toLowerCase()} cost vary by complexity in ${stateInfo.name}?`,
+      answer: costs.length > 1
+        ? `Yes. A simple ${categoryInfo.displayName.toLowerCase()} in ${stateInfo.name} costs around ${formatCurrency(costs.find(c => c.complexity === "simple")?.costRange.median ?? 0)}, while a complex case can cost ${formatCurrency(costs.find(c => c.complexity === "complex")?.costRange.median ?? 0)} or more.`
+        : `Yes, legal costs vary significantly based on case complexity. Simple cases cost less than moderate or complex ones.`,
+    },
   ];
 
   // Related links
@@ -158,6 +176,12 @@ export default async function StateCategoryPage({ params }: PageProps) {
                     costRange={moderateCost.costRange}
                     label={`Estimated ${categoryInfo.displayName} Cost (Moderate Complexity)`}
                   />
+                  {moderateCost.hourlyRate.median > 0 && (
+                    <p className="mt-3 text-center font-mono text-sm text-slate-500">
+                      Attorney rate: {formatCurrency(moderateCost.hourlyRate.low)} – {formatCurrency(moderateCost.hourlyRate.high)}/hr
+                      (median {formatCurrency(moderateCost.hourlyRate.median)}/hr)
+                    </p>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -181,6 +205,11 @@ export default async function StateCategoryPage({ params }: PageProps) {
                     <p className="mt-1 font-mono text-sm text-slate-500">
                       Range: {formatCurrency(cost.costRange.low)} – {formatCurrency(cost.costRange.high)}
                     </p>
+                    {cost.hourlyRate.median > 0 && (
+                      <p className="mt-2 font-mono text-xs text-slate-500">
+                        Attorney rate: {formatCurrency(cost.hourlyRate.low)} – {formatCurrency(cost.hourlyRate.high)}/hr
+                      </p>
+                    )}
                     {cost.sources.length < 2 && (
                       <p className="mt-2 text-xs italic text-slate-400">Estimated range (single source)</p>
                     )}
@@ -212,6 +241,56 @@ export default async function StateCategoryPage({ params }: PageProps) {
           })()}
         </div>
       </section>
+
+      {/* Common Fees & Duration */}
+      {moderateCost && moderateCost.commonFees.length > 0 && (
+        <section className="border-t border-slate-100 bg-slate-50 py-12">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="grid gap-8 lg:grid-cols-2">
+              <div>
+                <h2 className="mb-4 text-xl font-bold text-slate-900">
+                  Common {categoryInfo.displayName} Fees in {stateInfo.name}
+                </h2>
+                <ul className="space-y-2">
+                  {moderateCost.commonFees.map((fee, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-slate-700">
+                      <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-teal-500" />
+                      {fee}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <h2 className="mb-4 text-xl font-bold text-slate-900">
+                  What Affects {categoryInfo.displayName} Cost?
+                </h2>
+                <ul className="space-y-2 text-sm text-slate-700">
+                  <li className="flex items-start gap-2">
+                    <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-teal-500" />
+                    Case complexity (simple, moderate, or complex)
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-teal-500" />
+                    Attorney experience and reputation
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-teal-500" />
+                    Local market rates in {stateInfo.name}
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-teal-500" />
+                    Whether the case goes to trial or is settled
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-teal-500" />
+                    Court filing fees and administrative costs
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Interactive Calculator */}
       <section className="py-12">

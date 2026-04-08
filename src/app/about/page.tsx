@@ -19,9 +19,31 @@ export const metadata: Metadata = {
   },
 };
 
+function safeJsonLd(obj: Record<string, unknown>): string {
+  return JSON.stringify(obj).replace(/</g, "\\u003c");
+}
+
 export default function AboutPage() {
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    name: "About LegalCostCalc",
+    description:
+      "Learn how LegalCostCalc provides transparent, source-verified legal cost estimates across all 50 US states.",
+    url: "https://legalcostcalc.vercel.app/about",
+    isPartOf: {
+      "@type": "WebSite",
+      name: "LegalCostCalc",
+      url: "https://legalcostcalc.vercel.app",
+    },
+  };
+
   return (
     <div>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(schema) }}
+      />
       <section className="bg-gradient-to-b from-teal-50 to-white py-12 sm:py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <Disclaimer />

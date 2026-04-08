@@ -11,6 +11,88 @@
 
 ---
 
+## 2026-04-08 10:25 리서치
+
+**리서치 일시**: 2026-04-08 10:25 UTC
+**코드베이스 상태**: 4/4 기능 pass, 420 pages, 빌드 ✅, 프로덕션 배포 완료
+
+---
+
+### [A] 방향/기능 제안
+
+### A-6: SEO 랜딩 페이지 콘텐츠 강화 — 시간당 요율 + 일반 수수료 표시 [자동 반영]
+- **현재 상태**: SEO 랜딩 페이지(`/[state]/[slug]`)의 complexity 카드에 median cost와 range만 표시. 시간당 요율(hourly rate)과 일반 수수료(common fees)는 interactive calculator 결과에서만 표시됨.
+- **제안**: complexity 카드에 hourly rate 추가, 별도 "Common Fees" 섹션 추가. SEO 콘텐츠량 증가 + 사용자가 calculator 없이도 핵심 정보 확인 가능.
+- **근거**: PRD F1 AC에 "Results show hourly rate range", "Results show common fees breakdown" 명시. SEO 페이지에서도 이 정보가 직접 노출되어야 검색 엔진 크롤러가 인덱싱. 현재는 JS client-side 결과에서만 표시되어 검색 노출 안 됨.
+- **구현 가이드**: `src/app/[state]/[slug]/page.tsx` complexity 카드에 hourly rate 추가, moderateCost 아래에 common fees 섹션 추가.
+- **예상 작업량**: 0.5세션
+- **부작용**: 없음 (UI 추가만)
+
+### A-7: FAQ 스키마 질문 확장 (3→5+) [자동 반영]
+- **현재 상태**: SEO 랜딩 페이지 FAQ 스키마에 2개 질문만 (총 비용, 시간당 요율). Google Rich Results에서 더 많은 질문이 노출되면 CTR 향상.
+- **제안**: 3~4개 추가 질문: "How long does a [category] take?", "What are common [category] fees?", "Is [category] cost different by complexity?", "How to save on [category] costs?"
+- **근거**: FAQ Rich Results는 질문 수에 비례하여 SERP 점유 면적 증가. 기존 데이터(duration, commonFees, complexity costs)를 활용하므로 추가 데이터 불필요.
+- **구현 가이드**: `src/app/[state]/[slug]/page.tsx`의 faqQuestions 배열에 추가.
+- **예상 작업량**: 15분
+- **부작용**: 없음
+
+### A-8: 스마트 404 페이지 — 유사 페이지 추천 [자동 반영]
+- **현재 상태**: 404 페이지가 generic "Page Not Found" + 홈 링크만 제공. URL 패턴을 분석하여 유사 페이지를 추천하면 이탈률 감소.
+- **제안**: URL에서 state/category 패턴을 파싱하여 유사 페이지 링크 표시. 예: `/californai/divorce-cost` → "Did you mean California?" + 관련 페이지 링크.
+- **근거**: PROGRESS.md "다음 세션 권장"에 "404 페이지 SEO 개선 (유사 페이지 추천)" 명시.
+- **구현 가이드**: `src/app/not-found.tsx`에 URL 파싱 + 인기 페이지 링크 추가.
+- **예상 작업량**: 0.5세션
+- **부작용**: 없음
+
+### A-9: 모바일 네비게이션 개선 — 햄버거 메뉴 [자동 반영]
+- **현재 상태**: Header에서 모바일/데스크탑 네비게이션이 동일한 인라인 링크로 중복 구현. 3개 링크(Calculator, Compare, About)는 현재 충분하지만, 향후 Blog, Categories 등 추가 시 확장성 부족.
+- **제안**: shadcn Sheet 컴포넌트로 모바일 햄버거 메뉴 구현. 데스크탑은 현재 유지.
+- **근거**: DESIGN.md §6 "Mobile: Single column, stacked cards, full-width selects"에 모바일 최적화 원칙 명시. 현재 mobile nav는 화면 크기에 따라 링크가 좁아져 터치 타겟이 작아질 수 있음.
+- **구현 가이드**: `src/components/layout/header.tsx`에 Sheet 컴포넌트 사용.
+- **예상 작업량**: 0.5세션
+- **부작용**: 없음 (shadcn Sheet은 이미 설치 가능)
+
+---
+
+### [B] 코드 개선
+
+### B-4: Compare 페이지 schema.org 데이터 누락 [자동 반영]
+- **대상 파일**: `src/app/compare/page.tsx`
+- **문제**: Home, SEO Landing, About 페이지는 모두 schema.org 구조화 데이터를 포함하지만, Compare 페이지에는 없음. SEO 일관성 부족.
+- **제안**: Compare 페이지에 WebPage 스키마 추가.
+- **위험도**: 낮음
+
+---
+
+### [C] 외부 조사
+
+[C] 작성 전 기존 항목 확인:
+- C-1 (법률 비용 데이터 정확성 검증): git diff HEAD~10 -- PRD.md 결과 변경 없음 → [미반영 — 오너 확인 대기]
+- C-2 (UPL 리스크 판례): git diff HEAD~10 -- PRD.md §10 변경 없음 → [미반영 — 오너 확인 대기]
+- C-3 (Affiliate 프로그램 조건): git diff HEAD~10 -- PRD.md §3 변경 없음 → [미반영 — 오너 확인 대기]
+
+신규 [C] 항목 없음. 기존 3개 모두 미반영 상태.
+
+---
+
+### [D] 시장 인사이트
+
+### D-3: SEO 랜딩 페이지 콘텐츠 깊이와 SERP 순위 상관관계
+- **발견**: YMYL 카테고리에서 Google은 "포괄적 콘텐츠"를 선호. 현재 SEO 페이지는 비용 수치 중심이며, 해설 텍스트가 적음. 시간당 요율, 일반 수수료, 비용 절감 팁 등의 텍스트 콘텐츠가 추가되면 콘텐츠 깊이 점수 향상.
+- **적용 가능성**: A-6 (시간당 요율 + 일반 수수료 표시)이 직접 적용. 텍스트 콘텐츠 양 증가 → crawlable content 증가.
+- **관련 기능**: A-6, A-7
+
+---
+
+### [E] 개발 효율화
+
+### E-2: shadcn Sheet 컴포넌트 사전 설치
+- **관찰**: 모바일 햄버거 메뉴(A-9)에 필요한 Sheet 컴포넌트가 아직 설치되지 않음.
+- **제안**: `npx shadcn@latest add sheet` 실행하여 사전 준비.
+- **기대 효과**: A-9 구현 시 즉시 사용 가능.
+
+---
+
 ## 2026-04-05 02:00 리서치
 
 **리서치 일시**: 2026-04-05 02:00 UTC

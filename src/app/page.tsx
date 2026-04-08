@@ -160,6 +160,27 @@ export default function HomePage() {
               </Link>
             ))}
           </div>
+
+          {STATES.length > popularStates.length && (
+            <details className="mt-4">
+              <summary className="cursor-pointer text-center text-sm font-medium text-teal-600 hover:text-teal-700">
+                View all {STATES.length} states
+              </summary>
+              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
+                {STATES.filter(
+                  (s) => !(POPULAR_STATE_CODES as readonly string[]).includes(s.code),
+                ).map((state) => (
+                  <Link
+                    key={state.code}
+                    href={`/${state.slug}/divorce-cost`}
+                    className="rounded-lg border border-slate-200 bg-white p-3 text-center text-sm font-medium text-slate-700 transition-all hover:border-teal-200 hover:text-teal-700 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                  >
+                    {state.name}
+                  </Link>
+                ))}
+              </div>
+            </details>
+          )}
         </div>
       </section>
 

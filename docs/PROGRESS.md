@@ -128,8 +128,9 @@
 - ✅ Build: 420 pages, 0 errors
 
 ### 배포
-- Git: push (진행중)
-- 프로덕션: (진행중)
+- Git: push ✅ (5d3dd70)
+- 프로덕션: ✅ https://legalcostcalc.vercel.app
+- 프로덕션 확인: ✅ HTTP 200 (/, /about, /compare, /california/divorce-cost)
 
 ### 판단 필요
 - (기존 유지) Affiliate 프로그램 실제 가입 필요

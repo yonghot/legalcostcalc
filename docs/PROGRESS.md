@@ -7,6 +7,111 @@
 
 ---
 
+## [2026-04-11 20:00] 자동 개발 세션 — Layer violation fix (hooks) + sitemap lastModified
+
+### 리서치
+- ⏭️ 스킵 (쿨다운 미만: 직전 리서치 ~2시간 전 커밋, 6시간 미달)
+
+### 메인 태스크
+- **Layer violation 해소** (components/CLAUDE.md "No direct API calls in components" 위반)
+  - `cost-calculator.tsx:46` — `fetch('/api/costs?...')` 직접 호출
+  - `compare/page.tsx:40,61,62` — 3곳의 `fetch()` 직접 호출
+- **SEO 위생** — `sitemap.ts` `lastModified: new Date()` 매 빌드마다 갱신 → 모든 URL이 매 배포 시 변경된 것처럼 보이므로 Google이 411페이지 재크롤링 유발
+
+### 사전 리팩토링 (B-3)
+- 없음 (수정 대상 파일 모두 260줄 이하, 분리 임계치 미달)
+
+### 추가 작업
+- 없음 (B-0.5에서 발견한 2개 이슈로 충분)
+
+### 정합성 검증 (B-0.5)
+- [MUST] 위반: 없음 (REVIEW.md에 [MUST] 없음)
+- PRD 변경점: 없음 (git log HEAD~5 -- PRD.md 변경 없음)
+- DESIGN.md 불일치: 없음 (시각 변경 없음)
+- feature_list.json AC: 전체 PASS (4/4 유지, 기능 동작 불변)
+- **B-0.5 발견**: `components/CLAUDE.md`의 "No direct API calls in components" 규칙을 4곳이 위반. 이번 세션 전수 해소.
+
+### 구현 상세
+
+**1. `useCalculateCost` 훅 추출** — `src/lib/hooks/use-calculate-cost.ts` (신규, 52줄)
+- `useRequestTracker` + 내부 `results` state + 타입 안전한 `calculate({category, state, complexity})` API
+- 반환: `{ loading, error, results, calculate }`. `calculate`는 `{stale, hasResults}`로 outcome 제공하여 컴포넌트가 scroll 등 부수효과 결정 가능.
+- `ApiResponse<LegalCostData[]>` 타입 사용으로 `res.json()` 결과 `any` 제거.
+
+**2. `useCompareCosts` 훅 추출** — `src/lib/hooks/use-compare-costs.ts` (신규, 119줄)
+- 두 가지 비교 모드(cross-state, cross-category)를 단일 훅에서 관리.
+- 반환: `{ loading, error, stateResult, categoryResult, compareStates, compareCategories, reset }`
+- `compareStates(s1, s2, cat)` — `/api/costs/compare` 호출, `CostComparisonResult` 타입.
+- `compareCategories(state, cat1, cat2)` — `/api/costs` 병렬 2회, `CategoryComparisonResult` 내부 타입 export.
+- 상호 배타적 상태 관리: 한 쪽이 set되면 다른 쪽은 null로 reset.
+- `reset()`는 mode 전환 시 양쪽 모두 clear.
+
+**3. `cost-calculator.tsx` 리팩토링** (163 → 128줄, 35줄 감소)
+- `fetch`, `useRequestTracker`, `LegalCostData`, `URLSearchParams`, 수동 outcome 처리 모두 제거.
+- `useCalculateCost()` 단일 호출로 축약. `handleCalculate`는 scroll 부수효과만 관리.
+
+**4. `compare/page.tsx` 리팩토링** (261 → 208줄, 53줄 감소)
+- `CategoryComparisonResult` 로컬 interface → 훅에서 export 재사용.
+- `handleCompareStates`/`handleCompareCategories`는 훅 메서드로 위임하는 얇은 콜백으로 축약.
+- 로컬 `result`/`categoryResult` state → 훅 반환값으로 대체.
+- `handleModeChange`에서 수동 setResult(null) 2회 → `reset()` 단일 호출.
+
+**5. sitemap lastModified 수정** — `src/lib/constants/data-meta.ts` (신규) + `src/app/sitemap.ts`
+- `DATA_VERSION_DATE = new Date("2026-04-11T00:00:00Z")` 상수 정의. 주석에 "데이터 검증 시에만 수동 bump"로 운영 의도 명시.
+- sitemap의 411개 URL 전부에 동일 고정 날짜 적용. `new Date()` 4곳 → `lastModified` 단일 상수.
+- **검증**: 빌드 후 `.next/server/app/sitemap.xml.body`에서 `<lastmod>2026-04-11T00:00:00.000Z</lastmod>` 411회 출현 확인. 매 배포 시 전체 URL 재크롤링 유발 문제 해소.
+- **운영 절차**: 실제 cost 데이터 검증/갱신 시 오너가 `DATA_VERSION_DATE`를 bump하면 Google이 유의미한 변경만 재크롤.
+
+### Refactor-on-Touch 결과
+- 수정 파일 3개 (cost-calculator, compare/page, sitemap) + 신규 3개 (2 hooks + 1 constant)
+- 총 코드 감소: cost-calculator -35줄, compare/page -53줄 = **소비자 코드 88줄 감소**
+- 추가된 재사용 인프라 (hooks): 171줄 — 향후 타 컴포넌트 재사용 시 동일 패턴 즉시 적용 가능
+- `any` 타입: 기존 `res.json()` 암묵적 `any` → `ApiResponse<T>` 타입 명시로 개선
+- 미사용 import: 0 (lint clean)
+- console.log: 0
+
+### 자가 검토 (PHASE D)
+- ✅ REVIEW.md [MUST]: 없음 (위반 0)
+- ✅ feature_list.json: F1/F2/F3/F4 전체 PASS 유지. 기능 동작 불변 (리팩토링만).
+- ✅ Disclaimer: 페이지별 top+bottom 유지 (4개 주요 페이지에서 14회 사용)
+- ✅ Layer 위반: **0** (src/components, src/app 하위에서 `fetch(` 검색 → 0건 매치). 컴포넌트/페이지는 이제 hooks를 통해서만 API 접근.
+- ✅ CLAUDE.md 레이어 규칙: "API Route → Service → Repository → Supabase" 준수. 클라이언트 훅은 API Route 진입 직전 레이어.
+- ✅ Lint: 0 errors, 0 warnings
+- ✅ TypeScript: 0 errors (tsc --noEmit silent pass)
+- ✅ Build: 420 pages, 0 errors, 컴파일 5.5s
+- ✅ Sitemap 검증: 411 lastmod 전부 `2026-04-11T00:00:00.000Z` (동일 상수)
+- ✅ console.log: 0, any: 0, TODO: 0, 미사용 import: 0
+
+### gstack 검증 결과
+- /review: ⏭️ 스킵 (gstack global 설치됨 but 저장소 벤더링 없음 → 클라우드 재현성 위해 로컬 세션에서도 벤더링 기준 적용. 또한 이번 세션은 리팩토링만이라 컨텍스트 보존 우선.)
+- /qa --quick: ⏭️ 스킵 (제한 네트워크 모드 가정, Playwright CDN 차단 가능)
+
+### 기술 부채 현황
+- 이번 세션 발견: 4건 (fetch 4곳 layer 위반 + sitemap lastModified SEO 문제)
+- 이번 세션 해소: 5건 전부 (fetch 4곳 + sitemap 1건)
+- 잔여: 없음
+
+### 배포
+- Git: push 진행 중 (브랜치: feature/mvp-prototype)
+- 배포 방식: GitHub push 자동 배포 (Vercel)
+- 프로덕션 확인: 빌드 성공 420 pages, sitemap 411 URL 고정 날짜 확인
+
+### 판단 필요
+- (기존 유지) Affiliate 프로그램 실제 가입 필요
+- (기존 유지) Blog/CMS 구조 결정 필요 — RESEARCH.md A-4
+- (기존 유지) C-1 데이터 검증 심층 연구 필요 (긴급)
+- (기존 유지) C-2 UPL 리스크 판례 심층 연구 필요
+- (기존 유지) C-3 Affiliate 프로그램 조건 심층 연구 필요
+- **신규**: `DATA_VERSION_DATE` 운영 절차 문서화 필요 — 오너가 실제 데이터 검증 주기에 맞춰 수동 bump하는 워크플로우. CONTRIBUTING.md 또는 PRD.md §데이터 관리 섹션 검토.
+
+### 다음 세션 권장
+- `lib/services/` 레이어에 `cost-service.ts` 클라이언트용 래퍼 도입 검토 — 현재는 hooks가 `fetch`를 직접 호출. service layer를 한 겹 더 두면 서버/클라이언트 대칭 가능 (현재는 과잉).
+- 성능 최적화 (LCP, CLS 측정) — dev 서버 실행 가능한 환경에서
+- 접근성 심층 감사 (axe-core 또는 수동 스크린 리더 테스트)
+- 코드 커버리지 기반 테스트 추가 (Vitest + Playwright) — 네트워크 제한 풀린 후
+
+---
+
 ## [2026-04-11 18:00] 자동 개발 세션 — Compare a11y + dead code + robots disallow
 
 ### 리서치

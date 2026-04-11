@@ -13,10 +13,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { CATEGORIES } from "@/lib/constants/categories";
 import { STATES } from "@/lib/constants/states";
-import { LegalCostData } from "@/lib/types";
 import { CostResult } from "./cost-result";
 import { Calculator } from "lucide-react";
-import { useRequestTracker } from "@/lib/hooks/use-request-tracker";
+import { useCalculateCost } from "@/lib/hooks/use-calculate-cost";
 
 interface CostCalculatorProps {
   initialCategory?: string;
@@ -27,41 +26,18 @@ export function CostCalculator({ initialCategory, initialState }: CostCalculator
   const [category, setCategory] = useState(initialCategory || "");
   const [stateCode, setStateCode] = useState(initialState || "");
   const [complexity, setComplexity] = useState("moderate");
-  const [results, setResults] = useState<LegalCostData[] | null>(null);
 
-  const { loading, error, execute } = useRequestTracker();
+  const { loading, error, results, calculate } = useCalculateCost();
   const resultRef = useRef<HTMLDivElement>(null);
 
   const handleCalculate = useCallback(async () => {
-    if (!category || !stateCode) return;
-
-    const params = new URLSearchParams({
-      category,
-      state: stateCode,
-      ...(complexity && { complexity }),
-    });
-
-    const outcome = await execute(
-      async () => {
-        const res = await fetch(`/api/costs?${params}`);
-        return res.json();
-      },
-      { errorMessage: "Failed to calculate costs. Please try again." }
-    );
-
-    if (outcome.stale) return;
-
-    if (outcome.data?.error) {
-      setResults(null);
-    } else if (outcome.data?.data) {
-      setResults(outcome.data.data);
+    const outcome = await calculate({ category, state: stateCode, complexity });
+    if (outcome.hasResults) {
       setTimeout(() => {
         resultRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
       }, 100);
-    } else {
-      setResults(null);
     }
-  }, [category, stateCode, complexity, execute]);
+  }, [category, stateCode, complexity, calculate]);
 
   return (
     <div className="space-y-6">

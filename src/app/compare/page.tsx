@@ -9,16 +9,10 @@ import { BreadcrumbSchema } from "@/components/seo/breadcrumb-schema";
 import { CATEGORIES } from "@/lib/constants/categories";
 import { STATES } from "@/lib/constants/states";
 import { VALID_COMPLEXITIES } from "@/lib/constants/costs";
-import { CostComparisonResult, LegalCostData } from "@/lib/types";
+import { LegalCostData } from "@/lib/types";
 import { formatCurrency } from "@/lib/utils/format";
-import { useRequestTracker } from "@/lib/hooks/use-request-tracker";
+import { useCompareCosts } from "@/lib/hooks/use-compare-costs";
 import Link from "next/link";
-
-interface CategoryComparisonResult {
-  state: string;
-  stateName: string;
-  categories: { category: string; categoryName: string; costs: LegalCostData[] }[];
-}
 
 export default function ComparePage() {
   const [mode, setMode] = useState<CompareMode>("states");
@@ -26,67 +20,26 @@ export default function ComparePage() {
   const [state2, setState2] = useState("");
   const [category, setCategory] = useState("");
   const [category2, setCategory2] = useState("");
-  const [result, setResult] = useState<CostComparisonResult | null>(null);
-  const [categoryResult, setCategoryResult] = useState<CategoryComparisonResult | null>(null);
 
-  const { loading, error, execute } = useRequestTracker();
+  const {
+    loading,
+    error,
+    stateResult,
+    categoryResult,
+    compareStates,
+    compareCategories,
+    reset,
+  } = useCompareCosts();
 
-  const handleCompareStates = useCallback(async () => {
-    if (!state1 || !state2 || !category) return;
+  const handleCompareStates = useCallback(
+    () => compareStates(state1, state2, category),
+    [state1, state2, category, compareStates]
+  );
 
-    const outcome = await execute(
-      async () => {
-        const params = new URLSearchParams({ states: `${state1},${state2}`, category });
-        const res = await fetch(`/api/costs/compare?${params}`);
-        return res.json();
-      },
-      { errorMessage: "Failed to compare costs. Please try again." }
-    );
-
-    if (outcome.stale) return;
-    if (outcome.data?.error) {
-      setResult(null);
-    } else if (outcome.data?.data) {
-      setResult(outcome.data.data);
-      setCategoryResult(null);
-    }
-  }, [state1, state2, category, execute]);
-
-  const handleCompareCategories = useCallback(async () => {
-    if (!state1 || !category || !category2) return;
-
-    const outcome = await execute(
-      async () => {
-        const [res1, res2] = await Promise.all([
-          fetch(`/api/costs?state=${state1}&category=${category}`),
-          fetch(`/api/costs?state=${state1}&category=${category2}`),
-        ]);
-        return Promise.all([res1.json(), res2.json()]);
-      },
-      { errorMessage: "Failed to compare costs. Please try again." }
-    );
-
-    if (outcome.stale) return;
-    if (!outcome.data) return;
-
-    const [json1, json2] = outcome.data;
-    if (json1.error || json2.error) {
-      setCategoryResult(null);
-    } else {
-      const stateInfo = STATES.find((s) => s.code === state1);
-      const cat1Info = CATEGORIES.find((c) => c.slug === category);
-      const cat2Info = CATEGORIES.find((c) => c.slug === category2);
-      setCategoryResult({
-        state: state1,
-        stateName: stateInfo?.name ?? state1,
-        categories: [
-          { category, categoryName: cat1Info?.displayName ?? category, costs: json1.data },
-          { category: category2, categoryName: cat2Info?.displayName ?? category2, costs: json2.data },
-        ],
-      });
-      setResult(null);
-    }
-  }, [state1, category, category2, execute]);
+  const handleCompareCategories = useCallback(
+    () => compareCategories(state1, category, category2),
+    [state1, category, category2, compareCategories]
+  );
 
   const handleCompare = mode === "states" ? handleCompareStates : handleCompareCategories;
 
@@ -97,8 +50,7 @@ export default function ComparePage() {
 
   const handleModeChange = (newMode: CompareMode) => {
     setMode(newMode);
-    setResult(null);
-    setCategoryResult(null);
+    reset();
   };
 
   return (
@@ -150,15 +102,15 @@ export default function ComparePage() {
         )}
 
         {/* Cross-State Results */}
-        {result && result.states.length === 2 && (
+        {stateResult && stateResult.states.length === 2 && (
           <ComparisonResultSection
-            title={`${CATEGORIES.find((c) => c.slug === result.category)?.displayName} Cost Comparison`}
-            items={result.states.map((s) => ({
+            title={`${CATEGORIES.find((c) => c.slug === stateResult.category)?.displayName} Cost Comparison`}
+            items={stateResult.states.map((s) => ({
               key: s.stateCode,
               label: s.stateName,
               costs: s.costs,
               linkSlug: STATES.find((st) => st.code === s.stateCode)?.slug,
-              linkCategory: result.category,
+              linkCategory: stateResult.category,
             }))}
           />
         )}

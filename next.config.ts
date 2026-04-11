@@ -42,6 +42,15 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Cap static-page-generation workers.
+  // With 420 SSG pages (50 states × 8 categories + marketing pages), Next.js
+  // defaults to (cpus - 1) parallel workers (e.g. 11 on a 12-core box). Each
+  // worker holds ~500MB of React/Next state, so peak RSS balloons past 5GB and
+  // OOMs builds on memory-constrained CI or dev machines. 4 workers still
+  // parallelizes generation enough while keeping peak usage ~2GB.
+  experimental: {
+    cpus: 4,
+  },
   async headers() {
     return [
       {

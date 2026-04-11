@@ -1,4 +1,4 @@
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getPublicSupabaseClient } from "@/lib/supabase/public";
 import { LegalCostRow } from "@/lib/types";
 import { MAX_FILTER_PARAM_LENGTH } from "@/lib/constants/costs";
 
@@ -17,7 +17,7 @@ export async function findCostsByFilters(params: {
   stateCode?: string;
   complexity?: string;
 }): Promise<LegalCostRow[]> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = getPublicSupabaseClient();
   let query = supabase.from("legal_costs").select("*");
 
   if (params.category) {
@@ -51,7 +51,7 @@ export async function findCostsByStatesAndCategory(
     validateFilterParam(code, "stateCode");
   }
 
-  const supabase = await createServerSupabaseClient();
+  const supabase = getPublicSupabaseClient();
 
   const { data, error } = await supabase
     .from("legal_costs")
@@ -71,7 +71,7 @@ export async function findCostsByStatesAndCategory(
 export async function findAllCostsForStaticGeneration(): Promise<
   Pick<LegalCostRow, "category" | "state_code">[]
 > {
-  const supabase = await createServerSupabaseClient();
+  const supabase = getPublicSupabaseClient();
 
   const { data, error } = await supabase
     .from("legal_costs")

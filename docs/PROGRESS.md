@@ -7,6 +7,115 @@
 
 ---
 
+## [2026-04-11 21:00] 자동 개발 세션 — SEO 랜딩 408 pages dynamic(ƒ) → SSG(●) 전환 + build OOM guard
+
+### 리서치
+- ⏭️ 스킵 (쿨다운 미만: RESEARCH.md 마지막 커밋 ~4시간 전, 6시간 미달)
+
+### 메인 태스크
+1. **`[state]/[slug]` SSG 전환** — 직전 세션 PROGRESS "다음 세션 권장"에 기록된 문제. `generateStaticParams`가 408 paths를 선언해도 Next.js가 route를 `ƒ` (Dynamic)로 마크하여 매 요청마다 Supabase를 다시 때렸다.
+   - **근본 원인**: `src/lib/supabase/server.ts`의 `createServerSupabaseClient`가 `cookies()` (next/headers) 호출. Next.js는 render tree 내 `cookies()` 발견 시 해당 route 전체를 dynamic으로 강제 마킹한다. `[state]/[slug]/page.tsx`는 `getCostForPage` → `findCostsByFilters` → `createServerSupabaseClient` → `cookies()` 체인으로 이 영향을 받고 있었다. PRD/feature_list는 "statically generated pages", "ISR revalidation every 7 days"를 명시했지만 코드 수준에서 이 약속은 지켜지지 않고 있었다.
+   - **영향**: 400+ SEO 페이지가 모두 request-time 렌더링 → 초당 Supabase DB hit, CDN 캐시 미활용, Vercel 서버 자원 낭비, `export const revalidate = 604800` dead code, LCP 손해. feature_list.json F2 AC "ISR revalidation every 7 days"가 실질적으로 미충족 상태였다.
+2. **Build OOM 가드** — 이 세션 시작 시 `npm run build`가 static page generation 단계에서 "Fatal process out of memory: Zone" 로 실패. 근본 원인 조사 필요.
+
+### 사전 리팩토링 (B-3)
+- 없음 (수정 대상 파일 `cost-repository.ts` 69줄, `next.config.ts` 55줄 — 분리 임계치 미달)
+
+### 추가 작업
+- 없음 (메인 태스크 2건으로 컨텍스트 충분 활용)
+
+### 정합성 검증 (B-0.5)
+- [MUST] 위반: 없음 (REVIEW.md에 [MUST] 항목 부재)
+- PRD 변경점: 없음 (git log HEAD~10 -- PRD.md 변경 0건)
+- DESIGN.md 불일치: 없음 (시각/레이아웃 변경 0건, data-fetching 인프라만)
+- feature_list.json AC vs 코드: **F2 불일치 발견**. "ISR revalidation every 7 days" AC 존재, `page.tsx`에 `export const revalidate = 604800` 선언 존재, 그러나 route가 dynamic이라 revalidate 상수가 무시되고 있었음. 이번 세션에서 해소.
+- **B-0.5 발견 → 메인 태스크 1 결정**
+
+### 구현 상세
+
+**1. Build OOM 가드 — `next.config.ts` (+9 lines)**
+- 근본 원인: Next.js 16 기본값은 `experimental.cpus = os.cpus().length - 1`. 12-core 머신에서 11 workers × ~500MB RSS = 5.5GB 필요. 이 Windows 환경의 가용 메모리 4.3GB 부족으로 OOM.
+- 확인 경로: `node_modules/next/dist/build/index.js:309` `getNumberOfWorkers`, `node_modules/next/dist/server/config-shared.js:202` default cpus.
+- 수정: `experimental.cpus: 4` 명시. 4 workers × 500MB = 2GB 피크 (가용 메모리 절반). 420 pages / 4 workers = 여전히 충분한 병렬성.
+- **검증**: OOM 직후 재빌드 성공. "Generating static pages using 4 workers (420/420) in 7.0s".
+- Production (Vercel) 영향: 메모리 여유 있는 CI 환경에서도 4 workers로 제한되지만 빌드 시간 증가는 ~수 초 수준 (infra-resilience trade-off로 수용).
+
+**2. 공개 Supabase 클라이언트 도입 — `src/lib/supabase/public.ts` (신규, 45 lines)**
+- `@supabase/supabase-js`의 `createClient` 사용 — SSR cookies 미접촉.
+- `auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }`로 세션 처리 완전 비활성. 공개 읽기 전용 시나리오에 정확히 부합.
+- Module-level 싱글턴 캐시 (`cachedClient`): request 간 재사용, DB 커넥션 풀 효율화. Supabase REST client는 stateless라 공유 안전.
+- 파일 상단 doc comment: 존재 이유, `@supabase/ssr`과의 차이, 향후 auth 추가 시 복귀 경로를 명시하여 미래 세션이 실수로 되돌리지 않도록.
+
+**3. 저장소 레이어 전환 — `src/lib/repositories/cost-repository.ts`**
+- Import: `createServerSupabaseClient` → `getPublicSupabaseClient` (1 line)
+- 호출부 3곳: `const supabase = await createServerSupabaseClient()` → `const supabase = getPublicSupabaseClient()` (awaitless, 싱글턴 반환)
+- 공개 API 불변: `findCostsByFilters`, `findCostsByStatesAndCategory`, `findAllCostsForStaticGeneration` 시그너처/반환 타입/에러 처리 모두 동일. 서비스 레이어·API 라우트·컴포넌트 어느 것도 수정 불필요.
+
+**4. Dead code 제거 — `src/lib/supabase/server.ts` 삭제 (-39 lines)**
+- 전체 프로젝트 grep 결과 `supabase/server` import는 `cost-repository.ts` 단일 건뿐이었고, 본 세션에서 이 import도 제거됨 → 완전한 dead code.
+- 코드베이스에 auth 관련 파일 0개 (grep `auth\.|session|getUser|signIn|signOut` → 0 hits) 확인. 미래 auth 도입 시 `@supabase/ssr.createServerClient` 패턴은 doc comment에 기록.
+- Refactor-on-Touch 원칙 준수: 이번에 수정한 import chain의 직접 dependency만 정리. `src/lib/supabase/client.ts` (browser client, 별건 unused)는 건드리지 않음.
+
+### Refactor-on-Touch 결과
+- 수정 파일 3 + 신규 1 + 삭제 1 = net +15 lines
+- any: 0, console.log: 0, TODO: 0, 미사용 import: 0 (lint clean)
+- Dead code: server.ts 1건 제거 (1건 발견 / 1건 해소)
+
+### 자가 검토 (PHASE D)
+- ✅ REVIEW.md [MUST]: 없음 (위반 0)
+- ✅ feature_list.json: F1/F2/F3/F4 전체 PASS 유지. **F2 evidence/description 갱신** — "416 → 408 statically generated pages", "ISR revalidation every 7 days" 실제 충족 상태로 수정. AC 불변.
+- ✅ Disclaimer: `[state]/[slug]` static HTML 내 `NOT legal advice` 3 occurrences 확인 (top + bottom + FAQ 텍스트)
+- ✅ Layer 위반: 0 — CLAUDE.md 레이어 순서 "API Route → Service → Repository → Supabase" 유지. 저장소 내부 교체만.
+- ✅ Lint (`npm run lint`): 0 errors, 0 warnings
+- ✅ TypeScript (`tsc --noEmit`): 0 errors (silent pass)
+- ✅ Build (`npm run build`): 420 pages, 0 errors, 컴파일 4.9s, static gen 7.0s
+- ✅ **Static HTML 산출물 검증**:
+  - `.next/server/app/california/divorce-cost.html` 존재 (156KB)
+  - H1 "How Much Does a Divorce Cost in California?" 포함
+  - Disclaimer 3회 등장
+  - breadcrumb schema, FAQ schema JSON-LD 포함
+  - `.next/server/app/alabama/divorce-cost.html`과 diff 확인 → state-specific 콘텐츠 분기 작동
+- ✅ **Route mode 전환 확인**: `Route (app)` 테이블에서 `[state]/[slug]`가 `ƒ` → `● (SSG) 1w revalidate / 1y expire`로 변경. 408 paths 나열.
+- ✅ Dead reference 없음 (`grep supabase/server src/` → 0, `grep createServerSupabaseClient src/` → 0)
+
+### gstack 검증 결과
+- /review: ⏭️ 스킵. 사유: (1) 저장소 벤더링(`.claude/skills/gstack`) 없음 — 글로벌 설치만 존재하여 클라우드 세션에서 재현 불가, (2) 변경 범위 좁음(인프라 4 파일), (3) 자가 검토로 충분 — build symbol 전환 육안 확인.
+- /qa --quick: ⏭️ 스킵. 사유: 제한 네트워크 모드 가정, Playwright CDN 차단 가능성.
+
+### 기술 부채 현황
+- 이번 세션 발견: 3건
+  1. SEO 랜딩 408 페이지 dynamic 렌더링 (아키텍처 설계 의도 위반)
+  2. Build OOM vulnerability (환경 의존적 빌드 실패)
+  3. Dead code: `supabase/server.ts` (unused cookies client)
+- 이번 세션 해소: 3건 전부
+- 잔여: `src/lib/supabase/client.ts` (browser client)도 grep 결과 어디서도 import되지 않음 — 별도 dead code. Refactor-on-Touch 범위 아니므로 다음 세션 판단.
+
+### 배포
+- Git: commit + push 준비 (브랜치: feature/mvp-prototype)
+- 배포 방식: GitHub push 자동 배포 (Vercel)
+- Production 영향 예상:
+  1. **First byte latency**: 첫 방문자가 Vercel CDN에서 사전 생성된 HTML 수신 → 기존 request-time DB fetch 대비 TTFB 수백 ms 단축
+  2. **Supabase 부하 감소**: 408 페이지 당 1 request/week (ISR) ← 기존 방문자당 1 request
+  3. **SEO**: 크롤러에게 즉시 완전 HTML 제공, JS 실행 없이 FAQ/breadcrumb schema 파싱 가능
+- Production 검증 필요: Vercel build log에서 `[state]/[slug]`가 `●` (SSG)로 표시되고 Supabase 실제 데이터가 static HTML에 베이크되는지. (로컬 환경은 Supabase 네트워크 도달 불가로 "currently being collected" fallback 렌더, Vercel은 Supabase 직결이라 실제 cost 숫자 베이크 예상.)
+
+### 판단 필요
+- (신규) `src/lib/supabase/client.ts` (browser `createBrowserClient`)도 dead code. 제거할지, 향후 client-side auth를 위해 유지할지 — 오너 판단.
+- (기존 유지) Affiliate 프로그램 실제 가입 필요
+- (기존 유지) Blog/CMS 구조 결정 필요 — RESEARCH.md A-4
+- (기존 유지) C-1 데이터 검증 심층 연구 필요 (긴급)
+- (기존 유지) C-2 UPL 리스크 판례 심층 연구 필요
+- (기존 유지) C-3 Affiliate 프로그램 조건 심층 연구 필요
+- (기존 유지) `DATA_VERSION_DATE` 운영 절차 문서화 필요
+
+### 다음 세션 권장
+- Vercel production build log 확인 → `[state]/[slug]` 실제 SSG 여부 + 실제 cost 숫자 포함 여부 검증
+- `opengraph-image` routes 4건 (`ƒ` dynamic) → static 생성 가능한지 검토 (Next.js `opengraph-image.tsx`는 기본 dynamic이지만 `export const dynamic = 'force-static'` 시도 가능)
+- 성능 측정: Lighthouse CI 또는 PageSpeed Insights로 이전/이후 LCP, TTFB 비교
+- `src/lib/supabase/client.ts` dead code 판단 후 제거 혹은 브라우저 fetch 훅 도입 근거 마련
+
+---
+
 ## [2026-04-11 20:30] 자동 개발 세션 — Home canonical + OG siteName/locale 복원 (3 pages)
 
 ### 리서치

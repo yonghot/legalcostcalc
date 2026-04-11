@@ -1,7 +1,7 @@
 {
   "project": "LegalCostCalc",
   "version": "0.1.0",
-  "lastUpdated": "2026-04-11T00:00:00Z",
+  "lastUpdated": "2026-04-11T12:00:00Z",
   "features": [
     {
       "id": "F1",
@@ -27,8 +27,8 @@
       "name": "Programmatic SEO Landing Pages",
       "priority": "P0",
       "status": "pass",
-      "description": "416 statically generated pages (51 states x 8 categories + base pages)",
-      "evidence": "npm run build generates 416 pages. /california/divorce-cost renders correctly with H1, FAQ schema, internal links.",
+      "description": "408 statically generated pages (51 states x 8 categories) served as prerendered HTML with 7-day ISR",
+      "evidence": "npm run build prerenders [state]/[slug] as ● (SSG) with 408 paths, revalidate=1w. /california/divorce-cost renders at build time with H1, FAQ schema, breadcrumb schema, internal links, disclaimers top+bottom.",
       "acceptance": [
         "URL pattern: /[state]/[category]-cost",
         "Each page has unique H1, title, meta description",

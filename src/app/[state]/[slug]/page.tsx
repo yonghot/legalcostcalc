@@ -72,6 +72,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description,
       type: "website",
       url: `https://legalcostcalc.vercel.app/${stateInfo.slug}/${categorySlug}-cost`,
+      siteName: "LegalCostCalc",
+      locale: "en_US",
     },
   };
 }

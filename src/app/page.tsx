@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { CostCalculator } from "@/components/calculator/cost-calculator";
 import { Disclaimer } from "@/components/shared/disclaimer";
 import { CATEGORIES } from "@/lib/constants/categories";
@@ -21,6 +22,12 @@ import {
 } from "lucide-react";
 import { AffiliateCTA } from "@/components/shared/affiliate-cta";
 import { OrganizationSchema } from "@/components/seo/organization-schema";
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "/",
+  },
+};
 
 const POPULAR_STATE_CODES = ["CA", "TX", "FL", "NY", "IL", "PA", "OH", "GA", "NC", "MI"] as const;
 

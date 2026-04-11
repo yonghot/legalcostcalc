@@ -18,6 +18,8 @@ export const metadata: Metadata = {
       "Learn how LegalCostCalc provides transparent, source-verified legal cost estimates across all 50 US states.",
     type: "website",
     url: "https://legalcostcalc.vercel.app/about",
+    siteName: "LegalCostCalc",
+    locale: "en_US",
   },
 };
 

@@ -14,6 +14,8 @@ export const metadata: Metadata = {
       "Compare legal costs between states or across different legal categories. Side-by-side cost comparison for divorce, DUI, bankruptcy, and more.",
     type: "website",
     url: "https://legalcostcalc.vercel.app/compare",
+    siteName: "LegalCostCalc",
+    locale: "en_US",
   },
 };
 

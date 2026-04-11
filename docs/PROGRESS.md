@@ -7,6 +7,102 @@
 
 ---
 
+## [2026-04-11 20:30] 자동 개발 세션 — Home canonical + OG siteName/locale 복원 (3 pages)
+
+### 리서치
+- ⏭️ 스킵 (쿨다운 미만: RESEARCH.md 커밋 ~3시간 전, 6시간 미달)
+
+### 메인 태스크
+- **홈 페이지 canonical URL 누락** (confirmed via `.next/server/app/index.html` 빌드 산출물 grep)
+  - `/about`, `/compare`는 `<link rel="canonical">` 포함, 홈만 누락 → 루트 레이아웃 `metadata`에 `alternates.canonical` 미설정이 원인.
+- **`og:site_name`, `og:locale` 손실** (confirmed via 동일 빌드 산출물 비교)
+  - 루트 레이아웃은 `openGraph.siteName = "LegalCostCalc"`, `openGraph.locale = "en_US"` 포함.
+  - 그러나 Next.js metadata 병합 규칙상 자식 페이지가 `openGraph`를 설정하면 **객체 전체가 교체**된다 (siteName, locale 제외된 자식 객체가 최종).
+  - 결과: `/about`, `/compare`, `/[state]/[slug]` 모두 OG의 siteName/locale이 빠짐.
+  - Facebook/LinkedIn/X 프리뷰에서 사이트 이름 라벨 누락 → 소셜 CTR 손해.
+
+### 사전 리팩토링 (B-3)
+- 없음 (수정 대상 4개 파일 모두 <290줄, 분리 임계치 미달)
+
+### 추가 작업
+- 없음 (메인 태스크 내에서 3개 파일 일괄 수정하여 충분)
+
+### 정합성 검증 (B-0.5)
+- [MUST] 위반: 없음 (REVIEW.md에 [MUST] 없음)
+- PRD 변경점: 없음 (git log HEAD~5 -- PRD.md 변경 없음)
+- DESIGN.md 불일치: 없음 (시각 변경 전혀 없음, metadata만)
+- feature_list.json AC: 전체 PASS (4/4 유지, 기능 동작 불변)
+- **B-0.5 발견 (빌드 HTML 검증 기반)**:
+  1. 홈 canonical 누락 (확정)
+  2. `/about`, `/compare`에서 og:site_name / og:locale 누락 (확정)
+  3. `/[state]/[slug]`는 dynamic(ƒ)이라 정적 HTML 없지만 동일 코드 패턴 → 동일 누락 추정 → 선제 수정
+
+### 구현 상세
+**1. 홈 canonical 추가** — `src/app/page.tsx`
+- `import type { Metadata } from "next"` 추가.
+- `export const metadata: Metadata = { alternates: { canonical: "/" } }` 삽입.
+- Root layout의 `title.default`, `description`, `openGraph` 등 모든 기본 필드는 그대로 상속. canonical만 추가.
+- **검증**: 빌드 후 `.next/server/app/index.html`에서 `<link rel="canonical" href="https://legalcostcalc.vercel.app"/>` 출현 확인.
+
+**2. About openGraph 복원** — `src/app/about/page.tsx`
+- `openGraph` 객체에 `siteName: "LegalCostCalc"`, `locale: "en_US"` 2줄 추가.
+- 다른 필드(title, description, type, url) 불변.
+
+**3. Compare openGraph 복원** — `src/app/compare/layout.tsx`
+- 동일 패턴으로 2줄 추가.
+
+**4. SEO 랜딩 openGraph 복원** — `src/app/[state]/[slug]/page.tsx`
+- `generateMetadata` 내 `openGraph` 객체에 동일 2줄 추가 (416 동적 페이지에 선제 적용).
+
+### Refactor-on-Touch 결과
+- 수정 파일 4개: `page.tsx` (home), `about/page.tsx`, `compare/layout.tsx`, `[state]/[slug]/page.tsx`
+- 총 변경: +13줄 (metadata 추가만, 기능/동작 변경 0)
+- console.log / any / TODO / 미사용 import: 0 (기존 클린 상태 유지)
+
+### 자가 검토 (PHASE D)
+- ✅ REVIEW.md [MUST]: 없음 (위반 0)
+- ✅ feature_list.json: F1/F2/F3/F4 전체 PASS 유지, 기능 동작 불변
+- ✅ Disclaimer: 4개 주요 페이지 모두 top+bottom 2회 유지 (grep 확인)
+- ✅ Layer 위반: 0 (metadata export는 page/layout 내재 기능)
+- ✅ Lint: 0 errors, 0 warnings
+- ✅ TypeScript: 0 errors (tsc --noEmit silent pass)
+- ✅ Build: 420 pages, 0 errors, 컴파일 5.4s
+- ✅ **정적 HTML 검증**:
+  - `/` (index.html): canonical ✅ / og:site_name ✅ / og:locale ✅
+  - `/about` (about.html): canonical ✅ (기존) / og:site_name ✅ (신규) / og:locale ✅ (신규)
+  - `/compare` (compare.html): canonical ✅ (기존) / og:site_name ✅ (신규) / og:locale ✅ (신규)
+
+### gstack 검증 결과
+- /review: ⏭️ 스킵 (컨텍스트 보존 위해 + 변경 범위 좁음: metadata 13줄 추가, 자가 검토로 충분)
+- /qa --quick: ⏭️ 스킵 (네트워크 제한 환경 가정, Playwright CDN 차단 가능)
+
+### 기술 부채 현황
+- 이번 세션 발견: 4건 (홈 canonical + og:site_name/locale 누락 3 pages)
+- 이번 세션 해소: 4건 전부
+- 잔여: 없음
+
+### 배포
+- Git: push 진행 중 (브랜치: feature/mvp-prototype)
+- 배포 방식: GitHub push 자동 배포 (Vercel)
+- 프로덕션 확인: 빌드 성공 420 pages, 3개 정적 페이지 metadata 검증 완료
+
+### 판단 필요
+- (기존 유지) Affiliate 프로그램 실제 가입 필요
+- (기존 유지) Blog/CMS 구조 결정 필요 — RESEARCH.md A-4
+- (기존 유지) C-1 데이터 검증 심층 연구 필요 (긴급)
+- (기존 유지) C-2 UPL 리스크 판례 심층 연구 필요
+- (기존 유지) C-3 Affiliate 프로그램 조건 심층 연구 필요
+- (기존 유지) `DATA_VERSION_DATE` 운영 절차 문서화 필요
+
+### 다음 세션 권장
+- 성능 최적화 (LCP, CLS 측정) — dev 서버 실행 가능한 환경에서
+- 접근성 심층 감사 (axe-core 또는 수동 스크린 리더 테스트)
+- `[state]/[slug]` dynamic(ƒ) → static(○) 전환 원인 조사 — `generateStaticParams` 선언에도 dynamic으로 표시됨. Next.js 16 edge runtime / PPR 관련 가능성.
+- 코드 커버리지 기반 테스트 추가 (Vitest + Playwright) — 네트워크 제한 풀린 후
+- CSP에 Plausible 허용 (latent: `NEXT_PUBLIC_PLAUSIBLE_DOMAIN` 활성화 시점에 script-src/connect-src 확장)
+
+---
+
 ## [2026-04-11 20:00] 자동 개발 세션 — Layer violation fix (hooks) + sitemap lastModified
 
 ### 리서치

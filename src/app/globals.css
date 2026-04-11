@@ -127,4 +127,8 @@
   html {
     @apply font-sans;
   }
+  /* DESIGN.md §11: Lucide icons default stroke-width 1.5 */
+  svg.lucide {
+    stroke-width: 1.5;
+  }
 }

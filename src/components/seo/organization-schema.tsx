@@ -3,9 +3,7 @@
  * Used on the home page to help Google understand the site.
  */
 
-function safeJsonLd(obj: Record<string, unknown>): string {
-  return JSON.stringify(obj).replace(/</g, "\\u003c");
-}
+import { safeJsonLd } from "@/lib/utils/json-ld";
 
 export function OrganizationSchema() {
   const schema = {

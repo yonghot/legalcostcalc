@@ -1,6 +1,8 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { Disclaimer } from "@/components/shared/disclaimer";
+import { BreadcrumbSchema } from "@/components/seo/breadcrumb-schema";
+import { safeJsonLd } from "@/lib/utils/json-ld";
 import { Shield, Database, Scale, RefreshCw } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -18,10 +20,6 @@ export const metadata: Metadata = {
     url: "https://legalcostcalc.vercel.app/about",
   },
 };
-
-function safeJsonLd(obj: Record<string, unknown>): string {
-  return JSON.stringify(obj).replace(/</g, "\\u003c");
-}
 
 export default function AboutPage() {
   const schema = {
@@ -43,6 +41,12 @@ export default function AboutPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: safeJsonLd(schema) }}
+      />
+      <BreadcrumbSchema
+        items={[
+          { name: "Home", href: "/" },
+          { name: "About", href: "/about" },
+        ]}
       />
       <section className="bg-gradient-to-b from-teal-50 to-white py-16 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

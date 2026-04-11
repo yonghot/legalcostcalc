@@ -1,14 +1,7 @@
+import { safeJsonLd } from "@/lib/utils/json-ld";
+
 interface FaqSchemaProps {
   questions: { question: string; answer: string }[];
-}
-
-/**
- * Sanitize a JSON-LD string to prevent script injection.
- * Escaping `</` prevents a `</script>` inside the JSON blob
- * from closing the surrounding <script> tag.
- */
-function safeJsonLd(obj: Record<string, unknown>): string {
-  return JSON.stringify(obj).replace(/</g, "\\u003c");
 }
 
 export function FaqSchema({ questions }: FaqSchemaProps) {

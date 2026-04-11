@@ -11,6 +11,55 @@
 
 ---
 
+## 2026-04-11 리서치
+
+**리서치 일시**: 2026-04-11 UTC
+**코드베이스 상태**: 4/4 기능 pass, 420 pages, 빌드 ✅, 프로덕션 배포 완료
+
+---
+
+### [A] 방향/기능 제안
+
+없음 (폴리시 세션, 기존 항목 반영 단계)
+
+---
+
+### [B] 코드 개선
+
+### B-5: About 페이지 error boundary 누락 [자동 반영]
+- **대상 파일**: `src/app/about/error.tsx` (파일 없음)
+- **문제**: Compare, SEO landing, 루트 `app/error.tsx`는 error boundary 보유하나 About 페이지는 전용 error.tsx 없음. 루트 error.tsx가 fallback으로 동작하나 카테고리별 메시지 부재.
+- **제안**: Compare/error.tsx 패턴 그대로 About 전용 error.tsx 추가.
+- **위험도**: 낮음
+
+### B-6: Compare/About 페이지 BreadcrumbSchema 누락 [자동 반영]
+- **대상 파일**: `src/app/compare/page.tsx`, `src/app/about/page.tsx`
+- **문제**: 시각적 breadcrumb nav는 존재하나 schema.org BreadcrumbList 구조화 데이터는 SEO landing 페이지(`/[state]/[slug]`)에만 적용됨. Compare와 About는 크롤러가 계층을 인식하지 못함.
+- **제안**: 기존 `BreadcrumbSchema` 컴포넌트(`src/components/seo/breadcrumb-schema.tsx`) 재사용하여 Compare, About 페이지에도 삽입. Compare는 client component이지만 BreadcrumbSchema가 script 태그만 렌더하므로 안전.
+- **위험도**: 낮음
+
+### B-7: Compare 페이지 schema.org WebPage 데이터 누락 [자동 반영]
+- **대상 파일**: `src/app/compare/page.tsx`
+- **문제**: Home/SEO/About는 schema.org 구조화 데이터 포함. Compare 페이지는 BreadcrumbList도, WebPage도 없음. 이전 리서치 B-4에서 이미 제안됐으나 미반영.
+- **제안**: WebPage 스키마 + BreadcrumbSchema 조합.
+- **위험도**: 낮음
+
+---
+
+### [C] 외부 조사
+
+[C] 항목 변경 없음. 기존 C-1/C-2/C-3 오너 확인 대기 상태 유지.
+
+---
+
+### [E] 개발 효율화
+
+### E-3: 루트 error.tsx vs 페이지별 error.tsx 역할 정리
+- **관찰**: Next.js App Router는 가장 가까운 `error.tsx`를 fallback으로 사용. 루트 `src/app/error.tsx` + `src/app/compare/error.tsx` + `src/app/[state]/[slug]/error.tsx`이 이미 존재. 페이지별 error.tsx는 해당 경로 메시지만 커스터마이징하는 역할.
+- **적용 가능성**: About 페이지도 동일 패턴. 루트 fallback은 잘못된 contextual 메시지를 보여줄 수 있음.
+
+---
+
 ## 2026-04-08 10:25 리서치
 
 **리서치 일시**: 2026-04-08 10:25 UTC

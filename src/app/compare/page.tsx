@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Disclaimer } from "@/components/shared/disclaimer";
 import { ComparisonForm, CompareMode } from "@/components/compare/comparison-form";
+import { BreadcrumbSchema } from "@/components/seo/breadcrumb-schema";
 import { CATEGORIES } from "@/lib/constants/categories";
 import { STATES } from "@/lib/constants/states";
 import { VALID_COMPLEXITIES } from "@/lib/constants/costs";
@@ -105,6 +106,12 @@ export default function ComparePage() {
 
   return (
     <div className="py-16">
+      <BreadcrumbSchema
+        items={[
+          { name: "Home", href: "/" },
+          { name: "Compare Costs", href: "/compare" },
+        ]}
+      />
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <Disclaimer />
 

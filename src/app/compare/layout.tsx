@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import { safeJsonLd } from "@/lib/utils/json-ld";
 
 export const metadata: Metadata = {
   title: "Compare Legal Costs — LegalCostCalc",
@@ -15,10 +16,6 @@ export const metadata: Metadata = {
     url: "https://legalcostcalc.vercel.app/compare",
   },
 };
-
-function safeJsonLd(obj: Record<string, unknown>): string {
-  return JSON.stringify(obj).replace(/</g, "\\u003c");
-}
 
 export default function CompareLayout({
   children,

@@ -1,3 +1,5 @@
+import { safeJsonLd } from "@/lib/utils/json-ld";
+
 interface BreadcrumbItem {
   name: string;
   href: string;
@@ -5,10 +7,6 @@ interface BreadcrumbItem {
 
 interface BreadcrumbSchemaProps {
   items: BreadcrumbItem[];
-}
-
-function safeJsonLd(obj: Record<string, unknown>): string {
-  return JSON.stringify(obj).replace(/</g, "\\u003c");
 }
 
 export function BreadcrumbSchema({ items }: BreadcrumbSchemaProps) {

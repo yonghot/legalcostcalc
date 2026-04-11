@@ -75,27 +75,27 @@ export function ComparisonForm({
           {mode === "states" ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5 items-end">
               <div className="space-y-2">
-                <Label>State 1</Label>
+                <Label htmlFor="compare-state-1">State 1</Label>
                 <Select value={state1} onValueChange={(v) => onState1Change(v ?? "")}>
-                  <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
+                  <SelectTrigger id="compare-state-1"><SelectValue placeholder="Select..." /></SelectTrigger>
                   <SelectContent>
-                    {STATES.map((s) => (
+                    {STATES.filter((s) => s.code !== state2).map((s) => (
                       <SelectItem key={s.code} value={s.code}>{s.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
-              <div className="hidden lg:flex items-center justify-center">
-                <ArrowLeftRight className="h-5 w-5 text-slate-400" aria-hidden="true" />
+              <div className="hidden lg:flex items-center justify-center" aria-hidden="true">
+                <ArrowLeftRight className="h-5 w-5 text-slate-400" />
               </div>
 
               <div className="space-y-2">
-                <Label>State 2</Label>
+                <Label htmlFor="compare-state-2">State 2</Label>
                 <Select value={state2} onValueChange={(v) => onState2Change(v ?? "")}>
-                  <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
+                  <SelectTrigger id="compare-state-2"><SelectValue placeholder="Select..." /></SelectTrigger>
                   <SelectContent>
-                    {STATES.map((s) => (
+                    {STATES.filter((s) => s.code !== state1).map((s) => (
                       <SelectItem key={s.code} value={s.code}>{s.name}</SelectItem>
                     ))}
                   </SelectContent>
@@ -103,9 +103,9 @@ export function ComparisonForm({
               </div>
 
               <div className="space-y-2">
-                <Label>Category</Label>
+                <Label htmlFor="compare-category">Category</Label>
                 <Select value={category} onValueChange={(v) => onCategoryChange(v ?? "")}>
-                  <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
+                  <SelectTrigger id="compare-category"><SelectValue placeholder="Select..." /></SelectTrigger>
                   <SelectContent>
                     {CATEGORIES.map((c) => (
                       <SelectItem key={c.slug} value={c.slug}>{c.displayName}</SelectItem>
@@ -125,9 +125,9 @@ export function ComparisonForm({
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5 items-end">
               <div className="space-y-2">
-                <Label>State</Label>
+                <Label htmlFor="compare-state">State</Label>
                 <Select value={state1} onValueChange={(v) => onState1Change(v ?? "")}>
-                  <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
+                  <SelectTrigger id="compare-state"><SelectValue placeholder="Select..." /></SelectTrigger>
                   <SelectContent>
                     {STATES.map((s) => (
                       <SelectItem key={s.code} value={s.code}>{s.name}</SelectItem>
@@ -137,25 +137,25 @@ export function ComparisonForm({
               </div>
 
               <div className="space-y-2">
-                <Label>Category 1</Label>
+                <Label htmlFor="compare-category-1">Category 1</Label>
                 <Select value={category} onValueChange={(v) => onCategoryChange(v ?? "")}>
-                  <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
+                  <SelectTrigger id="compare-category-1"><SelectValue placeholder="Select..." /></SelectTrigger>
                   <SelectContent>
-                    {CATEGORIES.map((c) => (
+                    {CATEGORIES.filter((c) => c.slug !== category2).map((c) => (
                       <SelectItem key={c.slug} value={c.slug}>{c.displayName}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
-              <div className="hidden lg:flex items-center justify-center">
-                <ArrowLeftRight className="h-5 w-5 text-slate-400" aria-hidden="true" />
+              <div className="hidden lg:flex items-center justify-center" aria-hidden="true">
+                <ArrowLeftRight className="h-5 w-5 text-slate-400" />
               </div>
 
               <div className="space-y-2">
-                <Label>Category 2</Label>
+                <Label htmlFor="compare-category-2">Category 2</Label>
                 <Select value={category2} onValueChange={(v) => onCategory2Change(v ?? "")}>
-                  <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
+                  <SelectTrigger id="compare-category-2"><SelectValue placeholder="Select..." /></SelectTrigger>
                   <SelectContent>
                     {CATEGORIES.filter((c) => c.slug !== category).map((c) => (
                       <SelectItem key={c.slug} value={c.slug}>{c.displayName}</SelectItem>

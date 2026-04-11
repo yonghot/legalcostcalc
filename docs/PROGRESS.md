@@ -7,6 +7,103 @@
 
 ---
 
+## [2026-04-11 18:00] 자동 개발 세션 — Compare a11y + dead code + robots disallow
+
+### 리서치
+- ⏭️ 스킵 (쿨다운 미만: 이전 리서치 1시간 전 커밋, 6시간 미달)
+
+### 메인 태스크
+- Lint 경고 해소 및 Refactor-on-Touch 기반 품질 개선 사이클
+- 발견된 문제:
+  1. `src/app/compare/page.tsx:98` — `getCostByComplexity` 정의만 있고 사용 안 됨 (lint `@typescript-eslint/no-unused-vars` 경고 1건)
+  2. `src/components/compare/comparison-form.tsx` — 6개 Label/Select 모두 `htmlFor`/`id` 미연결 (a11y WCAG 2.1 AA 위반)
+  3. State 1 = State 2 또는 Category 1 = Category 2 입력 허용 (의미 없는 비교 가능)
+  4. `src/app/robots.ts` — `/api/*` 경로가 크롤러에 허용 (크롤링 예산 낭비, API 엔드포인트가 인덱싱될 가능성)
+
+### 사전 리팩토링 (B-3)
+- 없음 (수정 대상 파일이 모두 100~260줄 범위, 분리 임계치 미달)
+
+### 추가 작업
+- 없음 (단일 세션 내 집중 개선)
+
+### 정합성 검증 (B-0.5)
+- [MUST] 위반: 없음 (REVIEW.md에 [MUST] 없음)
+- PRD 변경점: 없음 (git log HEAD~5 -- PRD.md 변경 없음)
+- DESIGN.md 불일치: 없음 (시각 변경 없음, 구조/접근성만 개선)
+- feature_list.json AC: 전체 PASS (4/4 유지). F3 Compare의 "Side-by-side comparison" AC는 여전히 동일 state 금지 로직으로 의미가 강화됨
+- 코드 전수 스캔: console.log 0, any 0, TODO 0, 미사용 import 0
+
+### 구현 상세
+**1. Dead code 제거 + 비교 입력 검증 강화** — `src/app/compare/page.tsx`
+- L98 `getCostByComplexity` 함수 제거 (local scope, 참조 0회). 동일 이름 함수가 `ComparisonResultSection` 내부(L201)에 별도 정의되어 있어 혼동을 유발하던 상태 정리.
+- `isFormValid` 조건 강화:
+  - `state1 && state2 && category` → `state1 && state2 && category && state1 !== state2`
+  - `state1 && category && category2` → `state1 && category && category2 && category !== category2`
+- 효과: 사용자가 동일 항목을 선택해도 Compare 버튼이 활성화되지 않으며, 무의미한 API 호출 차단.
+
+**2. Comparison Form 접근성 (WCAG 2.1 AA)** — `src/components/compare/comparison-form.tsx`
+- 6개 Label에 `htmlFor` 추가: `compare-state-1`, `compare-state-2`, `compare-category`, `compare-state`, `compare-category-1`, `compare-category-2`
+- 6개 SelectTrigger에 대응 `id` 추가 (base-ui Select는 `Trigger` 레벨에서 `id` 속성 spread)
+- 효과: 스크린 리더가 Label 클릭으로 관련 Select에 포커스 이동 가능. `cost-calculator.tsx`가 이미 동일 패턴을 사용 중이므로 파일 간 일관성 확보.
+- 추가 개선:
+  - State 1 dropdown이 State 2로 선택된 주를 제외 (`STATES.filter((s) => s.code !== state2)`)
+  - State 2 dropdown이 State 1로 선택된 주를 제외
+  - Category 1 dropdown이 Category 2로 선택된 카테고리를 제외 (기존 Category 2에만 적용되던 필터를 양방향화)
+  - 시각적 화살표 구분자(`ArrowLeftRight`)를 감싸는 div에 `aria-hidden="true"` 이동 → 스크린 리더가 장식 요소를 건너뜀
+
+**3. robots.txt 정책 강화** — `src/app/robots.ts`
+- `disallow: ["/api/"]` 추가
+- 효과: Google/Bing 크롤러가 `/api/costs`, `/api/states`, `/api/categories`, `/api/costs/compare`를 크롤링하지 않음. 크롤링 예산 절약 + API 응답이 SERP에 노출될 가능성 차단.
+- 검증: 빌드 후 `.next/server/app/robots.txt.body` 확인 — `User-Agent: *\nAllow: /\nDisallow: /api/\n\nSitemap: https://legalcostcalc.vercel.app/sitemap.xml` 정상 출력.
+
+### Refactor-on-Touch 결과
+- 수정 파일 3개: compare/page.tsx, comparison-form.tsx, robots.ts
+- Dead code 제거: 1개 함수 (6줄) — lint 경고 1건 해소
+- 임포트 변경 없음 (`LegalCostData`는 `CategoryComparisonResult` interface와 `ComparisonResultSection` props에서 여전히 사용)
+- console.log / any / TODO: 0 (기존 클린 상태 유지)
+- 파일 크기 변화: compare/page.tsx 263 → 260줄, comparison-form.tsx 180줄 (동일, 로직 교체)
+
+### 자가 검토 (PHASE D)
+- ✅ REVIEW.md [MUST]: 없음 (위반 0)
+- ✅ feature_list.json: F1/F2/F3/F4 전체 PASS 유지. F3 개선.
+- ✅ Disclaimer: 페이지별 top+bottom 유지 (Home, About, Compare, SEO 랜딩 모두 ≥2 삽입)
+- ✅ Layer 위반: 0 (compare page는 hook 경유 API 호출, comparison-form은 pure presentational)
+- ✅ a11y: comparison-form의 모든 Label이 명시적 htmlFor 연결, aria-hidden 장식 요소 격리
+- ✅ Lint: 0 errors, 0 warnings (이전 세션 1 warning → 0)
+- ✅ TypeScript: 0 errors
+- ✅ Build: 420 pages, 0 errors, 컴파일 5.6s
+- ✅ robots.txt 출력 검증: `Disallow: /api/` 포함 확인
+- ✅ console.log: 0, any: 0, TODO: 0
+
+### gstack 검증 결과
+- /review: ⏭️ 스킵 (gstack 미설치 — `.claude/skills/gstack/SKILL.md` 없음)
+- /qa --quick: ⏭️ 스킵 (gstack 미설치)
+
+### 기술 부채 현황
+- 이번 세션 발견: 4건 (lint warning 1, a11y 6건, 입력 validation 2건, robots SEO 1건)
+- 이번 세션 해소: 4건 전부
+- 잔여: 없음
+
+### 배포
+- Git: push 진행 중 (브랜치: feature/mvp-prototype)
+- 배포 방식: GitHub push 자동 배포 (Vercel)
+- 프로덕션 확인: 빌드 성공 420 pages, robots.txt/sitemap.xml 정상 생성
+
+### 판단 필요
+- (기존 유지) Affiliate 프로그램 실제 가입 필요
+- (기존 유지) Blog/CMS 구조 결정 필요 — RESEARCH.md A-4
+- (기존 유지) C-1 데이터 검증 심층 연구 필요 (긴급)
+- (기존 유지) C-2 UPL 리스크 판례 심층 연구 필요
+- (기존 유지) C-3 Affiliate 프로그램 조건 심층 연구 필요
+
+### 다음 세션 권장
+- 성능 최적화 (LCP, CLS 측정 + 개선) — dev 서버 실행 후 Lighthouse 추출
+- 접근성 심층 감사 (axe-core 또는 수동 스크린 리더 테스트)
+- sitemap.ts의 `lastModified: new Date()` → 빌드 시점 고정 또는 git 커밋 시각 활용 검토 (매 빌드마다 전체 URL 갱신 → Google이 재크롤링 유발)
+- cost-calculator.tsx의 fetch 직접 호출 → `useCalculateCost` 훅 추출 (components/CLAUDE.md "No direct API calls in components" 엄격 준수)
+
+---
+
 ## [2026-04-11 추가] 자동 개발 세션 — Lucide 글로벌 stroke-width
 
 ### 리서치

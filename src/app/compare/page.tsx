@@ -92,11 +92,8 @@ export default function ComparePage() {
 
   const isFormValid =
     mode === "states"
-      ? !!(state1 && state2 && category)
-      : !!(state1 && category && category2);
-
-  const getCostByComplexity = (costs: LegalCostData[], complexity: string) =>
-    costs.find((c) => c.complexity === complexity);
+      ? !!(state1 && state2 && category && state1 !== state2)
+      : !!(state1 && category && category2 && category !== category2);
 
   const handleModeChange = (newMode: CompareMode) => {
     setMode(newMode);

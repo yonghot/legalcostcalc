@@ -7,6 +7,22 @@
 
 ---
 
+## [2026-04-13 21:01] 자동 개발 세션 — Compare 비용 차이 표시기 + 반응형 + a11y
+
+### 리서치: ⏭️ 스킵 (쿨다운 미만)
+### 메인 태스크: Compare 페이지 개선 3건
+1. F3 AC "Visual difference indicator": 절대값+퍼센트 차이 표시기 (빨강/초록 색상)
+2. 반응형: grid-cols-2 → grid-cols-1 sm:grid-cols-2 (모바일 세로 스택)
+3. 접근성: aria-live="polite" 래핑 추가
+### Refactor-on-Touch: console.log 0, any 0, TODO 0
+### 정합성: MUST 위반 없음. F1-F4 PASS. DESIGN.md semantic 색상 일치.
+### 기술 부채: 1건 해소 (F3 Visual difference indicator)
+### 배포: Git push ✅ (feature/mvp-prototype). Vercel 자동 배포.
+### 판단 필요: (기존 유지)
+### 다음 세션: 리서치(6h 쿨다운 후), 성능 측정, P2 기능 검토
+
+---
+
 ## [2026-04-13 20:03] 자동 개발 세션 — UI 일관성 개선 (B-11~B-14 리서치 반영)
 
 ### 리서치: ⏭️ 스킵 (쿨다운 미만: RESEARCH.md 커밋 ~85초 전, 6시간 미달)

@@ -102,6 +102,7 @@ export default function ComparePage() {
           </div>
         )}
 
+        <div aria-live="polite" aria-label="Comparison results">
         {/* Cross-State Results */}
         {stateResult && stateResult.states.length === 2 && (
           <ComparisonResultSection
@@ -129,11 +130,36 @@ export default function ComparePage() {
             }))}
           />
         )}
+        </div>
 
         <div className="mt-12">
           <Disclaimer />
         </div>
       </div>
+    </div>
+  );
+}
+
+function CostDifference({ cost1, cost2 }: { cost1: number; cost2: number }) {
+  if (!cost1 || !cost2) return null;
+  const diff = cost2 - cost1;
+  const pctDiff = Math.round((diff / cost1) * 100);
+  if (diff === 0) {
+    return (
+      <div className="flex items-center justify-center py-2 text-sm text-slate-500">
+        Same median cost
+      </div>
+    );
+  }
+  const isHigher = diff > 0;
+  return (
+    <div className="flex items-center justify-center gap-1.5 py-2">
+      <span className={`font-mono text-sm font-semibold ${isHigher ? "text-red-600" : "text-emerald-600"}`}>
+        {isHigher ? "+" : ""}{formatCurrency(diff)}
+      </span>
+      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${isHigher ? "bg-red-50 text-red-700" : "bg-emerald-50 text-emerald-700"}`}>
+        {isHigher ? "+" : ""}{pctDiff}%
+      </span>
     </div>
   );
 }
@@ -162,6 +188,9 @@ function ComparisonResultSection({
         const hasData = items.some((item) => getCostByComplexity(item.costs, complexity));
         if (!hasData) return null;
 
+        const cost0 = getCostByComplexity(items[0]?.costs ?? [], complexity);
+        const cost1 = getCostByComplexity(items[1]?.costs ?? [], complexity);
+
         return (
           <Card key={complexity} className="border-slate-200">
             <CardHeader className="pb-3">
@@ -171,7 +200,7 @@ function ComparisonResultSection({
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 {items.map((item, i) => {
                   const cost = getCostByComplexity(item.costs, complexity);
                   return (
@@ -204,6 +233,15 @@ function ComparisonResultSection({
                   );
                 })}
               </div>
+              {/* Visual difference indicator */}
+              {cost0 && cost1 && (
+                <div className="mt-4 border-t border-slate-100 pt-3">
+                  <CostDifference
+                    cost1={cost0.costRange.median}
+                    cost2={cost1.costRange.median}
+                  />
+                </div>
+              )}
             </CardContent>
           </Card>
         );

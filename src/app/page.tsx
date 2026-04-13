@@ -11,6 +11,7 @@ import {
   MapPin,
   TrendingUp,
   ArrowRight,
+  ChevronDown,
   Car,
   HeartPulse,
   Landmark,
@@ -170,9 +171,10 @@ export default function HomePage() {
           </div>
 
           {STATES.length > popularStates.length && (
-            <details className="mt-4">
-              <summary className="cursor-pointer text-center text-sm font-medium text-teal-600 hover:text-teal-700">
+            <details className="group mt-4">
+              <summary className={`flex cursor-pointer items-center justify-center gap-1 text-sm font-medium text-teal-600 hover:text-teal-700 ${FOCUS_RING} rounded-md`}>
                 View all {STATES.length} states
+                <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" aria-hidden="true" />
               </summary>
               <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
                 {STATES.filter(

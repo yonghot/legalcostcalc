@@ -54,7 +54,6 @@ export function ComparisonForm({
         <Button
           variant={mode === "states" ? "default" : "outline"}
           onClick={() => onModeChange("states")}
-          className={mode === "states" ? "bg-teal-600 hover:bg-teal-700" : ""}
         >
           <MapPin className="mr-2 h-5 w-5" aria-hidden="true" />
           Compare States
@@ -62,7 +61,6 @@ export function ComparisonForm({
         <Button
           variant={mode === "categories" ? "default" : "outline"}
           onClick={() => onModeChange("categories")}
-          className={mode === "categories" ? "bg-teal-600 hover:bg-teal-700" : ""}
         >
           <BarChart3 className="mr-2 h-5 w-5" aria-hidden="true" />
           Compare Categories
@@ -73,7 +71,7 @@ export function ComparisonForm({
       <Card className="mt-6 border-slate-200 shadow-sm">
         <CardContent className="p-6">
           {mode === "states" ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5 items-end">
+            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 items-end">
               <div className="space-y-2">
                 <Label htmlFor="compare-state-1">State 1</Label>
                 <Select value={state1} onValueChange={(v) => onState1Change(v ?? "")}>
@@ -117,13 +115,13 @@ export function ComparisonForm({
               <Button
                 onClick={onCompare}
                 disabled={!isFormValid || loading}
-                className="bg-teal-600 hover:bg-teal-700"
+                className="w-full"
               >
                 {loading ? "Comparing..." : "Compare"}
               </Button>
             </div>
           ) : (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5 items-end">
+            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 items-end">
               <div className="space-y-2">
                 <Label htmlFor="compare-state">State</Label>
                 <Select value={state1} onValueChange={(v) => onState1Change(v ?? "")}>
@@ -167,7 +165,7 @@ export function ComparisonForm({
               <Button
                 onClick={onCompare}
                 disabled={!isFormValid || loading}
-                className="bg-teal-600 hover:bg-teal-700"
+                className="w-full"
               >
                 {loading ? "Comparing..." : "Compare"}
               </Button>

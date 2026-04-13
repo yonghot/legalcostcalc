@@ -100,7 +100,7 @@ export function CostCalculator({ initialCategory, initialState }: CostCalculator
               <Button
                 onClick={handleCalculate}
                 disabled={!category || !stateCode || loading}
-                className="w-full bg-teal-600 hover:bg-teal-700"
+                className="w-full"
               >
                 {loading ? "Calculating..." : "Calculate Cost"}
               </Button>

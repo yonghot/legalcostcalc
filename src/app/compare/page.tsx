@@ -55,7 +55,7 @@ export default function ComparePage() {
   };
 
   return (
-    <div className="py-16">
+    <div className="bg-gradient-to-b from-teal-50 to-white py-16 sm:py-20">
       <BreadcrumbSchema
         items={[
           { name: "Home", href: "/" },

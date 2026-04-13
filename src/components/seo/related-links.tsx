@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ChevronDown } from "lucide-react";
 import { CategoryInfo } from "@/lib/types/category";
 import { StateInfo } from "@/lib/types/state";
 import { FOCUS_RING } from "@/lib/utils/styles";
@@ -60,9 +60,10 @@ export function RelatedLinks({ stateInfo, categoryInfo, otherCategories, allOthe
                 </Link>
               ))}
               {remainingStatesCount > 0 && (
-                <details className="rounded-lg border border-slate-200 bg-white">
-                  <summary className="cursor-pointer p-3 text-sm font-medium text-teal-600 hover:text-teal-700">
+                <details className="group rounded-lg border border-slate-200 bg-white">
+                  <summary className={`flex cursor-pointer items-center justify-between p-3 text-sm font-medium text-teal-600 hover:text-teal-700 ${FOCUS_RING} rounded-lg`}>
                     View {remainingStatesCount} more states
+                    <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" aria-hidden="true" />
                   </summary>
                   <div className="space-y-2 p-3 pt-0">
                     {allOtherStates.slice(INITIAL_STATES_SHOWN).map((state) => (

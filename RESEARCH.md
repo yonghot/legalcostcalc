@@ -26,23 +26,23 @@
 
 ### [B-UI] 프론트엔드 디자인 감사 결과
 
-### B-11: Compare 페이지 hero gradient 배경 누락 [자동 반영]
+### B-11: Compare 페이지 hero gradient 배경 누락 [반영]
 - **대상 파일**: `src/app/compare/page.tsx:58`
 - **문제**: Home, About은 `bg-gradient-to-b from-teal-50 to-white` hero 배경 사용, Compare만 plain `py-16`. 시각적 일관성 부족.
 - **제안**: Compare 페이지에도 동일 gradient 적용.
 - **위험도**: 없음
 
-### B-12: 버튼 인라인 클래스 → shadcn variant 통일 [자동 반영]
+### B-12: 버튼 인라인 클래스 → shadcn variant 통일 [반영]
 - **대상 파일**: `src/components/compare/comparison-form.tsx:57,65`, `src/components/calculator/cost-calculator.tsx:103`
 - **문제**: `bg-teal-600 hover:bg-teal-700` 인라인 사용 대신 shadcn Button variant="default"를 사용해야 디자인 토큰 일관성 확보.
 - **위험도**: 낮음
 
-### B-13: summary/details 요소 focus ring + 확장 표시 누락 [자동 반영]
+### B-13: summary/details 요소 focus ring + 확장 표시 누락 [반영]
 - **대상 파일**: `src/components/seo/related-links.tsx:63`, `src/app/[state]/[slug]/page.tsx:64`
 - **문제**: `<summary>` 요소에 FOCUS_RING 미적용. 키보드 탐색 시 focus 표시 없음. 확장 가능 표시(chevron 등)도 없음.
 - **위험도**: 접근성 (a11y)
 
-### B-14: Compare form 태블릿 그리드 breakpoint 누락 [자동 반영]
+### B-14: Compare form 태블릿 그리드 breakpoint 누락 [반영]
 - **대상 파일**: `src/components/compare/comparison-form.tsx:76,126`
 - **문제**: `lg:grid-cols-5`만 사용, `md:` breakpoint 없음. 태블릿(640-1024px)에서 전부 single column으로 전환되어 공간 낭비.
 - **위험도**: 낮음

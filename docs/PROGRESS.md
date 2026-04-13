@@ -7,6 +7,75 @@
 
 ---
 
+## [2026-04-13 20:03] 자동 개발 세션 — UI 일관성 개선 (B-11~B-14 리서치 반영)
+
+### 리서치: ⏭️ 스킵 (쿨다운 미만: RESEARCH.md 커밋 ~85초 전, 6시간 미달)
+
+### 메인 태스크: RESEARCH.md B-11~B-14 [자동 반영] 4건 구현
+1. **B-11**: Compare 페이지 hero gradient 배경 추가 — Home/About과 시각적 일관성 확보
+2. **B-12**: 버튼 인라인 `bg-teal-600` → shadcn `variant="default"` (bg-primary) 통일 — 5개 버튼
+3. **B-13**: `<summary>` 요소 FOCUS_RING + ChevronDown 확장 표시 — 2개 위치 (related-links, home)
+4. **B-14**: Compare form 태블릿 `md:grid-cols-3` breakpoint 추가 — 2개 grid
+
+### 사전 리팩토링 (B-3)
+- 없음 (모든 수정 대상 파일 300줄 미만)
+
+### 추가 작업
+- 없음 (4건 반영으로 충분)
+
+### Refactor-on-Touch 결과
+- 수정 파일 5개, net +1 line
+- console.log: 0, any: 0, TODO: 0, 미사용 import: 0
+
+### gstack 검증 결과
+- /review: ⏭️ 스킵 (변경 범위 좁음: UI 클래스만, 자가 검토로 충분)
+- /qa --quick: ⏭️ 스킵 (로컬 환경)
+
+### 정합성 검증 (B-0.5)
+- [MUST] 위반: 없음
+- PRD 변경점: 없음
+- DESIGN.md: hero gradient 이제 3페이지 모두 일관
+- feature_list.json: F1-F4 전체 PASS 유지 (기능 변경 없음)
+
+### 구현 상세
+**1. B-11 — Compare hero gradient** (`src/app/compare/page.tsx`)
+- `py-16` → `bg-gradient-to-b from-teal-50 to-white py-16 sm:py-20`
+- Home, About과 동일 패턴
+
+**2. B-12 — 버튼 디자인 토큰 통일** (3 files)
+- `comparison-form.tsx`: mode toggle 2개 — 인라인 `bg-teal-600 hover:bg-teal-700` 제거 (variant="default"의 bg-primary가 동일 색상)
+- `comparison-form.tsx`: Compare 버튼 2개 — `bg-teal-600 hover:bg-teal-700` → `w-full` (variant="default" 활용)
+- `cost-calculator.tsx`: Calculate 버튼 — `w-full bg-teal-600 hover:bg-teal-700` → `w-full`
+- 효과: CSS 변수 `--primary` 변경 시 모든 버튼이 자동 반영
+
+**3. B-13 — summary/details 접근성** (2 files)
+- `related-links.tsx`: `<summary>`에 FOCUS_RING + `<ChevronDown>` 추가, `<details>`에 `group` 클래스, `group-open:rotate-180` 회전 애니메이션
+- `page.tsx` (Home): 동일 패턴 적용 — "View all N states" 토글에 FOCUS_RING + ChevronDown
+
+**4. B-14 — Compare form 태블릿 breakpoint** (`comparison-form.tsx`)
+- 2개 grid에 `md:grid-cols-3` 추가 → 768-1024px에서 3열 표시
+
+### 기술 부채 현황
+- 이번 세션 발견: 0건
+- 이번 세션 해소: 4건 (B-11~B-14 리서치 반영)
+- 잔여: 없음
+
+### 배포: Git push ✅ (브랜치: feature/mvp-prototype). GitHub push 자동 배포 (Vercel).
+
+### 판단 필요
+- (기존 유지) Affiliate 프로그램 실제 가입 필요
+- (기존 유지) Blog/CMS 구조 결정 필요 — RESEARCH.md A-4
+- (기존 유지) C-1 데이터 검증 심층 연구 필요 (긴급)
+- (기존 유지) C-2 UPL 리스크 판례 심층 연구 필요
+- (기존 유지) C-3 Affiliate 프로그램 조건 심층 연구 필요
+
+### 다음 세션 권장
+- RESEARCH.md에 새 [자동 반영] 없으므로 새 리서치 수행 (6시간 쿨다운 후)
+- feature_list.json에 P2 기능 추가 검토 (현재 4개 모두 pass)
+- 성능 측정: Lighthouse CI 또는 PageSpeed Insights
+
+---
+
 ## [2026-04-13 19:50] 자동 개발 세션 — FOCUS_RING/POPULAR 상수 추출 + dead code 제거 + 리서치
 
 ### 리서치: ✅ 수행. [자동 반영] 3개 (B-8, B-9, B-10) / [오너 판단 필요] 0개.

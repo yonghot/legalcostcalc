@@ -4,16 +4,15 @@ import { Disclaimer } from "@/components/shared/disclaimer";
 import { Smart404Suggestions } from "@/components/shared/smart-404-suggestions";
 import { CATEGORIES } from "@/lib/constants/categories";
 import { STATES } from "@/lib/constants/states";
-
-const POPULAR_STATES = ["CA", "TX", "FL", "NY", "IL"];
-const POPULAR_CATEGORIES = ["divorce", "dui", "personal-injury", "bankruptcy"];
+import { FOCUS_RING } from "@/lib/utils/styles";
+import { POPULAR_STATE_CODES_SHORT, POPULAR_CATEGORY_SLUGS } from "@/lib/constants/popular";
 
 export default function NotFound() {
   const popularStates = STATES.filter((s) =>
-    POPULAR_STATES.includes(s.code),
+    (POPULAR_STATE_CODES_SHORT as readonly string[]).includes(s.code),
   );
   const popularCategories = CATEGORIES.filter((c) =>
-    POPULAR_CATEGORIES.includes(c.slug),
+    (POPULAR_CATEGORY_SLUGS as readonly string[]).includes(c.slug),
   );
 
   return (
@@ -30,7 +29,7 @@ export default function NotFound() {
         </p>
         <Link
           href="/"
-          className="mt-6 inline-flex items-center gap-2 rounded-md bg-teal-600 px-6 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-teal-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+          className={`mt-6 inline-flex items-center gap-2 rounded-md bg-teal-600 px-6 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-teal-700 ${FOCUS_RING}`}
         >
           <Home className="h-5 w-5" aria-hidden="true" />
           Back to Calculator
@@ -50,7 +49,7 @@ export default function NotFound() {
               <Link
                 key={state.code}
                 href={`/${state.slug}/divorce-cost`}
-                className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3 text-sm transition-all hover:border-teal-200 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                className={`flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3 text-sm transition-all hover:border-teal-200 hover:shadow-sm ${FOCUS_RING}`}
               >
                 <span className="font-medium text-slate-700">
                   Legal Costs in {state.name}
@@ -70,7 +69,7 @@ export default function NotFound() {
               <Link
                 key={cat.slug}
                 href={`/california/${cat.slug}-cost`}
-                className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3 text-sm transition-all hover:border-teal-200 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                className={`flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3 text-sm transition-all hover:border-teal-200 hover:shadow-sm ${FOCUS_RING}`}
               >
                 <span className="font-medium text-slate-700">
                   {cat.displayName} Cost

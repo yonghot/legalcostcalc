@@ -9,6 +9,7 @@ import { formatCurrency } from "@/lib/utils/format";
 import { isSafeUrl } from "@/lib/utils/sanitize";
 import { checkDataFreshness } from "@/lib/utils/data-freshness";
 import { Clock, DollarSign, FileText, ExternalLink } from "lucide-react";
+import { FOCUS_RING } from "@/lib/utils/styles";
 
 interface CostResultProps {
   results: LegalCostData[];
@@ -105,7 +106,7 @@ export const CostResult = memo(function CostResult({
                     href={source}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-1 text-xs text-slate-600 hover:bg-slate-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                    className={`inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-1 text-xs text-slate-600 hover:bg-slate-200 transition-colors ${FOCUS_RING}`}
                   >
                     Source {i + 1}
                     <ExternalLink className="h-3 w-3" aria-hidden="true" />

@@ -7,6 +7,78 @@
 
 ---
 
+## [2026-04-13 19:50] 자동 개발 세션 — FOCUS_RING/POPULAR 상수 추출 + dead code 제거 + 리서치
+
+### 리서치: ✅ 수행. [자동 반영] 3개 (B-8, B-9, B-10) / [오너 판단 필요] 0개.
+- B-8: 미커밋 FOCUS_RING/POPULAR 리팩토링 커밋 → 이번 세션 반영
+- B-9: `src/lib/supabase/client.ts` dead code 삭제 → 이번 세션 반영
+- B-10: Compare WebPage 스키마 → 조사 결과 `compare/layout.tsx`에 이미 존재 확인
+
+### 메인 태스크
+1. 이전 세션 미커밋 리팩토링 커밋 (FOCUS_RING 상수 추출 13파일 + POPULAR 상수 중앙화)
+2. Dead code 제거: `src/lib/supabase/client.ts` (프로젝트 어디서도 미사용, auth 코드 전무)
+3. Unused `clearError` 제거: `use-request-tracker.ts`
+
+### 사전 리팩토링 (B-3)
+- 없음 (모든 수정 대상 파일 300줄 미만)
+
+### 추가 작업
+- RESEARCH.md 2026-04-13 리서치 추가 (B-8, B-9, B-10 기록)
+
+### Refactor-on-Touch 결과
+- 수정 파일 15개 (13 modified + 2 new + 1 deleted)
+- console.log: 0, any: 0, TODO: 0, 미사용 import: 0
+- Dead code: `client.ts` 1건 제거 + `clearError` 1건 제거
+
+### gstack 검증 결과
+- /review: ⏭️ 스킵 (변경 범위 좁음: 리팩토링+dead code만, 자가 검토로 충분)
+- /qa --quick: ⏭️ 스킵 (로컬 환경)
+
+### 정합성 검증 (B-0.5)
+- [MUST] 위반: 없음
+- PRD 변경점: 없음
+- DESIGN.md 불일치: 없음
+- feature_list.json: F1-F4 전체 PASS 유지 (기능 변경 없음)
+- RESEARCH.md B-4/B-7 미반영 의심 → 조사 결과 `compare/layout.tsx`에 이미 반영 확인
+
+### 구현 상세
+**1. FOCUS_RING 상수 추출** — `src/lib/utils/styles.ts` (신규)
+- `FOCUS_RING`: 표준 teal focus ring 클래스 (light bg용)
+- `FOCUS_RING_DARK`: dark bg (footer) 전용 focus ring 클래스
+- 13개 파일에서 인라인 focus-visible 클래스를 상수 참조로 교체
+- 동작 변경 없음, 클래스 출력 동일
+
+**2. POPULAR 상수 중앙화** — `src/lib/constants/popular.ts` (신규)
+- `POPULAR_STATE_CODES` (10개): Home 페이지용
+- `POPULAR_STATE_CODES_SHORT` (5개): 404 등 compact display용
+- `POPULAR_CATEGORY_SLUGS` (4개): 404 등 compact display용
+- `not-found.tsx`, `page.tsx`에서 인라인 배열을 import로 교체
+
+**3. Dead code 제거**
+- `src/lib/supabase/client.ts` 삭제 (createBrowserClient — 프로젝트 어디서도 미사용)
+- `use-request-tracker.ts`의 `clearError` 제거 (미사용 export)
+
+### 기술 부채 현황
+- 이번 세션 발견: 0건 (리서치에서 확인만)
+- 이번 세션 해소: 2건 (client.ts dead code, clearError dead code)
+- 잔여: 없음
+
+### 배포: Git push ✅ (브랜치: feature/mvp-prototype). GitHub push 자동 배포 (Vercel).
+
+### 판단 필요
+- (기존 유지) Affiliate 프로그램 실제 가입 필요
+- (기존 유지) Blog/CMS 구조 결정 필요 — RESEARCH.md A-4
+- (기존 유지) C-1 데이터 검증 심층 연구 필요 (긴급)
+- (기존 유지) C-2 UPL 리스크 판례 심층 연구 필요
+- (기존 유지) C-3 Affiliate 프로그램 조건 심층 연구 필요
+
+### 다음 세션 권장
+- feature_list.json에 새 기능 추가 검토 (현재 4개 모두 pass, 추가 개발 기회)
+- RESEARCH.md A-1 ~ A-9 중 미구현 확인: 대부분 반영됨. A-4(Blog), A-5(Ad) 오너 판단 대기
+- 성능 측정: Lighthouse CI 또는 PageSpeed Insights
+
+---
+
 ## [2026-04-11 21:00] 자동 개발 세션 — SEO 랜딩 408 pages dynamic(ƒ) → SSG(●) 전환 + build OOM guard
 
 ### 리서치

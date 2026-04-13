@@ -4,6 +4,7 @@ import { Disclaimer } from "@/components/shared/disclaimer";
 import { BreadcrumbSchema } from "@/components/seo/breadcrumb-schema";
 import { safeJsonLd } from "@/lib/utils/json-ld";
 import { Shield, Database, Scale, RefreshCw } from "lucide-react";
+import { FOCUS_RING } from "@/lib/utils/styles";
 
 export const metadata: Metadata = {
   title: "About LegalCostCalc — Our Data & Methodology",
@@ -57,7 +58,7 @@ export default function AboutPage() {
           <nav className="mt-8 text-sm text-slate-500">
             <Link
               href="/"
-              className="rounded-sm hover:text-teal-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+              className={`rounded-sm hover:text-teal-600 ${FOCUS_RING}`}
             >
               Home
             </Link>

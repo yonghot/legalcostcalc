@@ -4,6 +4,7 @@ import { AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Disclaimer } from "@/components/shared/disclaimer";
 import Link from "next/link";
+import { FOCUS_RING } from "@/lib/utils/styles";
 
 interface ErrorContentProps {
   title: string;
@@ -25,7 +26,7 @@ export function ErrorContent({ title, message, reset, showBackLink = false }: Er
           {showBackLink && (
             <Link
               href="/"
-              className="inline-flex items-center justify-center rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+              className={`inline-flex items-center justify-center rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 ${FOCUS_RING}`}
             >
               Back to Calculator
             </Link>

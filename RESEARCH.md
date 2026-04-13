@@ -11,6 +11,57 @@
 
 ---
 
+## 2026-04-13 리서치
+
+**리서치 일시**: 2026-04-13 UTC
+**코드베이스 상태**: 4/4 기능 pass, 420 pages, 빌드 ✅, 미커밋 리팩토링(FOCUS_RING/POPULAR 상수 추출) 존재
+
+---
+
+### [A] 방향/기능 제안
+
+없음 (기존 미반영 항목 처리 우선)
+
+---
+
+### [B] 코드 개선
+
+### B-8: 미커밋 리팩토링 커밋 필요 [자동 반영]
+- **대상 파일**: 13개 수정 + 2개 신규 (`src/lib/utils/styles.ts`, `src/lib/constants/popular.ts`)
+- **문제**: 이전 세션에서 FOCUS_RING 상수 추출 + POPULAR 상수 중앙화 작업이 수행되었으나 커밋되지 않은 상태.
+- **제안**: 빌드 확인 후 즉시 커밋.
+- **위험도**: 없음 (리팩토링만, 동작 변경 없음)
+
+### B-9: `src/lib/supabase/client.ts` dead code 제거 [자동 반영]
+- **대상 파일**: `src/lib/supabase/client.ts`
+- **문제**: grep 결과 프로젝트 어디서도 import되지 않음. 이전 세션에서 "판단 필요"로 기록되었으나, auth 관련 코드가 프로젝트에 전무하고 PRD에도 auth 기능 없음. dead code 유지는 기술 부채.
+- **제안**: 삭제. 향후 auth 도입 시 `@supabase/ssr` 패턴으로 재생성 (doc comment in `public.ts`에 이미 기록됨).
+- **위험도**: 없음
+
+### B-10: Compare 페이지 WebPage 스키마 — 이미 반영 확인
+- **대상 파일**: `src/app/compare/layout.tsx` (page.tsx가 아닌 layout.tsx에 위치)
+- **상태**: `compare/layout.tsx:27-39`에 WebPage 스키마 이미 존재. B-4/B-7은 이미 반영됨. page.tsx만 검색하면 누락으로 보이지만 layout.tsx에 올바르게 구현됨.
+
+---
+
+### [C] 외부 조사
+
+[C] 항목 변경 없음. 기존 C-1/C-2/C-3 오너 확인 대기 상태 유지.
+
+---
+
+### [D] 시장 인사이트
+
+없음 (기존 항목 유효)
+
+---
+
+### [E] 개발 효율화
+
+없음
+
+---
+
 ## 2026-04-11 리서치
 
 **리서치 일시**: 2026-04-11 UTC

@@ -1,5 +1,6 @@
 import { ExternalLink } from "lucide-react";
 import { getPartnersForCategory, type AffiliatePartner } from "@/lib/constants/affiliates";
+import { FOCUS_RING } from "@/lib/utils/styles";
 
 interface AffiliateCTAProps {
   categorySlug?: string;
@@ -27,7 +28,7 @@ export function AffiliateCTA({ categorySlug, stateName }: AffiliateCTAProps) {
             href={buildAffiliateUrl(partner, categorySlug)}
             target="_blank"
             rel="noopener noreferrer nofollow"
-            className="flex flex-col gap-3 rounded-lg border border-slate-200 p-4 transition-all hover:border-teal-200 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 sm:flex-row sm:items-center sm:justify-between"
+            className={`flex flex-col gap-3 rounded-lg border border-slate-200 p-4 transition-all hover:border-teal-200 hover:shadow-sm ${FOCUS_RING} sm:flex-row sm:items-center sm:justify-between`}
           >
             <div>
               <span className="font-medium text-slate-900">{partner.name}</span>

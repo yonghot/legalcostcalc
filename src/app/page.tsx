@@ -22,14 +22,14 @@ import {
 } from "lucide-react";
 import { AffiliateCTA } from "@/components/shared/affiliate-cta";
 import { OrganizationSchema } from "@/components/seo/organization-schema";
+import { FOCUS_RING } from "@/lib/utils/styles";
+import { POPULAR_STATE_CODES } from "@/lib/constants/popular";
 
 export const metadata: Metadata = {
   alternates: {
     canonical: "/",
   },
 };
-
-const POPULAR_STATE_CODES = ["CA", "TX", "FL", "NY", "IL", "PA", "OH", "GA", "NC", "MI"] as const;
 
 const CATEGORY_ICONS: Record<string, LucideIcon> = {
   divorce: Scale,
@@ -130,7 +130,7 @@ export default function HomePage() {
               <Link
                 key={cat.slug}
                 href={`/${DEFAULT_STATE_SLUG}/${cat.slug}-cost`}
-                className="group rounded-lg border border-slate-200 p-6 transition-all hover:border-teal-200 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                className={`group rounded-lg border border-slate-200 p-6 transition-all hover:border-teal-200 hover:shadow-md ${FOCUS_RING}`}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-teal-50 transition-colors group-hover:bg-teal-100">
@@ -162,7 +162,7 @@ export default function HomePage() {
               <Link
                 key={state.code}
                 href={`/${state.slug}/divorce-cost`}
-                className="rounded-lg border border-slate-200 bg-white p-3 text-center text-sm font-medium text-slate-700 transition-all hover:border-teal-200 hover:text-teal-700 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                className={`rounded-lg border border-slate-200 bg-white p-3 text-center text-sm font-medium text-slate-700 transition-all hover:border-teal-200 hover:text-teal-700 hover:shadow-sm ${FOCUS_RING}`}
               >
                 {state.name}
               </Link>
@@ -181,7 +181,7 @@ export default function HomePage() {
                   <Link
                     key={state.code}
                     href={`/${state.slug}/divorce-cost`}
-                    className="rounded-lg border border-slate-200 bg-white p-3 text-center text-sm font-medium text-slate-700 transition-all hover:border-teal-200 hover:text-teal-700 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                    className={`rounded-lg border border-slate-200 bg-white p-3 text-center text-sm font-medium text-slate-700 transition-all hover:border-teal-200 hover:text-teal-700 hover:shadow-sm ${FOCUS_RING}`}
                   >
                     {state.name}
                   </Link>

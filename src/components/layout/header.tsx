@@ -9,6 +9,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { useState } from "react";
+import { FOCUS_RING } from "@/lib/utils/styles";
 
 const NAV_LINKS = [
   { href: "/", label: "Calculator" },
@@ -37,7 +38,7 @@ export function Header() {
             <Link
               key={link.href}
               href={link.href}
-              className="text-sm font-medium text-slate-600 transition-colors hover:text-teal-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded-sm"
+              className={`text-sm font-medium text-slate-600 transition-colors hover:text-teal-600 ${FOCUS_RING} rounded-sm`}
             >
               {link.label}
             </Link>
@@ -47,7 +48,7 @@ export function Header() {
         {/* Mobile hamburger menu */}
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger
-            className="inline-flex h-10 w-10 items-center justify-center rounded-md text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 md:hidden"
+            className={`inline-flex h-10 w-10 items-center justify-center rounded-md text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 ${FOCUS_RING} md:hidden`}
             aria-label="Open menu"
           >
             <Menu className="h-5 w-5" />
@@ -68,7 +69,7 @@ export function Header() {
                   key={link.href}
                   href={link.href}
                   onClick={() => setOpen(false)}
-                  className="rounded-md px-3 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-teal-50 hover:text-teal-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                  className={`rounded-md px-3 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-teal-50 hover:text-teal-700 ${FOCUS_RING}`}
                 >
                   {link.label}
                 </Link>

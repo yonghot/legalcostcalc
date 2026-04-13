@@ -3,6 +3,7 @@ import { Scale } from "lucide-react";
 import { DISCLAIMER_TEXT } from "@/lib/constants/disclaimer";
 import { CATEGORIES } from "@/lib/constants/categories";
 import { DEFAULT_STATE_SLUG } from "@/lib/constants/costs";
+import { FOCUS_RING_DARK } from "@/lib/utils/styles";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -39,7 +40,7 @@ export function Footer() {
                 <li key={cat.slug}>
                   <Link
                     href={`/${DEFAULT_STATE_SLUG}/${cat.slug}-cost`}
-                    className="text-sm text-slate-400 hover:text-teal-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 rounded-sm"
+                    className={`text-sm text-slate-400 hover:text-teal-400 transition-colors ${FOCUS_RING_DARK} rounded-sm`}
                   >
                     {cat.displayName} Costs
                   </Link>
@@ -52,17 +53,17 @@ export function Footer() {
             <h3 className="mb-3 text-sm font-semibold text-white">Resources</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/" className="text-sm text-slate-400 hover:text-teal-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 rounded-sm">
+                <Link href="/" className={`text-sm text-slate-400 hover:text-teal-400 transition-colors ${FOCUS_RING_DARK} rounded-sm`}>
                   Cost Calculator
                 </Link>
               </li>
               <li>
-                <Link href="/compare" className="text-sm text-slate-400 hover:text-teal-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 rounded-sm">
+                <Link href="/compare" className={`text-sm text-slate-400 hover:text-teal-400 transition-colors ${FOCUS_RING_DARK} rounded-sm`}>
                   Compare Costs
                 </Link>
               </li>
               <li>
-                <Link href="/about" className="text-sm text-slate-400 hover:text-teal-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 rounded-sm">
+                <Link href="/about" className={`text-sm text-slate-400 hover:text-teal-400 transition-colors ${FOCUS_RING_DARK} rounded-sm`}>
                   About &amp; Methodology
                 </Link>
               </li>

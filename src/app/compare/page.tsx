@@ -12,6 +12,7 @@ import { VALID_COMPLEXITIES } from "@/lib/constants/costs";
 import { LegalCostData } from "@/lib/types";
 import { formatCurrency } from "@/lib/utils/format";
 import { useCompareCosts } from "@/lib/hooks/use-compare-costs";
+import { FOCUS_RING } from "@/lib/utils/styles";
 import Link from "next/link";
 
 export default function ComparePage() {
@@ -65,7 +66,7 @@ export default function ComparePage() {
         <Disclaimer />
 
         <nav className="mt-8 text-sm text-slate-500">
-          <Link href="/" className="hover:text-teal-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded-sm">Home</Link>
+          <Link href="/" className={`hover:text-teal-600 ${FOCUS_RING} rounded-sm`}>Home</Link>
           <span className="mx-2">/</span>
           <span>Compare Costs</span>
         </nav>
@@ -194,7 +195,7 @@ function ComparisonResultSection({
                       {item.linkSlug && (
                         <Link
                           href={`/${item.linkSlug}/${item.linkCategory}-cost`}
-                          className="mt-3 inline-block text-xs font-medium text-teal-600 hover:text-teal-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded-sm"
+                          className={`mt-3 inline-block text-xs font-medium text-teal-600 hover:text-teal-700 ${FOCUS_RING} rounded-sm`}
                         >
                           View full details →
                         </Link>

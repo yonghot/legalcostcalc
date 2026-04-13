@@ -5,6 +5,8 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { STATES } from "@/lib/constants/states";
 import { CATEGORIES } from "@/lib/constants/categories";
+import { FOCUS_RING } from "@/lib/utils/styles";
+import { POPULAR_STATE_CODES_SHORT } from "@/lib/constants/popular";
 
 const ALL_STATE_SLUGS = STATES.map((s) => s.slug);
 const ALL_CATEGORY_SLUGS = CATEGORIES.map((c) => c.slug);
@@ -100,7 +102,7 @@ function parseSuggestions(pathname: string): Suggestion[] {
   if (!matchedState && matchedCategory) {
     // Suggest top states for this category
     const topStates = STATES.filter((s) =>
-      ["CA", "TX", "FL", "NY", "IL"].includes(s.code),
+      (POPULAR_STATE_CODES_SHORT as readonly string[]).includes(s.code),
     );
     for (const state of topStates) {
       suggestions.push({
@@ -129,7 +131,7 @@ export function Smart404Suggestions() {
           <Link
             key={s.href}
             href={s.href}
-            className="flex items-center justify-between rounded-lg border border-teal-200 bg-teal-50/50 p-3 text-sm transition-all hover:border-teal-300 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+            className={`flex items-center justify-between rounded-lg border border-teal-200 bg-teal-50/50 p-3 text-sm transition-all hover:border-teal-300 hover:shadow-sm ${FOCUS_RING}`}
           >
             <span className="font-medium text-teal-800">{s.label}</span>
             <ArrowRight className="h-5 w-5 text-teal-400" aria-hidden="true" />

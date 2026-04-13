@@ -13,6 +13,7 @@ import { CostDisplay } from "@/components/shared/cost-display";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AffiliateCTA } from "@/components/shared/affiliate-cta";
+import { FOCUS_RING } from "@/lib/utils/styles";
 import { BreadcrumbSchema } from "@/components/seo/breadcrumb-schema";
 import { CostDetailsSection } from "@/components/seo/cost-details-section";
 import { RelatedLinks } from "@/components/seo/related-links";
@@ -153,7 +154,7 @@ export default async function StateCategoryPage({ params }: PageProps) {
 
           <div className="mt-8">
             <nav className="mb-4 text-sm text-slate-500">
-              <Link href="/" className="hover:text-teal-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded-sm">Home</Link>
+              <Link href="/" className={`hover:text-teal-600 ${FOCUS_RING} rounded-sm`}>Home</Link>
               <span className="mx-2">/</span>
               <span>{stateInfo.name}</span>
               <span className="mx-2">/</span>

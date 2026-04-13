@@ -41,7 +41,5 @@ export function useRequestTracker() {
     []
   );
 
-  const clearError = useCallback(() => setError(null), []);
-
-  return { loading, error, execute, clearError };
+  return { loading, error, execute };
 }

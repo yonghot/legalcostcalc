@@ -7,6 +7,78 @@
 
 ---
 
+## [2026-04-17 01:00] 자동 개발 세션 — FAQPage 스키마 + FAQ 다양화 + SEO 콘텐츠 강화
+
+### 리서치: ⏭️ 스킵 (쿨다운 미만: ~0.8시간 경과, 6시간 미달)
+
+### 메인 태스크: PRD 갭 해소 + D-4 FAQ 다양화 + A-6 SEO 콘텐츠 강화 + DESIGN.md 일관성
+
+### 사전 리팩토링 (B-3)
+- 없음 (모든 수정 대상 파일 300줄 미만)
+
+### 추가 작업
+- 없음
+
+### Refactor-on-Touch 결과
+- 수정 파일 6개, net +186 lines
+- console.log: 0, any: 0, TODO: 0, 미사용 import: 0
+
+### gstack 검증 결과
+- /review: ⏭️ 스킵 (변경 범위: SEO 스키마+콘텐츠+디자인 토큰, 자가 검토로 충분)
+- /qa --quick: ⏭️ 스킵 (로컬 환경)
+
+### 정합성 검증 (B-0.5)
+- [MUST] 위반: 없음 (REVIEW.md에 [MUST] 항목 부재)
+- PRD 변경점: 없음
+- PRD 갭 해소: 홈 페이지 FAQPage 스키마 추가 (PRD "Schema.org FAQPage" 요구사항)
+- DESIGN.md 불일치 해소: disclaimer 아이콘 amber-600 → amber-700
+- feature_list.json: F1-F4 전체 PASS 유지 (기능 변경 없음, SEO 강화만)
+
+### 구현 상세
+
+**1. PRD 갭 해소 — 홈 페이지 FAQPage 스키마** (`src/app/page.tsx`)
+- PRD는 "Schema.org FAQPage on landing pages"를 요구하지만 홈 페이지에 OrganizationSchema만 존재.
+- 5개 일반 법률 비용 FAQ 추가: 미국 변호사 비용, 비용 영향 요인, 데이터 정확성, 비용 절감, 커버 카테고리.
+- `FaqSchema` 컴포넌트 import + `HOME_FAQ_QUESTIONS` 상수 + JSX 렌더링.
+
+**2. DESIGN.md 일관성 — disclaimer 아이콘 색상** (`src/components/shared/disclaimer.tsx:16`)
+- `text-amber-600` → `text-amber-700`. DESIGN.md "amber-700 text" 명세와 일치.
+
+**3. D-4 — FAQ 스키마 다양화** (`src/lib/types/category.ts`, `src/lib/constants/categories.ts`, `src/app/[state]/[slug]/page.tsx`)
+- `CategoryInfo`에 `faqTemplates?: FaqTemplate[]` 필드 추가.
+- 8개 카테고리 각각에 2개 고유 FAQ 템플릿 추가 (16개 총). `{state}` 플레이스홀더로 주별 개인화.
+- SEO 페이지에서 기존 5개 공통 질문 뒤에 카테고리별 질문 2개 자동 추가 (총 7개/페이지).
+- 408 페이지가 5개 동일 → 7개 차별화된 FAQ로 "thin content" 위험 감소.
+
+**4. A-6 — SEO 랜딩 페이지 콘텐츠 강화** (`src/components/seo/cost-details-section.tsx`, `src/app/[state]/[slug]/page.tsx`)
+- `CostDetailsSection`에 `hourlyRate`, `typicalDuration` props 추가.
+- 시간당 요금 범위 (low-high + median) + 케이스 기간을 가시적 카드로 표시.
+- SEO 페이지에서 `moderateCost.hourlyRate`, `moderateCost.typicalDuration` 전달.
+- 기존에 quick stats 카드에만 있던 정보를 별도 섹션에서 더 상세하게 표시 → 페이지 콘텐츠 깊이 증가.
+
+### 기술 부채 현황
+- 이번 세션 발견: 0건
+- 이번 세션 해소: 3건 (PRD FAQPage 갭, DESIGN.md 아이콘 색상, D-4 FAQ 다양화)
+- 잔여: 없음
+
+### 배포: Git push ✅ (브랜치: feature/mvp-prototype). GitHub push 자동 배포 (Vercel).
+
+### 판단 필요
+- (기존 유지) B-19: Calculator form 인라인 검증 힌트 — UX 변경으로 오너 판단 필요
+- (기존 유지) Affiliate 프로그램 실제 가입 필요
+- (기존 유지) Blog/CMS 구조 결정 필요 — RESEARCH.md A-4
+- (기존 유지) C-1 데이터 검증 심층 연구 필요 (긴급)
+- (기존 유지) C-2 UPL 리스크 판례 심층 연구 필요
+- (기존 유지) C-3 Affiliate 프로그램 조건 심층 연구 필요
+
+### 다음 세션 권장
+- 성능 측정: Lighthouse CI 또는 PageSpeed Insights
+- P2 기능 검토 (현재 F1-F4 전부 pass, 새 기능 추가 가능)
+- FAQ 콘텐츠 추가 확장: 카테고리별 3-5개로 늘리기
+- 블로그/콘텐츠 전략 수립 (PRD Section 8: Monthly blog content 4-8 articles)
+
+---
+
 ## [2026-04-17 00:10] 자동 개발 세션 — 리서치 + dead code 제거 + 디자인 일관성 + 타입 안전성
 
 ### 리서치: ✅ 수행 (76시간 경과). [자동 반영] 5개 / [오너 판단 필요] 1개 (B-19).

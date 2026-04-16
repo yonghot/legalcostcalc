@@ -1,3 +1,8 @@
+export interface FaqTemplate {
+  questionTemplate: string;
+  answerTemplate: string;
+}
+
 export interface CategoryInfo {
   slug: string;
   displayName: string;
@@ -5,6 +10,7 @@ export interface CategoryInfo {
   seoTitleTemplate: string;
   seoDescriptionTemplate: string;
   sortOrder: number;
+  faqTemplates?: FaqTemplate[];
 }
 
 export type LegalCategorySlug =

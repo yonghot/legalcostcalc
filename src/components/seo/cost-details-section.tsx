@@ -1,13 +1,57 @@
+import { formatCurrency } from "@/lib/utils/format";
+import type { CostRange } from "@/lib/types";
+
 interface CostDetailsSectionProps {
   categoryName: string;
   stateName: string;
   commonFees: string[];
+  hourlyRate?: CostRange;
+  typicalDuration?: string;
 }
 
-export function CostDetailsSection({ categoryName, stateName, commonFees }: CostDetailsSectionProps) {
+export function CostDetailsSection({
+  categoryName,
+  stateName,
+  commonFees,
+  hourlyRate,
+  typicalDuration,
+}: CostDetailsSectionProps) {
   return (
     <section className="border-t border-slate-100 bg-slate-50 py-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        {/* Hourly rate + duration summary */}
+        {(hourlyRate?.median ?? 0) > 0 && (
+          <div className="mb-8 grid gap-4 sm:grid-cols-2">
+            <div className="rounded-lg border border-slate-200 bg-white p-4">
+              <h3 className="text-sm font-medium text-slate-500">
+                Attorney Hourly Rate in {stateName}
+              </h3>
+              <p className="mt-1 font-mono text-lg font-bold text-slate-900">
+                {formatCurrency(hourlyRate!.low)} – {formatCurrency(hourlyRate!.high)}
+                <span className="ml-2 text-sm font-normal text-slate-500">
+                  / hour
+                </span>
+              </p>
+              <p className="mt-0.5 font-mono text-sm text-teal-600">
+                Median: {formatCurrency(hourlyRate!.median)}/hr
+              </p>
+            </div>
+            {typicalDuration && (
+              <div className="rounded-lg border border-slate-200 bg-white p-4">
+                <h3 className="text-sm font-medium text-slate-500">
+                  Typical Case Duration
+                </h3>
+                <p className="mt-1 text-lg font-bold text-slate-900">
+                  {typicalDuration}
+                </p>
+                <p className="mt-0.5 text-sm text-slate-500">
+                  For moderate complexity cases
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="grid gap-8 lg:grid-cols-2">
           <div>
             <h2 className="mb-4 text-xl font-bold text-slate-900">

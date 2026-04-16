@@ -131,6 +131,11 @@ export default async function StateCategoryPage({ params }: PageProps) {
         ? `Yes. A simple ${categoryInfo.displayName.toLowerCase()} in ${stateInfo.name} costs around ${formatCurrency(costs.find(c => c.complexity === "simple")?.costRange.median ?? 0)}, while a complex case can cost ${formatCurrency(costs.find(c => c.complexity === "complex")?.costRange.median ?? 0)} or more.`
         : `Yes, legal costs vary significantly based on case complexity. Simple cases cost less than moderate or complex ones.`,
     },
+    // Category-specific unique FAQ questions
+    ...(categoryInfo.faqTemplates ?? []).map((t) => ({
+      question: t.questionTemplate.replace(/\{state\}/g, stateInfo.name),
+      answer: t.answerTemplate.replace(/\{state\}/g, stateInfo.name),
+    })),
   ];
 
   // Related links
@@ -242,12 +247,14 @@ export default async function StateCategoryPage({ params }: PageProps) {
         </div>
       </section>
 
-      {/* Common Fees & Duration */}
+      {/* Common Fees, Hourly Rate & Duration */}
       {moderateCost && moderateCost.commonFees.length > 0 && (
         <CostDetailsSection
           categoryName={categoryInfo.displayName}
           stateName={stateInfo.name}
           commonFees={moderateCost.commonFees}
+          hourlyRate={moderateCost.hourlyRate}
+          typicalDuration={moderateCost.typicalDuration}
         />
       )}
 

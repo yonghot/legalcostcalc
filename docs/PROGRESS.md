@@ -7,6 +7,84 @@
 
 ---
 
+## [2026-04-17 00:10] 자동 개발 세션 — 리서치 + dead code 제거 + 디자인 일관성 + 타입 안전성
+
+### 리서치: ✅ 수행 (76시간 경과). [자동 반영] 5개 / [오너 판단 필요] 1개 (B-19).
+- B-15: About 페이지 disclaimer heading amber-800 → amber-700 통일
+- B-16: `formatNumber()`, `stateSlugToName()` dead code 제거
+- B-17: `table.tsx`, `tabs.tsx` 미사용 UI 컴포넌트 삭제
+- B-18: `CARD_HOVER` 상수 추출 (hover:border-teal-200 hover:shadow-sm 패턴 5곳)
+- B-19: Calculator form 인라인 검증 힌트 → [오너 판단 필요] (UX 변경)
+- B-20: `complexity` unsafe type casting → 런타임 검증 추가
+- D-4: FAQ 스키마 다양화 필요 (시장 인사이트)
+
+### 메인 태스크: RESEARCH.md [자동 반영] 5건 구현
+
+### 사전 리팩토링 (B-3)
+- 없음 (모든 수정 대상 파일 300줄 미만)
+
+### 추가 작업
+- 없음
+
+### Refactor-on-Touch 결과
+- 수정 파일 8개 (+ 2 deleted), net -116 lines
+- Dead code: `formatNumber()`, `stateSlugToName()` 2함수 제거, `table.tsx`(116줄), `tabs.tsx`(82줄) 2컴포넌트 삭제
+- console.log: 0, any: 0, TODO: 0, 미사용 import: 0
+
+### gstack 검증 결과
+- /review: ⏭️ 스킵 (변경 범위 좁음: 리팩토링+dead code+타입 안전성, 자가 검토로 충분)
+- /qa --quick: ⏭️ 스킵 (로컬 환경)
+
+### 정합성 검증 (B-0.5)
+- [MUST] 위반: 없음 (REVIEW.md에 [MUST] 항목 부재)
+- PRD 변경점: 없음
+- DESIGN.md 불일치: B-15 해소 (amber-800 → amber-700)
+- feature_list.json: F1-F4 전체 PASS 유지 (기능 변경 없음)
+
+### 구현 상세
+**1. B-16 — Dead code 제거** (`src/lib/utils/format.ts`)
+- `formatNumber()`: 정의만 있고 전체 프로젝트에서 import 0회. `formatCurrency` 대비 덜 구체적. 삭제.
+- `stateSlugToName()`: `slugToTitle(slug)` 단순 래퍼. import 0회. 삭제.
+
+**2. B-17 — 미사용 UI 컴포넌트 삭제**
+- `src/components/ui/table.tsx` (116줄): 프로젝트 어디서도 import 없음. 삭제.
+- `src/components/ui/tabs.tsx` (82줄): 프로젝트 어디서도 import 없음. 삭제.
+
+**3. B-18 — CARD_HOVER 상수 추출** (`src/lib/utils/styles.ts`)
+- `CARD_HOVER = "transition-all hover:border-teal-200 hover:shadow-sm"` 추가.
+- 4파일에서 인라인 hover 클래스를 상수 참조로 교체: `related-links.tsx`, `not-found.tsx`(2곳), `affiliate-cta.tsx`.
+- `page.tsx:134`는 `hover:shadow-md`(다른 variant)이므로 유지.
+
+**4. B-15 — 디자인 토큰 통일** (`src/app/about/page.tsx:186`)
+- "Important Notice" heading: `text-amber-800` → `text-amber-700`. DESIGN.md 팔레트 일치.
+
+**5. B-20 — complexity 런타임 검증** (`src/lib/services/cost-service.ts`)
+- `VALID_COMPLEXITIES` 배열 + `isValidComplexity()` guard 추가.
+- DB에서 잘못된 complexity 값 반환 시 "moderate"로 fallback (기존 unsafe cast 제거).
+
+### 기술 부채 현황
+- 이번 세션 발견: 5건 (리서치)
+- 이번 세션 해소: 5건 전부 (B-15, B-16, B-17, B-18, B-20)
+- 잔여: 없음
+
+### 배포: Git push ✅ (브랜치: feature/mvp-prototype). GitHub push 자동 배포 (Vercel).
+
+### 판단 필요
+- (신규) B-19: Calculator form 인라인 검증 힌트 — UX 변경으로 오너 판단 필요
+- (기존 유지) Affiliate 프로그램 실제 가입 필요
+- (기존 유지) Blog/CMS 구조 결정 필요 — RESEARCH.md A-4
+- (기존 유지) C-1 데이터 검증 심층 연구 필요 (긴급)
+- (기존 유지) C-2 UPL 리스크 판례 심층 연구 필요
+- (기존 유지) C-3 Affiliate 프로그램 조건 심층 연구 필요
+
+### 다음 세션 권장
+- FAQ 스키마 다양화 (D-4 인사이트 반영: 카테고리별 고유 질문 추가)
+- A-6 SEO 랜딩 페이지 콘텐츠 강화 (hourly rate + common fees 표시)
+- 성능 측정: Lighthouse CI 또는 PageSpeed Insights
+- P2 기능 검토 (현재 4개 모두 pass)
+
+---
+
 ## [2026-04-13 21:01] 자동 개발 세션 — Compare 비용 차이 표시기 + 반응형 + a11y
 
 ### 리서치: ⏭️ 스킵 (쿨다운 미만)

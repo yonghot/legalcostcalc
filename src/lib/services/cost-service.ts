@@ -3,14 +3,21 @@ import {
   findCostsByStatesAndCategory,
 } from "@/lib/repositories/cost-repository";
 import { STATE_MAP } from "@/lib/constants/states";
-import { LegalCostData, LegalCostRow, CostComparisonResult } from "@/lib/types";
+import { Complexity, LegalCostData, LegalCostRow, CostComparisonResult } from "@/lib/types";
+
+const VALID_COMPLEXITIES: readonly Complexity[] = ["simple", "moderate", "complex"] as const;
+
+function isValidComplexity(value: string): value is Complexity {
+  return VALID_COMPLEXITIES.includes(value as Complexity);
+}
 
 function mapRowToData(row: LegalCostRow): LegalCostData {
+  const complexity = isValidComplexity(row.complexity) ? row.complexity : "moderate";
   return {
     id: row.id,
     category: row.category,
     stateCode: row.state_code,
-    complexity: row.complexity as LegalCostData["complexity"],
+    complexity,
     costRange: {
       low: row.cost_low,
       median: row.cost_median,

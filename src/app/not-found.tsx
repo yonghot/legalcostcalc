@@ -4,7 +4,7 @@ import { Disclaimer } from "@/components/shared/disclaimer";
 import { Smart404Suggestions } from "@/components/shared/smart-404-suggestions";
 import { CATEGORIES } from "@/lib/constants/categories";
 import { STATES } from "@/lib/constants/states";
-import { FOCUS_RING } from "@/lib/utils/styles";
+import { CARD_HOVER, FOCUS_RING } from "@/lib/utils/styles";
 import { POPULAR_STATE_CODES_SHORT, POPULAR_CATEGORY_SLUGS } from "@/lib/constants/popular";
 
 export default function NotFound() {
@@ -49,7 +49,7 @@ export default function NotFound() {
               <Link
                 key={state.code}
                 href={`/${state.slug}/divorce-cost`}
-                className={`flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3 text-sm transition-all hover:border-teal-200 hover:shadow-sm ${FOCUS_RING}`}
+                className={`flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3 text-sm ${CARD_HOVER} ${FOCUS_RING}`}
               >
                 <span className="font-medium text-slate-700">
                   Legal Costs in {state.name}
@@ -69,7 +69,7 @@ export default function NotFound() {
               <Link
                 key={cat.slug}
                 href={`/california/${cat.slug}-cost`}
-                className={`flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3 text-sm transition-all hover:border-teal-200 hover:shadow-sm ${FOCUS_RING}`}
+                className={`flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3 text-sm ${CARD_HOVER} ${FOCUS_RING}`}
               >
                 <span className="font-medium text-slate-700">
                   {cat.displayName} Cost

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowRight, ChevronDown } from "lucide-react";
 import { CategoryInfo } from "@/lib/types/category";
 import { StateInfo } from "@/lib/types/state";
-import { FOCUS_RING } from "@/lib/utils/styles";
+import { CARD_HOVER, FOCUS_RING } from "@/lib/utils/styles";
 
 interface RelatedLinksProps {
   stateInfo: StateInfo;
@@ -14,7 +14,7 @@ interface RelatedLinksProps {
 const INITIAL_STATES_SHOWN = 10;
 
 const linkClassName =
-  `flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3 text-sm transition-all hover:border-teal-200 hover:shadow-sm ${FOCUS_RING}`;
+  `flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3 text-sm ${CARD_HOVER} ${FOCUS_RING}`;
 
 export function RelatedLinks({ stateInfo, categoryInfo, otherCategories, allOtherStates }: RelatedLinksProps) {
   const displayedStates = allOtherStates.slice(0, INITIAL_STATES_SHOWN);

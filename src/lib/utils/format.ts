@@ -10,10 +10,6 @@ export function formatCurrencyRange(low: number, high: number): string {
   return `${formatCurrency(low)} – ${formatCurrency(high)}`;
 }
 
-export function formatNumber(num: number): string {
-  return new Intl.NumberFormat("en-US").format(num);
-}
-
 export function slugToTitle(slug: string): string {
   return slug
     .split("-")
@@ -21,6 +17,3 @@ export function slugToTitle(slug: string): string {
     .join(" ");
 }
 
-export function stateSlugToName(slug: string): string {
-  return slugToTitle(slug);
-}

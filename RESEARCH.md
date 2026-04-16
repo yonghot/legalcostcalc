@@ -11,6 +11,84 @@
 
 ---
 
+## 2026-04-17 리서치
+
+**리서치 일시**: 2026-04-17 UTC
+**코드베이스 상태**: 4/4 기능 pass, 408 SSG pages, 빌드 ✅, 프로덕션 배포 완료
+
+---
+
+### [A] 방향/기능 제안
+
+없음 (기존 미반영 항목 처리 + 코드 품질 개선 우선)
+
+---
+
+### [B-UI] 프론트엔드 디자인 감사 결과
+
+### B-15: About 페이지 disclaimer heading amber-800 → amber-700 [자동 반영]
+- **대상 파일**: `src/app/about/page.tsx:186`
+- **문제**: Disclaimer 컴포넌트(`disclaimer.tsx`)는 `text-amber-700` 사용. About 페이지의 "Important Notice" heading만 `text-amber-800` 사용. DESIGN.md와 불일치.
+- **제안**: `text-amber-800` → `text-amber-700`으로 통일.
+- **위험도**: 없음
+
+---
+
+### [B] 코드 개선
+
+### B-16: Dead code — `formatNumber()`, `stateSlugToName()` 미사용 함수 [자동 반영]
+- **대상 파일**: `src/lib/utils/format.ts:13,24`
+- **문제**: 두 함수 모두 정의만 있고 프로젝트 어디서도 import되지 않음 (grep 확인). `formatNumber`는 `formatCurrency` 대비 덜 구체적, `stateSlugToName`은 `slugToTitle` wrapper에 불과.
+- **제안**: 두 함수 제거.
+- **위험도**: 없음
+
+### B-17: Dead code — `table.tsx`, `tabs.tsx` 미사용 UI 컴포넌트 [자동 반영]
+- **대상 파일**: `src/components/ui/table.tsx`, `src/components/ui/tabs.tsx`
+- **문제**: 두 컴포넌트 모두 프로젝트 어디서도 import되지 않음 (grep 확인). shadcn init 시 자동 생성되었으나 미사용.
+- **제안**: 삭제. 필요 시 `npx shadcn@latest add table/tabs`로 재생성 가능.
+- **위험도**: 없음
+
+### B-18: `hover:border-teal-200 hover:shadow-sm` 반복 패턴 → 상수 추출 [자동 반영]
+- **대상 파일**: `src/app/page.tsx:134`, `src/app/not-found.tsx:52,72`, `src/components/shared/affiliate-cta.tsx:31`, `src/components/seo/related-links.tsx:17`
+- **문제**: 5곳에서 동일 hover 패턴 반복. `FOCUS_RING` 상수 추출과 동일한 DRY 원칙.
+- **제안**: `src/lib/utils/styles.ts`에 `CARD_HOVER` 상수 추가.
+- **위험도**: 없음
+
+### B-19: UX — Calculator form 인라인 검증 힌트 누락 [오너 판단 필요]
+- **대상 파일**: `src/components/calculator/cost-calculator.tsx`
+- **문제**: 3개 필드(category, state, complexity) 모두 선택 전 Calculate 버튼이 비활성화되지만, 어떤 필드가 미선택인지 사용자에게 알려주지 않음. 모바일에서 폼이 길어 어떤 필드를 놓쳤는지 파악 어려움.
+- **제안**: 미선택 필드에 시각적 힌트 또는 버튼 hover 시 "Select [missing field]" 툴팁.
+- **판단 이유**: UX 변경으로 사용자 테스트 없이 자동 반영하기 어려움.
+
+### B-20: Backend — `complexity` unsafe type casting [자동 반영]
+- **대상 파일**: `src/lib/services/cost-service.ts:13`
+- **문제**: `row.complexity as LegalCostData["complexity"]` — DB에서 반환된 string을 런타임 검증 없이 타입 캐스팅. 잘못된 데이터 입력 시 타입 안전성 파괴.
+- **제안**: `mapRowToData()`에서 `VALID_COMPLEXITIES` 배열 대조 검증 추가.
+- **위험도**: 낮음
+
+---
+
+### [C] 외부 조사
+
+[C] 항목 변경 없음. 기존 C-1/C-2/C-3 오너 확인 대기 상태 유지.
+
+---
+
+### [D] 시장 인사이트
+
+### D-4: FAQ 스키마 다양화와 SERP 경쟁력
+- **발견**: 현재 408 SEO 페이지의 FAQ 스키마가 5개 동일 템플릿 질문 사용. Google은 "thin content" 패턴을 감지하여 중복 콘텐츠로 인식할 수 있음. 카테고리별 고유 질문(예: "What happens if I can't afford a divorce lawyer?", "What are bankruptcy exemptions?")이 추가되면 페이지 간 차별화 강화.
+- **적용 가능성**: 기존 A-7 (FAQ 확장)과 연계. 카테고리별 2-3개 고유 질문 추가 필요.
+- **관련 기능**: A-7
+
+---
+
+### [E] 개발 효율화
+
+없음
+
+---
+
 ## 2026-04-13 리서치
 
 **리서치 일시**: 2026-04-13 UTC

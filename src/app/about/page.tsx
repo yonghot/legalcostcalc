@@ -183,7 +183,7 @@ export default function AboutPage() {
           </div>
 
           <div className="mt-12 rounded-lg border border-amber-200 bg-amber-50 p-6">
-            <h2 className="text-lg font-semibold text-amber-800">Important Notice</h2>
+            <h2 className="text-lg font-semibold text-amber-700">Important Notice</h2>
             <p className="mt-2 text-sm text-amber-700">
               LegalCostCalc is an informational tool only. Our cost estimates are for general
               reference purposes and should not be considered legal advice. Actual costs will

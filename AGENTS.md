@@ -21,3 +21,15 @@
 - 실패: (없음)
 - 발견 제약: Gate 2는 외부 크리덴셜(Vercel 토큰/링크 + 실 Supabase)에 막힘 — 코드로 해소 불가.
 - 다음에 시도: 빌드 green 최종 확인 → 감사 워크플로 결과로 큐 확정 → 무결성 안전한 P0만 적용 → Gate 2는 크리덴셜 확보 시 재개.
+
+### cycle #1 (2026-06-27) — Gate-1 폴리시 + 게이트 판정
+- 성공:
+  - 5-에이전트 병렬 read-only 감사(33 raw → 14 큐)로 Gate 1 정직 판정. 감사가 **오탐 자가수정**(isSafeUrl XSS는 이미 https/http 허용목록으로 방어됨)까지 수행.
+  - 무결성 안전 폴리시 8건 적용 후 lint/tsc/build green 유지, impeccable 0 new, anti-slop 수동 0. 회귀 0.
+  - **풍성도 프레임워크의 함정 회피**: 감사가 home use-case/social-proof/FAQ 백필을 integrity_risk로 제외 판정. 법률 제품에 가짜 통계·후기·데이터를 넣는 것은 CLAUDE.md Data Rules + UPL 위반 → 절대 금지 재확인.
+- 실패: (없음 — 회귀 없음)
+- 발견 제약(중요 정정):
+  - **이전 cycle #0 가정 정정**: `vercel whoami` → `sk1597530-3914` 로 **Vercel CLI는 이미 인증됨**(미인증 아님). `vercel project inspect legalcostcalc` 로 production 타깃 프로젝트 존재 확인(prj_aO8PhXBF9EZGcERnjshxul2YMu2F). 즉 Gate 2는 크리덴셜로 막힌 게 아니라 **라이브 법률 사이트 production 푸시라는 outward-facing 승인 경계**에 있음.
+  - 로컬 Supabase는 플레이스홀더 → 로컬 prebuilt 배포 금지(데이터 없는 빌드). 반드시 원격 빌드(Vercel env=실 Supabase) 또는 git push 자동배포 사용.
+  - 본 프로젝트 배포 패턴 = git push(feature/mvp-prototype)→Vercel 자동배포(PROGRESS.md 다수 기록). 즉 `git push`가 곧 production 배포.
+- 다음에 시도: 오너가 production 배포(DEPLOY-001) 승인 시 → 원격 빌드 배포 → SmokeRunner(/ + /api/health 200 + prod 풍성도 실측) → 실패 시 `vercel rollback`. P1-002/004/005는 별도 후속.

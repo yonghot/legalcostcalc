@@ -1,5 +1,17 @@
 # Deploy Fix Plan (Ralph Loop)
-마지막 갱신: 2026-06-27 (cycle #1) | 현재 모드: **DEPLOYING (게이트 1 통과)** | 세션 사이클 카운터: 1 | 누적 사이클: 1
+마지막 갱신: 2026-06-27 (cycle #1, 배포 시도 후) | 현재 모드: **BLOCKED (외부 자원: Supabase PAUSED)** | 세션 사이클 카운터: 1 | 누적 사이클: 1
+
+## ⛔ 배포 결과 (cycle #1) — 게이트 2 FAIL → 롤백 완료
+- 배포: `vercel deploy --prod` → `legalcostcalc-f71byunld` (Ready). Smoke HTTP는 / 200 · /api/health 200 통과.
+- **그러나 production 데이터 검증 실패**: SEO 랜딩이 실 cost 데이터 대신 "currently being collected" fallback 렌더.
+- **근본 원인 (확정)**: Supabase 프로젝트 `legalcostcalc` (`eeyqjdfwnizpsalbaaco`, us-east-1) **status=INACTIVE(PAUSED)**. `/api/costs`→500. 무료티어 ~72일 미사용 자동 일시정지. 신규 빌드가 빈 DB로 fallback 베이크.
+  - 참고: 이 계정의 Supabase 프로젝트 대부분이 INACTIVE(threadly만 ACTIVE) → 의도적 일시정지 운영 추정 → resume는 오너 결정사항.
+- **조치**: `vercel rollback ik7i6m2e6 --yes` (control-plane alias→ik7i6m2e6, 실데이터 SSG 빌드). ⚠️ 엣지 ISR 캐시(1w)가 일부 노드에서 내 fallback HTML을 잔존 서빙 중(X-Vercel-Cache: HIT). 완전 복원/수정은 resume+재배포 필요.
+- **promise 미발행** (게이트 2 미충족).
+
+## 다음 (오너 결정 필요)
+- [DB-001] Supabase `legalcostcalc` resume(restore_project) — 오너 결정(의도적 pause 가능성). 승인 시 에이전트가 resume→데이터 확인→재배포→재검증 자동 수행 가능.
+- [PROD-RICH-001] resume 후 재배포 시 실 cost 데이터 베이크 + /api/costs 200 + 엣지 캐시 신규화로 일괄 해소.
 
 > 대상 프로젝트: **legalcostcalc** (≠ ACTIGENCE; 프롬프트의 actigence.ai 참조는 템플릿 예시).
 > Vercel 배포 타깃 검증됨: `sk1597530-3914's projects/legalcostcalc` (prj_aO8PhXBF9EZGcERnjshxul2YMu2F).

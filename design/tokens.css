@@ -1,0 +1,46 @@
+/*
+ * design/tokens.css — LegalCostCalc canonical design tokens (OKLCH)
+ *
+ * Source of truth: DESIGN.md §2 (Color Palette). Values converted from the
+ * documented hex palette to OKLCH (Tailwind v4 native color space) so that
+ * lightness/chroma can be tuned perceptually without drifting hue.
+ *
+ * These tokens MIRROR the existing src/app/globals.css palette. globals.css
+ * remains the runtime source; this file is the design-review reference that
+ * the design-reviewer agent and design-qa workflow check against.
+ * If you change a brand color, change it in BOTH places (or import this file).
+ */
+
+:root {
+  /* Brand — Teal scale (DESIGN.md: trustworthy, professional) */
+  --brand-50:  oklch(0.984 0.014 180.72);  /* #F0FDFA Teal 50  — secondary / card bg */
+  --brand-600: oklch(0.600 0.118 184.70);  /* #0D9488 Teal 600 — primary / CTA       */
+  --brand-800: oklch(0.437 0.078 188.22);  /* #115E59 Teal 800 — accent / headings    */
+
+  /* Semantic surface + text (Slate scale) */
+  --background: oklch(1 0 0);               /* #FFFFFF */
+  --foreground: oklch(0.208 0.042 265.76);  /* #0F172A Slate 900 — body text */
+  --card:       oklch(1 0 0);               /* #FFFFFF */
+  --muted:      oklch(0.968 0.007 247.90);  /* #F1F5F9 Slate 100 */
+  --border:     oklch(0.929 0.013 255.51);  /* #E2E8F0 Slate 200 */
+
+  /* State */
+  --primary:              var(--brand-600);
+  --primary-foreground:   oklch(1 0 0);
+  --secondary:            var(--brand-50);
+  --accent:               var(--brand-800);
+  --destructive:          oklch(0.577 0.245 27.33);  /* #DC2626 Red 600 */
+  --destructive-foreground: oklch(1 0 0);
+
+  /* Disclaimer banner (DESIGN.md §5: yellow-50 bg, amber-700 text) */
+  --disclaimer-bg:   oklch(0.987 0.022 95.28);   /* amber-50  */
+  --disclaimer-fg:   oklch(0.555 0.135 66.44);   /* amber-700 */
+
+  /* Radii (DESIGN.md §5: rounded-lg cards, rounded-md controls) */
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+
+  /* Motion (DESIGN.md §8: 150ms, professional restraint) */
+  --motion-fast: 150ms;
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+}

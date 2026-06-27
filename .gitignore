@@ -42,3 +42,8 @@ next-env.d.ts
 
 .vercel
 .dev-lock
+
+# impeccable design-qa transient scans (baseline.json IS committed)
+detect.json
+.slop.json
+baseline.err

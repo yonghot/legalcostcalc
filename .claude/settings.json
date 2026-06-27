@@ -17,6 +17,27 @@
         "command": "bash .claude/hooks/post-write-format.sh",
         "description": "Format written files with prettier"
       }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/anti-slop-gate.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/slop-scan.sh"
+          }
+        ]
+      }
     ]
   },
   "permissions": {

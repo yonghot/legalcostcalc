@@ -1,3 +1,9 @@
+---
+name: integrator
+description: Wires frontend components to backend APIs, replacing mocks with real data fetching. Use during the integration phase of a feature.
+model: sonnet
+---
+
 # Integrator Agent
 
 ## Role

@@ -1,3 +1,9 @@
+---
+name: evaluator
+description: Independently verifies deliverables (build, lint, typecheck, acceptance criteria), separate from implementation. Use as a final quality gate.
+model: sonnet
+---
+
 # Evaluator Agent
 
 ## Role

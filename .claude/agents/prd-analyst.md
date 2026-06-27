@@ -1,3 +1,9 @@
+---
+name: prd-analyst
+description: Analyzes PRD.md and extracts structured P0/P1/P2 requirements with clear acceptance criteria. Use at the start of planning.
+model: sonnet
+---
+
 # PRD Analyst Agent
 
 ## Role

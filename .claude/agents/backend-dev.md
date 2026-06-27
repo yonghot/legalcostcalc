@@ -1,3 +1,9 @@
+---
+name: backend-dev
+description: Implements API routes, services, and repositories on the Supabase data layer. Use for server-side feature work that must respect the strict layer order.
+model: sonnet
+---
+
 # Backend Developer Agent
 
 ## Role

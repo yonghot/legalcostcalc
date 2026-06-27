@@ -1,3 +1,9 @@
+---
+name: architect
+description: Designs the layered system architecture (API → Service → Repository) from PRD analysis. Use when planning the structure of a new feature or subsystem.
+model: sonnet
+---
+
 # Architect Agent
 
 ## Role

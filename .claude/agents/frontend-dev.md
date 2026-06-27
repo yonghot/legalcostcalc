@@ -1,3 +1,9 @@
+---
+name: frontend-dev
+description: Implements UI components and pages with shadcn/ui per DESIGN.md — mobile-first, token-driven, WCAG 2.1 AA. Use for client/UI work (no business logic).
+model: sonnet
+---
+
 # Frontend Developer Agent
 
 ## Role

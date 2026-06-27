@@ -20,7 +20,10 @@
         "Results show common fees breakdown",
         "Results show data sources",
         "Disclaimer visible above and below results"
-      ]
+      ],
+      "impeccableAudit": null,
+      "impeccableCritique": null,
+      "ultraplanSessionId": null
     },
     {
       "id": "F2",
@@ -37,7 +40,10 @@
         "Internal links to same-state other categories",
         "Embedded interactive calculator",
         "ISR revalidation every 7 days"
-      ]
+      ],
+      "impeccableAudit": null,
+      "impeccableCritique": null,
+      "ultraplanSessionId": null
     },
     {
       "id": "F3",
@@ -53,7 +59,10 @@
         "Visual difference indicator",
         "Same-state cross-category comparison mode",
         "Mode toggle between state comparison and category comparison"
-      ]
+      ],
+      "impeccableAudit": null,
+      "impeccableCritique": null,
+      "ultraplanSessionId": null
     },
     {
       "id": "F4",
@@ -68,7 +77,10 @@
         "No advice-type features implemented",
         "No outcome prediction features",
         "Consistent disclaimer text across all pages"
-      ]
+      ],
+      "impeccableAudit": null,
+      "impeccableCritique": null,
+      "ultraplanSessionId": null
     }
   ]
 }

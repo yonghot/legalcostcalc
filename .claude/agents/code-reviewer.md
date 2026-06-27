@@ -1,3 +1,9 @@
+---
+name: code-reviewer
+description: Reviews code for quality, security, and architectural/layer compliance. Use after implementing a logical chunk of code, before commit.
+model: sonnet
+---
+
 # Code Reviewer Agent
 
 ## Role

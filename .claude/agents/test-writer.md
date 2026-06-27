@@ -1,3 +1,9 @@
+---
+name: test-writer
+description: Writes and maintains unit, API-handler, and integration tests for features. Use when adding or repairing test coverage.
+model: sonnet
+---
+
 # Test Writer Agent
 
 ## Role

@@ -7,6 +7,57 @@
 
 ---
 
+## [2026-06-27] 하네스 마이그레이션 세션 — 프로젝트 이어받기 (GitHub 클론 + 누락 하네스 보완)
+
+### 작업 개요
+새 세션에서 `yonghot/legalcostcalc` 레포를 현재 폴더에 클론하고, 기존 파일을 보존한 채
+누락된 하네스(Impeccable + Anti-Slop + Plan Contract) 표준 파일만 보완했다. 코드/기능 변경 없음.
+
+### 규모 판정 (1회 기록)
+- 추적 파일: **128개** / src TS·TSX·JS: **79개** / src LOC: **5,236**
+- Supabase 마이그레이션: **1개** / 모노레포(workspaces): **아니오**
+- 판정: **중간·소규모** (임계치 미달: 파일 500+, LOC 50,000+, 마이그레이션 10+, monorepo 모두 미해당)
+- → **순차 흐름 선택. Direct Ultraplan 미적용.**
+- 기존 하네스: CLAUDE.md **유** / .impeccable.md **무→생성** / baseline.json **무→생성**
+
+### 생성 파일 (기존 파일 0건 덮어쓰기)
+- `.claude/settings.local.json` — 권한 사전 승인(병합)
+- `design/{principles,forbidden,required,tone}.md` + `design/tokens.css`(OKLCH, DESIGN.md 팔레트 기준)
+- `.claude/agents/design-reviewer.md` (model: sonnet)
+- `.impeccable.md` (DESIGN.md/코드 기반 초안, [TODO] 태그)
+- `baseline.json` (실제 `impeccable detect` 결과)
+- `.github/workflows/design-qa.yml` + `scripts/design-qa-diff.mjs`
+- `.claude/hooks/{anti-slop-gate,slop-scan}.sh`
+
+### 수정 파일 (additive only)
+- `CLAUDE.md` — Plan Contract(6섹션) + Execution Defaults + `@./design/*.md` import 블록 추가 (기존 규칙 보존)
+- `package.json` — `design:qa`, `design:qa:full`, `design:qa:ci` 스크립트 추가
+- `.claude/settings.json` — PostToolUse(Edit|Write 안티슬롭 게이트) + Stop(slop 스캔) 훅 추가 (기존 훅 보존)
+- `.claude/agents/*.md` (기존 8개) — 프론트매터(name/description/**model: sonnet**) 추가, 본문 보존
+- `feature_list.json` — F1~F4에 `impeccableAudit`/`impeccableCritique`/`ultraplanSessionId: null` 필드 추가
+- `.gitignore` — `detect.json`, `.slop.json`, `baseline.err` 무시
+
+### Impeccable 상태
+- CLI: ✅ npm `impeccable@3.1.0` 실재 확인. **주의: engine 요구 Node >=24, 현재 v22.15.0** (detect는 동작했으나 CI 워크플로우는 node 24로 고정).
+- baseline.json: **findings 1건** — `gray-on-color` (warning) `src/components/layout/header.tsx:72` (`text-slate-700` on `bg-teal-50`). 베이스라인으로 채택 → 신규 발생분만 CI/스크립트가 차단.
+- design.json/`.impeccable/` config: 미생성. CLI는 DESIGN.md를 직접 읽으므로 동작에 지장 없음.
+- 오너 액션: `/impeccable teach`로 `.impeccable.md`의 Users/Brand/Aesthetic/Principles [TODO] 확정 필요.
+
+### Ultraplan 세션 로그
+- (없음) 이번 세션은 규모 판정 결과 **중간·소규모 → 순차 흐름**이므로 Direct Ultraplan 미실행.
+- 향후 첫 아키텍처 변경·신기능은 CLAUDE.md Execution Defaults의 **Two-pass 패턴**(로컬 구현 → Ultraplan 승격) 적용 권장. 실행 시 `feature_list.json.ultraplanSessionId`에 세션 ID 기록.
+
+### 가정 / 판단 필요
+- [중간] **Anti-Slop 폰트 규칙에서 `Inter` 제외**: 프로젝트가 DESIGN.md §3에서 Inter를 의도적으로 채택했으므로 PostToolUse grep 패턴(`from-purple-|to-blue-|hover:scale-105|#000000`)에서 `\bInter\b`를 뺐다. impeccable `overused-font`는 DESIGN.md 컨텍스트로 처리. 오너가 Inter 유지를 재확인하면 종결.
+- [낮음] **부록 M/N/O/H 부재**: 원본 프롬프트가 참조한 부록(forbidden/required/design-reviewer/design-qa.yml 표준)을 직접 받지 못해, 코드베이스·DESIGN.md 기반의 합리적 표준안으로 재구성했다. 오너 표준과 다르면 교체 가능.
+- [낮음] **CLAUDE.md Plan Contract 6섹션 정의**: 프롬프트가 "6섹션"만 명시하고 정의를 위임하여, Goal&Scope / Constraints / Assumptions / Blast radius / Verification / Rollback로 구성했다.
+- [낮음] **하위 CLAUDE.md(src/api, src/components)**: 기존 `components/CLAUDE.md`만 PROGRESS 이력에 등장. 본 세션은 신규 생성하지 않음(기존 구조 보존). 필요 시 후속 세션에서 보완.
+
+### 검증
+- 마이그레이션 검증 스크립트 전 항목 ✅ (아래 세션 출력 참조). 기존 파일 git diff 보존 확인.
+
+---
+
 ## [2026-04-17 01:00] 자동 개발 세션 — FAQPage 스키마 + FAQ 다양화 + SEO 콘텐츠 강화
 
 ### 리서치: ⏭️ 스킵 (쿨다운 미만: ~0.8시간 경과, 6시간 미달)

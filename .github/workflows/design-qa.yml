@@ -1,0 +1,51 @@
+name: Design QA
+
+# Runs the impeccable anti-slop / design-quality detector on every push and PR.
+# Fails the job only when NEW findings appear relative to the committed baseline.
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  design-qa:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Run impeccable detect (full, JSON)
+        id: detect
+        run: npx --yes impeccable@latest detect --json src/ > detect.json || true
+
+      - name: Compare against baseline
+        run: |
+          node -e '
+            const fs = require("fs");
+            const read = f => { try { return JSON.parse(fs.readFileSync(f, "utf8")); } catch { return []; } };
+            const key = x => [x.antipattern, x.file && x.file.replace(/\\\\/g, "/").split("/src/").pop(), x.line].join("|");
+            const base = new Set(read("baseline.json").map(key));
+            const now = read("detect.json");
+            const fresh = now.filter(x => !base.has(key(x)));
+            if (fresh.length) {
+              console.error("New design-quality findings (" + fresh.length + "):");
+              for (const f of fresh) console.error(`  [${f.severity}] ${f.antipattern} ${f.file}:${f.line} — ${f.snippet || f.name}`);
+              process.exit(1);
+            }
+            console.log("No new findings beyond baseline (" + base.size + " baselined).");
+          '
+
+      - name: Upload detect report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: design-qa-report
+          path: detect.json

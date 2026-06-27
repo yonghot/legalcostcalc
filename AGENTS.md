@@ -45,3 +45,16 @@
   2. Smoke의 HTTP 200만으로는 부족 — **데이터 풍성도(실 cost 숫자 존재) 검증이 회귀를 잡았다.** "Smoke 부풀리기 금지" 원칙이 실제로 작동.
   3. 무료티어 fleet는 상시 paused 가정. 배포 파이프라인에 "DB resume → 데이터 확인 → 빌드" 선행 단계 필요.
 - 미발행: promise(게이트 2 미충족). 다음: 오너가 Supabase resume 승인 시 → restore_project → 데이터 확인 → 재배포 → 재검증 → promise.
+
+### cycle #2 (2026-06-27) — Supabase resume + 재배포 → 게이트 2 PASS
+- 성공:
+  - `restore_project(eeyqjdfwnizpsalbaaco)` INACTIVE→COMING_UP→ACTIVE_HEALTHY. **데이터 보존됨**(일시정지 후 복원): legal_costs 1224행 전부 sources 보유. (재시드 불요 — COMING_UP 중 일시적으로 빈 결과 보였으나 복원 완료 후 전량 존재.)
+  - `vercel deploy --prod` 원격 빌드가 실 데이터 베이크 → `vercel promote`로 alias 전환 → Smoke 200 + 실 $figure + /api/costs 200 + SSL. 게이트 2 PASS.
+  - Gate-1 폴리시(glassmorphism 제거 등) production 라이브 확인(home backdrop-blur=0).
+- 발견 제약/함정:
+  1. **rollback이 alias를 특정 배포에 "pin"** → 이후 `vercel deploy --prod`가 새 배포를 만들어도 alias가 안 옮겨짐. **명시적 `vercel promote <new>`로 해제** 필요.
+  2. **엣지 ISR 캐시 전파 지연**: control-plane alias 전환 후에도 일부 엣지 노드가 구 SSG HTML 잠시 잔존 서빙(X-Vercel-Cache HIT). 신규 배포 promote가 가장 확실한 해소.
+  3. **env headless Chromium 불가**(`spawn UNKNOWN`) → Playwright 4-viewport 픽셀 측정 미수행. 콘텐츠/구조 검증으로 대체(방식 명시, 측정 부풀리기 금지 준수).
+  4. production env에 service role key 없음 — 앱은 anon + public RLS read만. 시드 쓰기는 MCP 또는 임시 정책 필요(이번엔 데이터 보존되어 불요).
+- 교훈(파이프라인): **배포 전 `list_projects`로 대상 Supabase status=ACTIVE_HEALTHY 강제 확인 → 아니면 restore→대기→데이터 검증 후 빌드.** Smoke는 HTTP 200 + **실 데이터 존재**까지 봐야 함.
+- promise 발행: 게이트 1+2 PASS, 회귀 없음, HANDOVER.md 작성 완료.

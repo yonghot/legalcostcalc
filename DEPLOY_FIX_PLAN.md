@@ -1,5 +1,13 @@
 # Deploy Fix Plan (Ralph Loop)
-마지막 갱신: 2026-06-27 (cycle #1, 배포 시도 후) | 현재 모드: **BLOCKED (외부 자원: Supabase PAUSED)** | 세션 사이클 카운터: 1 | 누적 사이클: 1
+마지막 갱신: 2026-06-27 (cycle #2, 재배포 검증 후) | 현재 모드: **DEPLOYED ✅ (게이트 1+2 PASS)** | 세션 사이클 카운터: 2 | 누적 사이클: 2
+
+## ✅✅ 최종 결과 (cycle #2) — 게이트 1+2 PASS
+- 오너 승인("Resume + redeploy") → `restore_project(eeyqjdfwnizpsalbaaco)` INACTIVE→ACTIVE_HEALTHY → 데이터 보존 확인(states 51·categories 8·legal_costs 1224, 전부 sources 보유).
+- `vercel deploy --prod`(원격 빌드, 실 Supabase) → `legalcostcalc-qiziwq220` → `vercel promote`로 alias 전환(직전 rollback pin 해제).
+- **Smoke**: `/` 200 ✓ · `/api/health` 200 ✓ (strict -sf). **실 데이터**: `/api/costs` median=10600 ✓ · 랜딩 실 $figure($5,900/$10,600/$17,700 등) ✓ · fallback 0 ✓. **SSL/HSTS** ✓.
+- 풍성도: 콘텐츠/구조 검증 PASS(픽셀 스크린샷은 env headless 불가로 미수행, 방식 명시 — HANDOVER.md 참조).
+- production: **https://legalcostcalc.vercel.app** · 인계: HANDOVER.md.
+- ⚠️ 운영 교훈: 배포 전 Supabase status=ACTIVE_HEALTHY 선확인 필수(무료티어 자동 pause).
 
 ## ⛔ 배포 결과 (cycle #1) — 게이트 2 FAIL → 롤백 완료
 - 배포: `vercel deploy --prod` → `legalcostcalc-f71byunld` (Ready). Smoke HTTP는 / 200 · /api/health 200 통과.

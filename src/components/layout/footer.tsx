@@ -67,6 +67,11 @@ export function Footer() {
                   About &amp; Methodology
                 </Link>
               </li>
+              <li>
+                <Link href="/privacy" className={`text-sm text-slate-400 hover:text-teal-400 transition-colors ${FOCUS_RING_DARK} rounded-sm`}>
+                  Privacy Policy
+                </Link>
+              </li>
             </ul>
           </div>
         </div>

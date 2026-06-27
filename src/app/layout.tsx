@@ -74,6 +74,16 @@ export default function RootLayout({
             strategy="afterInteractive"
           />
         )}
+        {/* Google AdSense — only loads when a publisher ID (ca-pub-…) is configured.
+            Set NEXT_PUBLIC_ADSENSE_CLIENT in the environment after approval. */}
+        {process.env.NEXT_PUBLIC_ADSENSE_CLIENT && (
+          <Script
+            async
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_CLIENT}`}
+            crossOrigin="anonymous"
+            strategy="afterInteractive"
+          />
+        )}
       </head>
       <body className="min-h-screen bg-white font-sans text-slate-900 antialiased">
         <a

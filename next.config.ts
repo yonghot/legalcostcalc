@@ -1,5 +1,23 @@
 import type { NextConfig } from "next";
 
+// Google AdSense needs several Google/DoubleClick origins allowlisted in the CSP.
+// We only widen the policy when AdSense is actually configured, so the default
+// (no-AdSense) build keeps the tighter policy.
+const adsenseEnabled = Boolean(process.env.NEXT_PUBLIC_ADSENSE_CLIENT);
+
+const adScript = adsenseEnabled
+  ? " https://pagead2.googlesyndication.com https://*.googlesyndication.com https://*.googleadservices.com https://adservice.google.com https://www.googletagservices.com https://*.google.com https://*.doubleclick.net"
+  : "";
+const adFrame = adsenseEnabled
+  ? "https://*.googlesyndication.com https://*.doubleclick.net https://*.google.com"
+  : "";
+const adImg = adsenseEnabled
+  ? " https://*.googlesyndication.com https://*.doubleclick.net https://*.google.com https://*.gstatic.com"
+  : "";
+const adConnect = adsenseEnabled
+  ? " https://pagead2.googlesyndication.com https://*.googlesyndication.com https://*.google.com https://*.doubleclick.net"
+  : "";
+
 const securityHeaders = [
   {
     key: "X-DNS-Prefetch-Control",
@@ -29,11 +47,12 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline'",
+      `script-src 'self' 'unsafe-inline'${adScript}`,
       "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data:",
+      `img-src 'self' data:${adImg}`,
       "font-src 'self' https://fonts.gstatic.com",
-      "connect-src 'self' https://*.supabase.co",
+      `connect-src 'self' https://*.supabase.co${adConnect}`,
+      ...(adFrame ? [`frame-src ${adFrame}`] : []),
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self'",

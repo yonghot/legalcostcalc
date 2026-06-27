@@ -42,7 +42,7 @@ export function AffiliateCTA({ categorySlug, stateName }: AffiliateCTAProps) {
         ))}
       </div>
 
-      <p className="mt-3 text-xs text-slate-400">
+      <p className="mt-3 text-xs text-slate-500">
         Affiliate disclosure: LegalCostCalc may receive compensation from the companies listed above.
         This does not influence our cost data or estimates.
       </p>
@@ -51,6 +51,12 @@ export function AffiliateCTA({ categorySlug, stateName }: AffiliateCTAProps) {
 }
 
 function buildAffiliateUrl(partner: AffiliatePartner, categorySlug?: string): string {
+  // A real affiliate/tracking link credits commissions — use it verbatim
+  // (appending params can break the partner's own tracking).
+  if (partner.affiliateUrl) {
+    return partner.affiliateUrl;
+  }
+  // No tracking link yet: fall back to the public site with UTM attribution.
   const url = new URL(partner.url);
   url.searchParams.set("utm_source", "legalcostcalc");
   url.searchParams.set("utm_medium", "referral");

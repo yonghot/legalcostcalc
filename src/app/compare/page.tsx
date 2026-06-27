@@ -13,6 +13,7 @@ import { LegalCostData } from "@/lib/types";
 import { formatCurrency } from "@/lib/utils/format";
 import { useCompareCosts } from "@/lib/hooks/use-compare-costs";
 import { FOCUS_RING } from "@/lib/utils/styles";
+import { AffiliateCTA } from "@/components/shared/affiliate-cta";
 import Link from "next/link";
 
 export default function ComparePage() {
@@ -130,6 +131,10 @@ export default function ComparePage() {
             }))}
           />
         )}
+        </div>
+
+        <div className="mt-8">
+          <AffiliateCTA categorySlug={category || undefined} />
         </div>
 
         <div className="mt-12">

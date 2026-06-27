@@ -33,3 +33,15 @@
   - 로컬 Supabase는 플레이스홀더 → 로컬 prebuilt 배포 금지(데이터 없는 빌드). 반드시 원격 빌드(Vercel env=실 Supabase) 또는 git push 자동배포 사용.
   - 본 프로젝트 배포 패턴 = git push(feature/mvp-prototype)→Vercel 자동배포(PROGRESS.md 다수 기록). 즉 `git push`가 곧 production 배포.
 - 다음에 시도: 오너가 production 배포(DEPLOY-001) 승인 시 → 원격 빌드 배포 → SmokeRunner(/ + /api/health 200 + prod 풍성도 실측) → 실패 시 `vercel rollback`. P1-002/004/005는 별도 후속.
+
+### cycle #1 (배포 실행 결과) — 게이트 2 FAIL, 외부 자원 블로커
+- 오너 승인("Deploy to production now") → `vercel link`(prj_aO8PhXBF9EZGcERnjshxul2YMu2F) → `vercel deploy --prod`(원격 빌드) → `legalcostcalc-f71byunld` Ready.
+- Smoke HTTP: / 200 ✅, /api/health 200 ✅ (신규 라우트 검증). **그러나 데이터 검증 실패**: 랜딩이 "currently being collected" fallback.
+- **근본 원인 확정**: `list_projects` → Supabase `legalcostcalc`(eeyqjdfwnizpsalbaaco) **status=INACTIVE(PAUSED)**. `/api/costs`→500. 신규 빌드가 빈 DB로 fallback 베이크. 구 배포는 84일 전 활성 시 실데이터 SSG 베이크라 정상.
+  - **중요 관찰**: 계정 Supabase 프로젝트 12개 중 11개 INACTIVE(threadly만 ACTIVE) → 오너가 의도적으로 idle pause 운영. legalcostcalc resume는 오너 결정사항(billing/의도).
+- 조치: `vercel rollback ik7i6m2e6 --yes` → control-plane alias=ik7i6m2e6 확정(`vercel promote` 409 "already current"로 재확인). 엣지 ISR 캐시 전파 지연으로 일부 노드가 잠시 fallback 잔존 서빙(자가 해소 예상).
+- 교훈:
+  1. **로컬 placeholder Supabase + 원격 빌드라도, Supabase가 paused면 데이터 없는 빌드가 나간다.** 배포 전 `list_projects`로 대상 DB status=ACTIVE_HEALTHY 선확인 필수.
+  2. Smoke의 HTTP 200만으로는 부족 — **데이터 풍성도(실 cost 숫자 존재) 검증이 회귀를 잡았다.** "Smoke 부풀리기 금지" 원칙이 실제로 작동.
+  3. 무료티어 fleet는 상시 paused 가정. 배포 파이프라인에 "DB resume → 데이터 확인 → 빌드" 선행 단계 필요.
+- 미발행: promise(게이트 2 미충족). 다음: 오너가 Supabase resume 승인 시 → restore_project → 데이터 확인 → 재배포 → 재검증 → promise.

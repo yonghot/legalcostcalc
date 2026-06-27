@@ -34,7 +34,7 @@ export const CostResult = memo(function CostResult({
       <Disclaimer variant="full" />
 
       <Card className="overflow-hidden border-slate-200 shadow-md">
-        <CardHeader className="bg-gradient-to-r from-teal-600 to-teal-700 text-white">
+        <CardHeader className="bg-teal-600 text-white">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg">
               {categoryName} Cost in {stateName}

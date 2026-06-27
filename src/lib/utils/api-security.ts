@@ -4,7 +4,7 @@
  */
 export function sanitizeForErrorMessage(input: string, maxLength = 50): string {
   return input
-    .replace(/[<>"'&]/g, "")
+    .replace(/[<>"'&\r\n]/g, "")
     .slice(0, maxLength);
 }
 

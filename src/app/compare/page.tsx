@@ -154,10 +154,10 @@ function CostDifference({ cost1, cost2 }: { cost1: number; cost2: number }) {
   const isHigher = diff > 0;
   return (
     <div className="flex items-center justify-center gap-1.5 py-2">
-      <span className={`font-mono text-sm font-semibold ${isHigher ? "text-red-600" : "text-emerald-600"}`}>
+      <span className={`font-mono text-sm font-semibold ${isHigher ? "text-red-600" : "text-teal-600"}`}>
         {isHigher ? "+" : ""}{formatCurrency(diff)}
       </span>
-      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${isHigher ? "bg-red-50 text-red-700" : "bg-emerald-50 text-emerald-700"}`}>
+      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${isHigher ? "bg-red-50 text-red-700" : "bg-teal-50 text-teal-700"}`}>
         {isHigher ? "+" : ""}{pctDiff}%
       </span>
     </div>

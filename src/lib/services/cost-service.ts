@@ -13,6 +13,20 @@ function isValidComplexity(value: string): value is Complexity {
 
 function mapRowToData(row: LegalCostRow): LegalCostData {
   const complexity = isValidComplexity(row.complexity) ? row.complexity : "moderate";
+
+  // Build contingency fee range only when all three values are present and non-null.
+  // Personal-injury rows carry these; all other categories have them null.
+  const contingencyFee =
+    row.contingency_fee_low != null &&
+    row.contingency_fee_median != null &&
+    row.contingency_fee_high != null
+      ? {
+          low: row.contingency_fee_low,
+          median: row.contingency_fee_median,
+          high: row.contingency_fee_high,
+        }
+      : null;
+
   return {
     id: row.id,
     category: row.category,
@@ -28,6 +42,7 @@ function mapRowToData(row: LegalCostRow): LegalCostData {
       median: row.hourly_rate_median ?? 0,
       high: row.hourly_rate_high ?? 0,
     },
+    contingencyFee,
     typicalDuration: row.typical_duration ?? "Varies",
     commonFees: row.common_fees ?? [],
     sources: row.sources ?? [],

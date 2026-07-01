@@ -17,7 +17,7 @@ export function BreadcrumbSchema({ items }: BreadcrumbSchemaProps) {
       "@type": "ListItem",
       position: index + 1,
       name: item.name,
-      item: `https://legalcostcalc.vercel.app${item.href}`,
+      item: `https://legalcostcalc.co${item.href}`,
     })),
   };
 

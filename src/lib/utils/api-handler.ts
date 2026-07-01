@@ -12,6 +12,7 @@ export interface ApiContext {
  * - Rate limiting (IP-based)
  * - Try-catch error handling with 500 response
  * - X-RateLimit-Remaining header injection
+ * - console.error logging on 500 (Vercel maps this to platform logs)
  */
 export function withApiHandler(
   handler: (ctx: ApiContext) => Promise<NextResponse>,
@@ -26,7 +27,7 @@ export function withApiHandler(
       response.headers.set("X-RateLimit-Remaining", String(guard.remaining));
       return response;
     } catch (error) {
-      void error;
+      console.error("[api-handler] Unhandled error:", error);
       return NextResponse.json(
         errorResponse("Internal server error"),
         { status: 500 },

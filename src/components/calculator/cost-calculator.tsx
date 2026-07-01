@@ -122,6 +122,7 @@ export function CostCalculator({ initialCategory, initialState }: CostCalculator
           results={results}
           stateName={STATES.find((s) => s.code === stateCode)?.name || stateCode}
           categoryName={CATEGORIES.find((c) => c.slug === category)?.displayName || category}
+          categorySlug={category}
         />
         </div>
       )}

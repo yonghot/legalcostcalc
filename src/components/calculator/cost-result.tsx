@@ -8,19 +8,23 @@ import { LegalCostData } from "@/lib/types";
 import { formatCurrency } from "@/lib/utils/format";
 import { isSafeUrl } from "@/lib/utils/sanitize";
 import { checkDataFreshness } from "@/lib/utils/data-freshness";
-import { Clock, DollarSign, FileText, ExternalLink } from "lucide-react";
+import { Clock, DollarSign, FileText, ExternalLink, Percent } from "lucide-react";
 import { FOCUS_RING } from "@/lib/utils/styles";
+import { ResultMonetization } from "@/components/monetization/ResultMonetization";
 
 interface CostResultProps {
   results: LegalCostData[];
   stateName: string;
   categoryName: string;
+  /** Optional category slug for monetization partner filtering. */
+  categorySlug?: string;
 }
 
 export const CostResult = memo(function CostResult({
   results,
   stateName,
   categoryName,
+  categorySlug,
 }: CostResultProps) {
   // Show the first result (filtered by complexity)
   const cost = results[0];
@@ -29,11 +33,19 @@ export const CostResult = memo(function CostResult({
 
   const safeSourceUrls = cost.sources.filter(isSafeUrl);
 
+  // Personal-injury attorneys charge contingency fees, not hourly rates.
+  // When all hourly values are 0 and contingency data is available, show the
+  // Contingency Fee card instead of the (misleadingly zero) Hourly Rate card.
+  const isContingencyBasis =
+    cost.hourlyRate.low === 0 &&
+    cost.hourlyRate.median === 0 &&
+    cost.hourlyRate.high === 0;
+
   return (
     <div className="space-y-4">
       <Disclaimer variant="full" />
 
-      <Card className="overflow-hidden border-slate-200 shadow-md">
+      <Card className="overflow-hidden border-slate-200 shadow-sm">
         <CardHeader className="bg-teal-600 text-white">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg">
@@ -54,19 +66,50 @@ export const CostResult = memo(function CostResult({
 
           {/* Details grid */}
           <div className="grid gap-6 sm:grid-cols-3">
-            {/* Hourly Rate */}
-            <div className="rounded-lg border border-slate-100 bg-slate-50 p-4">
-              <div className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-600">
-                <DollarSign className="h-5 w-5" aria-hidden="true" />
-                Hourly Rate
+            {/* Hourly Rate — hidden when the category bills on contingency */}
+            {!isContingencyBasis && (
+              <div className="rounded-lg border border-slate-100 bg-slate-50 p-4">
+                <div className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-600">
+                  <DollarSign className="h-5 w-5" aria-hidden="true" />
+                  Hourly Rate
+                </div>
+                <p className="font-mono text-lg font-semibold text-slate-900">
+                  {formatCurrency(cost.hourlyRate.low)} – {formatCurrency(cost.hourlyRate.high)}
+                </p>
+                <p className="mt-1 font-mono text-xs text-slate-500">
+                  Median: {formatCurrency(cost.hourlyRate.median)}/hr
+                </p>
               </div>
-              <p className="font-mono text-lg font-semibold text-slate-900">
-                {formatCurrency(cost.hourlyRate.low)} – {formatCurrency(cost.hourlyRate.high)}
-              </p>
-              <p className="mt-1 font-mono text-xs text-slate-500">
-                Median: {formatCurrency(cost.hourlyRate.median)}/hr
-              </p>
-            </div>
+            )}
+
+            {/* Contingency Fee — shown instead of Hourly Rate for personal-injury */}
+            {isContingencyBasis && cost.contingencyFee && (
+              <div className="rounded-lg border border-slate-100 bg-slate-50 p-4">
+                <div className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-600">
+                  <Percent className="h-5 w-5" aria-hidden="true" />
+                  Contingency Fee
+                </div>
+                <p className="font-mono text-lg font-semibold text-slate-900">
+                  {cost.contingencyFee.low}% – {cost.contingencyFee.high}%
+                </p>
+                <p className="mt-1 font-mono text-xs text-slate-500">
+                  Median: {cost.contingencyFee.median}% of settlement
+                </p>
+              </div>
+            )}
+
+            {/* Contingency basis — shown when no contingency data is available */}
+            {isContingencyBasis && !cost.contingencyFee && (
+              <div className="rounded-lg border border-slate-100 bg-slate-50 p-4">
+                <div className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-600">
+                  <Percent className="h-5 w-5" aria-hidden="true" />
+                  Attorney Fees
+                </div>
+                <p className="text-sm text-slate-700">
+                  Contingency basis — see Common Fees
+                </p>
+              </div>
+            )}
 
             {/* Duration */}
             <div className="rounded-lg border border-slate-100 bg-slate-50 p-4">
@@ -130,7 +173,7 @@ export const CostResult = memo(function CostResult({
                 <p className="text-xs text-slate-400">
                   Last verified: {formattedDate}
                 </p>
-                {cost.sources.length < 2 && (
+                {safeSourceUrls.length < 2 && (
                   <p className="mt-1 text-xs italic text-slate-400">
                     Estimated range (single source)
                   </p>
@@ -140,6 +183,17 @@ export const CostResult = memo(function CostResult({
           })()}
         </CardContent>
       </Card>
+
+      {/* ResultMonetization — inserted directly below the cost result card.
+          Never above the result (protects LCP). Disclaimer top+bottom remain
+          intact via the Disclaimer component at the top of this component and
+          on the page-level layout. Each block renders null when its env var is
+          unset (no empty boxes, no broken links). */}
+      <ResultMonetization
+        context={`${categoryName} cost in ${stateName}`}
+        categorySlug={categorySlug}
+        stateName={stateName}
+      />
     </div>
   );
 });

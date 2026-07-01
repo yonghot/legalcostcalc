@@ -3,7 +3,7 @@ import { STATES } from "@/lib/constants/states";
 import { CATEGORIES } from "@/lib/constants/categories";
 import { DATA_VERSION_DATE } from "@/lib/constants/data-meta";
 
-const BASE_URL = "https://legalcostcalc.vercel.app";
+const BASE_URL = "https://legalcostcalc.co";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = DATA_VERSION_DATE;
@@ -26,6 +26,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified,
       changeFrequency: "monthly",
       priority: 0.6,
+    },
+    {
+      url: `${BASE_URL}/embed`,
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.4,
     },
   ];
 

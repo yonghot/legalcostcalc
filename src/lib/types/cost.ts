@@ -13,6 +13,8 @@ export interface LegalCostData {
   complexity: Complexity;
   costRange: CostRange;
   hourlyRate: CostRange;
+  /** Contingency fee percentages (e.g. 25/33/40). Present for personal-injury rows; null for hourly-billed categories. */
+  contingencyFee: CostRange | null;
   typicalDuration: string;
   commonFees: string[];
   sources: string[];
@@ -30,6 +32,10 @@ export interface LegalCostRow {
   hourly_rate_low: number | null;
   hourly_rate_median: number | null;
   hourly_rate_high: number | null;
+  /** Contingency fee percentages — present for personal-injury, null for other categories. */
+  contingency_fee_low: number | null;
+  contingency_fee_median: number | null;
+  contingency_fee_high: number | null;
   typical_duration: string | null;
   common_fees: string[] | null;
   sources: string[] | null;

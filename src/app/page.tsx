@@ -23,6 +23,8 @@ import {
 } from "lucide-react";
 import { AffiliateCTA } from "@/components/shared/affiliate-cta";
 import { OrganizationSchema } from "@/components/seo/organization-schema";
+import { SoftwareApplicationSchema } from "@/components/seo/software-application-schema";
+import { RelatedCalculators } from "@/components/seo/related-calculators";
 import { FaqSchema } from "@/components/seo/faq-schema";
 import { FOCUS_RING } from "@/lib/utils/styles";
 import { POPULAR_STATE_CODES } from "@/lib/constants/popular";
@@ -58,7 +60,7 @@ const HOME_FAQ_QUESTIONS = [
   {
     question: "Are the cost estimates on LegalCostCalc accurate?",
     answer:
-      "Our estimates are based on publicly available data from legal industry sources, state bar associations, and court records. All data includes source citations and last-verified dates. Actual costs may vary based on individual circumstances. This tool provides informational ranges, not legal advice.",
+      "Our estimates are illustrative ranges compiled from publicly available legal-cost research and official fee schedules. Actual costs may vary based on individual circumstances. This tool provides general information, not legal advice.",
   },
   {
     question: "How can I reduce my legal costs?",
@@ -80,6 +82,11 @@ export default function HomePage() {
   return (
     <div>
       <OrganizationSchema />
+      <SoftwareApplicationSchema
+        name="LegalCostCalc — Legal Cost Calculator"
+        description="Free legal cost calculator for all 50 US states. Estimate attorney fees, court costs, and total expenses for divorce, DUI, bankruptcy, personal injury, and more."
+        url="https://legalcostcalc.co/"
+      />
       <FaqSchema questions={HOME_FAQ_QUESTIONS} />
       {/* Hero Section */}
       <section className="bg-gradient-to-b from-teal-50 to-white py-16 sm:py-20">
@@ -125,9 +132,9 @@ export default function HomePage() {
                 <Shield className="h-5 w-5 text-teal-600" aria-hidden="true" />
               </div>
               <div>
-                <h3 className="font-semibold text-slate-900">Source-Verified Data</h3>
+                <h3 className="font-semibold text-slate-900">Authoritative References</h3>
                 <p className="mt-1 text-sm text-slate-600">
-                  Every cost estimate includes cited sources. Cross-referenced from multiple data points.
+                  Estimates compiled from publicly available legal-cost research and official fee schedules.
                 </p>
               </div>
             </div>
@@ -228,6 +235,82 @@ export default function HomePage() {
       <section className="py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <AffiliateCTA />
+        </div>
+      </section>
+
+      {/* Cross-link module — sibling cost-calculator network. */}
+      <RelatedCalculators />
+
+      {/* FAQ Section */}
+      <section className="border-t border-slate-100 py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-slate-900">Frequently Asked Questions</h2>
+          <dl className="mt-8 space-y-6">
+            <div>
+              <dt className="text-base font-semibold text-slate-900">
+                How much does hiring a lawyer cost in the United States?
+              </dt>
+              <dd className="mt-2 text-sm text-slate-600">
+                Attorney fees vary widely by practice area, state, and case complexity. Hourly
+                rates typically range from $150 to $500+, while some cases use flat fees or
+                contingency arrangements. Use our free calculator to get cost estimates specific
+                to your legal matter and state.
+              </dd>
+              <dd className="mt-2 text-xs text-slate-400">
+                Sources:{" "}
+                <a
+                  href="https://www.clio.com/resources/legal-trends/compare-lawyer-rates/"
+                  className="underline hover:text-teal-600"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Clio Legal Trends Report
+                </a>
+                {"; "}
+                <a
+                  href="https://www.bls.gov/ooh/legal/lawyers.htm"
+                  className="underline hover:text-teal-600"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Bureau of Labor Statistics — Lawyers
+                </a>
+              </dd>
+            </div>
+            <div>
+              <dt className="text-base font-semibold text-slate-900">
+                What factors affect legal costs?
+              </dt>
+              <dd className="mt-2 text-sm text-slate-600">
+                The main factors are: the type of legal matter (divorce, DUI, bankruptcy,
+                etc.), your state, case complexity (simple, moderate, or complex), attorney
+                experience, and whether the case goes to trial. Court filing fees and expert
+                witness costs can also add to the total.
+              </dd>
+            </div>
+            <div>
+              <dt className="text-base font-semibold text-slate-900">
+                Are the cost estimates on LegalCostCalc accurate?
+              </dt>
+              <dd className="mt-2 text-sm text-slate-600">
+                Our estimates are illustrative ranges compiled from publicly available
+                legal-cost research and official fee schedules. They are intended as a
+                starting reference; actual costs may vary based on individual circumstances.
+                This tool provides general information, not legal advice.
+              </dd>
+            </div>
+            <div>
+              <dt className="text-base font-semibold text-slate-900">
+                What legal categories does LegalCostCalc cover?
+              </dt>
+              <dd className="mt-2 text-sm text-slate-600">
+                We currently cover 8 legal categories across all 50 US states plus DC:
+                Divorce, DUI/DWI, Personal Injury, Bankruptcy, Real Estate Closing, Estate
+                Planning/Probate, Criminal Defense, and Immigration. Each category includes
+                cost ranges, hourly rates, typical duration, and common fees.
+              </dd>
+            </div>
+          </dl>
         </div>
       </section>
 

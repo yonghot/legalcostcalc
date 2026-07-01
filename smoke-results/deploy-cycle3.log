@@ -1,0 +1,17 @@
+Vercel CLI 48.0.0
+Retrieving project…
+Deploying sk1597530-3914s-projects/legalcostcalc
+Uploading [--------------------] (0.0B/251.7KB)
+Uploading [=====---------------] (63.1KB/251.7KB)
+Uploading [==========----------] (136.2KB/251.7KB)
+Uploading [===============-----] (200.2KB/251.7KB)
+Uploading [====================] (251.7KB/251.7KB)
+Inspect: https://vercel.com/sk1597530-3914s-projects/legalcostcalc/F7dCLRdkMZbXAVb7weFuU4y5Gw2c [3s]
+Production: https://legalcostcalc-dgyonos2q-sk1597530-3914s-projects.vercel.app [3s]
+https://legalcostcalc-dgyonos2q-sk1597530-3914s-projects.vercel.appBuilding
+Building
+Completing
+
+Common next commands:
+- `vercel inspect legalcostcalc-dgyonos2q-sk1597530-3914s-projects.vercel.app --logs`
+- `vercel redeploy legalcostcalc-dgyonos2q-sk1597530-3914s-projects.vercel.app`

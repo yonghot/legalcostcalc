@@ -4,6 +4,7 @@ import { DISCLAIMER_TEXT } from "@/lib/constants/disclaimer";
 import { CATEGORIES } from "@/lib/constants/categories";
 import { DEFAULT_STATE_SLUG } from "@/lib/constants/costs";
 import { FOCUS_RING_DARK } from "@/lib/utils/styles";
+import { ManageConsentLink } from "@/components/consent/manage-consent-link";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -63,14 +64,39 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/settlement-estimator" className={`text-sm text-slate-400 hover:text-teal-400 transition-colors ${FOCUS_RING_DARK} rounded-sm`}>
+                  Settlement Estimator
+                </Link>
+              </li>
+              <li>
                 <Link href="/about" className={`text-sm text-slate-400 hover:text-teal-400 transition-colors ${FOCUS_RING_DARK} rounded-sm`}>
                   About &amp; Methodology
+                </Link>
+              </li>
+              <li>
+                <Link href="/contact" className={`text-sm text-slate-400 hover:text-teal-400 transition-colors ${FOCUS_RING_DARK} rounded-sm`}>
+                  Contact
+                </Link>
+              </li>
+              <li>
+                <Link href="/embed" className={`text-sm text-slate-400 hover:text-teal-400 transition-colors ${FOCUS_RING_DARK} rounded-sm`}>
+                  Embed Calculator
                 </Link>
               </li>
               <li>
                 <Link href="/privacy" className={`text-sm text-slate-400 hover:text-teal-400 transition-colors ${FOCUS_RING_DARK} rounded-sm`}>
                   Privacy Policy
                 </Link>
+              </li>
+              <li>
+                <Link href="/terms" className={`text-sm text-slate-400 hover:text-teal-400 transition-colors ${FOCUS_RING_DARK} rounded-sm`}>
+                  Terms of Service
+                </Link>
+              </li>
+              <li>
+                <ManageConsentLink
+                  className={`text-left text-sm text-slate-400 hover:text-teal-400 transition-colors ${FOCUS_RING_DARK} rounded-sm`}
+                />
               </li>
             </ul>
           </div>

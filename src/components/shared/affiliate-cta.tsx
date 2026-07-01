@@ -1,16 +1,46 @@
 import { ExternalLink } from "lucide-react";
-import { getPartnersForCategory, type AffiliatePartner } from "@/lib/constants/affiliates";
+import {
+  getPartnersForCategory,
+  getAffiliateTrackingUrl,
+  type AffiliatePartner,
+} from "@/lib/constants/affiliates";
 import { CARD_HOVER, FOCUS_RING } from "@/lib/utils/styles";
+import { isSafeUrl } from "@/lib/utils/sanitize";
 
 interface AffiliateCTAProps {
   categorySlug?: string;
   stateName?: string;
 }
 
+/**
+ * AffiliateCTA — renders partner links ONLY when the owner has set the
+ * corresponding NEXT_PUBLIC_AFFILIATE_<SLUG>_URL environment variable to a
+ * valid HTTPS tracking URL.
+ *
+ * When no partner has a configured tracking URL, this component renders nothing
+ * (returns null). There is no fallback to a hardcoded affiliate URL or a UTM-
+ * tagged public site URL.
+ *
+ * Gate summary:
+ *   1. getPartnersForCategory() filters by category relevance.
+ *   2. getAffiliateTrackingUrl() reads the env var and isSafeUrl-guards it.
+ *   3. Only partners whose env var is set AND passes isSafeUrl render a link.
+ *   4. Partners without a configured URL are silently omitted.
+ *   5. If no partners have a configured URL, the entire block renders null.
+ */
 export function AffiliateCTA({ categorySlug, stateName }: AffiliateCTAProps) {
-  const partners = getPartnersForCategory(categorySlug);
+  const candidates = getPartnersForCategory(categorySlug);
 
-  if (partners.length === 0) return null;
+  // Resolve the tracking URL for each candidate — only keep those with a
+  // valid, owner-supplied env var.
+  const activePartners: Array<{ partner: AffiliatePartner; trackingUrl: string }> =
+    candidates.flatMap((partner) => {
+      const trackingUrl = getAffiliateTrackingUrl(partner, isSafeUrl);
+      return trackingUrl ? [{ partner, trackingUrl }] : [];
+    });
+
+  // Nothing to show — owner has not configured any affiliate programs yet.
+  if (activePartners.length === 0) return null;
 
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-6">
@@ -18,14 +48,15 @@ export function AffiliateCTA({ categorySlug, stateName }: AffiliateCTAProps) {
         Need Legal Help{stateName ? ` in ${stateName}` : ""}?
       </h3>
       <p className="mt-1 text-sm text-slate-500">
-        Connect with trusted legal service providers. These are affiliate links — we may earn a commission at no extra cost to you.
+        Connect with trusted legal service providers. These are affiliate links — we may earn a
+        commission at no extra cost to you.
       </p>
 
       <div className="mt-4 space-y-3">
-        {partners.map((partner: AffiliatePartner) => (
+        {activePartners.map(({ partner, trackingUrl }) => (
           <a
             key={partner.slug}
-            href={buildAffiliateUrl(partner, categorySlug)}
+            href={trackingUrl}
             target="_blank"
             rel="noopener noreferrer nofollow"
             className={`flex flex-col gap-3 rounded-lg border border-slate-200 p-4 ${CARD_HOVER} ${FOCUS_RING} sm:flex-row sm:items-center sm:justify-between`}
@@ -43,25 +74,9 @@ export function AffiliateCTA({ categorySlug, stateName }: AffiliateCTAProps) {
       </div>
 
       <p className="mt-3 text-xs text-slate-500">
-        Affiliate disclosure: LegalCostCalc may receive compensation from the companies listed above.
-        This does not influence our cost data or estimates.
+        Affiliate disclosure: LegalCostCalc may receive compensation from the companies listed
+        above. This does not influence our cost data or estimates.
       </p>
     </div>
   );
-}
-
-function buildAffiliateUrl(partner: AffiliatePartner, categorySlug?: string): string {
-  // A real affiliate/tracking link credits commissions — use it verbatim
-  // (appending params can break the partner's own tracking).
-  if (partner.affiliateUrl) {
-    return partner.affiliateUrl;
-  }
-  // No tracking link yet: fall back to the public site with UTM attribution.
-  const url = new URL(partner.url);
-  url.searchParams.set("utm_source", "legalcostcalc");
-  url.searchParams.set("utm_medium", "referral");
-  if (categorySlug) {
-    url.searchParams.set("utm_campaign", categorySlug);
-  }
-  return url.toString();
 }

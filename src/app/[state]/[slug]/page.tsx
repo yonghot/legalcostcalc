@@ -15,8 +15,12 @@ import { Badge } from "@/components/ui/badge";
 import { AffiliateCTA } from "@/components/shared/affiliate-cta";
 import { FOCUS_RING } from "@/lib/utils/styles";
 import { BreadcrumbSchema } from "@/components/seo/breadcrumb-schema";
+import { SoftwareApplicationSchema } from "@/components/seo/software-application-schema";
 import { CostDetailsSection } from "@/components/seo/cost-details-section";
 import { RelatedLinks } from "@/components/seo/related-links";
+import { RelatedCalculators } from "@/components/seo/related-calculators";
+import { AdProvider } from "@/components/monetization/AdProvider";
+import { AuthorByline } from "@/components/shared/author-byline";
 
 interface PageProps {
   params: Promise<{ state: string; slug: string }>;
@@ -72,7 +76,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title,
       description,
       type: "website",
-      url: `https://legalcostcalc.vercel.app/${stateInfo.slug}/${categorySlug}-cost`,
+      url: `https://legalcostcalc.co/${stateInfo.slug}/${categorySlug}-cost`,
       siteName: "LegalCostCalc",
       locale: "en_US",
     },
@@ -152,6 +156,11 @@ export default async function StateCategoryPage({ params }: PageProps) {
           { name: `${categoryInfo.displayName} Cost`, href: `/${stateInfo.slug}/${categoryInfo.slug}-cost` },
         ]}
       />
+      <SoftwareApplicationSchema
+        name={`${categoryInfo.displayName} Cost Calculator — ${stateInfo.name}`}
+        description={`Free calculator estimating ${categoryInfo.displayName.toLowerCase()} costs in ${stateInfo.name}, including attorney fees, court costs, and common fees.`}
+        url={`https://legalcostcalc.co/${stateInfo.slug}/${categoryInfo.slug}-cost`}
+      />
 
       <section className="bg-gradient-to-b from-teal-50 to-white py-16 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -173,6 +182,30 @@ export default async function StateCategoryPage({ params }: PageProps) {
               {year} cost estimates for {categoryInfo.displayName.toLowerCase()} in {stateInfo.name},
               including attorney fees, court costs, and other expenses.
             </p>
+
+            {/* Quick-answer block — concise typical cost + range for featured
+                snippets / AI Overviews. Uses real moderate-complexity data only;
+                rendered only when that data exists. */}
+            {moderateCost && (
+              <p className="mt-4 max-w-2xl rounded-lg border border-teal-100 bg-teal-50/60 p-4 text-base text-slate-700">
+                <span className="font-semibold text-slate-900">Quick answer:</span>{" "}
+                A {categoryInfo.displayName.toLowerCase()} in {stateInfo.name} typically costs{" "}
+                <span className="font-mono font-semibold text-teal-700">
+                  {formatCurrency(moderateCost.costRange.median)}
+                </span>{" "}
+                for a moderate-complexity case, with most ranging from{" "}
+                <span className="font-mono font-semibold">
+                  {formatCurrency(moderateCost.costRange.low)}
+                </span>{" "}
+                to{" "}
+                <span className="font-mono font-semibold">
+                  {formatCurrency(moderateCost.costRange.high)}
+                </span>
+                .
+              </p>
+            )}
+
+            <AuthorByline className="mt-4" />
           </div>
 
           {/* Quick stats */}
@@ -258,7 +291,16 @@ export default async function StateCategoryPage({ params }: PageProps) {
         />
       )}
 
-      {/* Interactive Calculator */}
+      {/* In-content ad — placed between the cost details and the calculator,
+          below the fold on most viewports. Routes through AdProvider so exactly
+          one programmatic network is active. */}
+      <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
+        <AdProvider className="w-full" />
+      </div>
+
+      {/* Interactive Calculator — ResultMonetization is injected inside CostResult
+          (via cost-result.tsx) so it appears directly below each result card.
+          Email capture and result-area ad are handled there; no duplicate here. */}
       <section className="py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h2 className="mb-6 text-2xl font-bold text-slate-900">
@@ -285,6 +327,15 @@ export default async function StateCategoryPage({ params }: PageProps) {
         otherCategories={otherCategories}
         allOtherStates={allOtherStates}
       />
+
+      {/* Cross-link module — sibling cost-calculator network. */}
+      <RelatedCalculators />
+
+      {/* In-content ad — after related links, before the bottom disclaimer.
+          Routes through AdProvider to keep exactly one programmatic network. */}
+      <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
+        <AdProvider className="w-full" />
+      </div>
 
       {/* Bottom Disclaimer */}
       <section className="py-8">

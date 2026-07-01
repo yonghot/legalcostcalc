@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     description:
       "Compare legal costs between states or across different legal categories. Side-by-side cost comparison for divorce, DUI, bankruptcy, and more.",
     type: "website",
-    url: "https://legalcostcalc.vercel.app/compare",
+    url: "https://legalcostcalc.co/compare",
     siteName: "LegalCostCalc",
     locale: "en_US",
   },
@@ -30,11 +30,11 @@ export default function CompareLayout({
     name: "Compare Legal Costs",
     description:
       "Compare legal costs between US states or across different legal categories with side-by-side cost breakdowns.",
-    url: "https://legalcostcalc.vercel.app/compare",
+    url: "https://legalcostcalc.co/compare",
     isPartOf: {
       "@type": "WebSite",
       name: "LegalCostCalc",
-      url: "https://legalcostcalc.vercel.app",
+      url: "https://legalcostcalc.co",
     },
   };
 

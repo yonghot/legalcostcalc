@@ -3,7 +3,12 @@ import type { NextConfig } from "next";
 // Google AdSense needs several Google/DoubleClick origins allowlisted in the CSP.
 // We only widen the policy when AdSense is actually configured, so the default
 // (no-AdSense) build keeps the tighter policy.
-const adsenseEnabled = Boolean(process.env.NEXT_PUBLIC_ADSENSE_CLIENT);
+const adsenseEnabled = Boolean(process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID);
+
+// Google Analytics 4 (gtag.js) needs googletagmanager.com in script-src and
+// google-analytics.com in connect-src.  We only widen the policy when a GA
+// measurement ID is configured, mirroring the AdSense gating above.
+const gaEnabled = Boolean(process.env.NEXT_PUBLIC_GA_ID);
 
 const adScript = adsenseEnabled
   ? " https://pagead2.googlesyndication.com https://*.googlesyndication.com https://*.googleadservices.com https://adservice.google.com https://www.googletagservices.com https://*.google.com https://*.doubleclick.net"
@@ -16,6 +21,14 @@ const adImg = adsenseEnabled
   : "";
 const adConnect = adsenseEnabled
   ? " https://pagead2.googlesyndication.com https://*.googlesyndication.com https://*.google.com https://*.doubleclick.net"
+  : "";
+
+// GA4 / gtag.js CSP additions (only when NEXT_PUBLIC_GA_ID is set).
+const gaScript = gaEnabled
+  ? " https://www.googletagmanager.com"
+  : "";
+const gaConnect = gaEnabled
+  ? " https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com"
   : "";
 
 const securityHeaders = [
@@ -47,11 +60,11 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      `script-src 'self' 'unsafe-inline'${adScript}`,
+      `script-src 'self' 'unsafe-inline'${adScript}${gaScript}`,
       "style-src 'self' 'unsafe-inline'",
       `img-src 'self' data:${adImg}`,
       "font-src 'self' https://fonts.gstatic.com",
-      `connect-src 'self' https://*.supabase.co${adConnect}`,
+      `connect-src 'self' https://*.supabase.co${adConnect}${gaConnect}`,
       ...(adFrame ? [`frame-src ${adFrame}`] : []),
       "frame-ancestors 'none'",
       "base-uri 'self'",
@@ -71,9 +84,35 @@ const nextConfig: NextConfig = {
     cpus: 4,
   },
   async headers() {
+    // /embed/* must be loadable inside third-party iframes, so it overrides the
+    // global X-Frame-Options / frame-ancestors lockdown. Everything else keeps
+    // the strict no-framing policy. We list the embed rule FIRST and exclude
+    // /embed from the catch-all so the relaxed framing policy wins for embeds.
+    const embedSecurityHeaders = securityHeaders.map((h) => {
+      if (h.key === "X-Frame-Options") {
+        // Drop the legacy header for embeds (allow framing anywhere).
+        return { key: "X-Frame-Options", value: "ALLOWALL" };
+      }
+      if (h.key === "Content-Security-Policy") {
+        return {
+          key: "Content-Security-Policy",
+          value: h.value.replace(
+            "frame-ancestors 'none'",
+            "frame-ancestors *",
+          ),
+        };
+      }
+      return h;
+    });
+
     return [
       {
-        source: "/(.*)",
+        source: "/embed/:path*",
+        headers: embedSecurityHeaders,
+      },
+      {
+        // Catch-all for every non-embed route.
+        source: "/((?!embed).*)",
         headers: securityHeaders,
       },
     ];

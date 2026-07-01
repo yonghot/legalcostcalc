@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: ["/api/"],
     },
-    sitemap: "https://legalcostcalc.vercel.app/sitemap.xml",
+    sitemap: "https://legalcostcalc.co/sitemap.xml",
   };
 }

@@ -9,16 +9,16 @@ import { FOCUS_RING } from "@/lib/utils/styles";
 export const metadata: Metadata = {
   title: "About LegalCostCalc — Our Data & Methodology",
   description:
-    "Learn how LegalCostCalc provides transparent, source-verified legal cost estimates across all 50 US states. Our methodology, data sources, and commitment to accuracy.",
+    "Learn how LegalCostCalc provides transparent legal cost estimates across all 50 US states. Our methodology, reference sources, and commitment to accuracy.",
   alternates: {
     canonical: "/about",
   },
   openGraph: {
     title: "About LegalCostCalc — Our Data & Methodology",
     description:
-      "Learn how LegalCostCalc provides transparent, source-verified legal cost estimates across all 50 US states.",
+      "Learn how LegalCostCalc provides transparent legal cost estimates across all 50 US states.",
     type: "website",
-    url: "https://legalcostcalc.vercel.app/about",
+    url: "https://legalcostcalc.co/about",
     siteName: "LegalCostCalc",
     locale: "en_US",
   },
@@ -30,12 +30,12 @@ export default function AboutPage() {
     "@type": "AboutPage",
     name: "About LegalCostCalc",
     description:
-      "Learn how LegalCostCalc provides transparent, source-verified legal cost estimates across all 50 US states.",
-    url: "https://legalcostcalc.vercel.app/about",
+      "Learn how LegalCostCalc provides transparent legal cost estimates across all 50 US states.",
+    url: "https://legalcostcalc.co/about",
     isPartOf: {
       "@type": "WebSite",
       name: "LegalCostCalc",
-      url: "https://legalcostcalc.vercel.app",
+      url: "https://legalcostcalc.co",
     },
   };
 
@@ -106,27 +106,75 @@ export default function AboutPage() {
                   <h2 className="text-xl font-semibold text-slate-900">Our Data Sources</h2>
                 </div>
                 <p className="mt-3 text-slate-600">
-                  Our cost estimates are compiled from publicly available data including
-                  attorney fee surveys, state bar association reports, court filing fee
-                  schedules, and legal service provider pricing. We cross-reference multiple
-                  sources to ensure accuracy.
+                  Our cost estimates are illustrative estimates compiled from publicly
+                  available legal-cost research and official fee schedules. Key reference
+                  sources include:
                 </p>
                 <ul className="mt-3 space-y-2 text-sm text-slate-600">
                   <li className="flex items-start gap-2">
                     <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-teal-500" />
-                    State bar association fee surveys and reports
+                    <span>
+                      <a
+                        href="https://www.bls.gov/ooh/legal/lawyers.htm"
+                        className="underline hover:text-teal-600"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Bureau of Labor Statistics (BLS) — Lawyers Occupational Outlook
+                      </a>
+                    </span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-teal-500" />
-                    Bureau of Labor Statistics (BLS) occupational data
+                    <span>
+                      <a
+                        href="https://www.clio.com/resources/legal-trends/compare-lawyer-rates/"
+                        className="underline hover:text-teal-600"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Clio Legal Trends Report — Lawyer Rate Benchmarks
+                      </a>
+                    </span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-teal-500" />
-                    State court filing fee schedules
+                    <span>
+                      <a
+                        href="https://www.uscourts.gov/court-programs/bankruptcy/bankruptcy-basics"
+                        className="underline hover:text-teal-600"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        U.S. Courts — Bankruptcy Basics &amp; Fee Schedule
+                      </a>
+                    </span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-teal-500" />
-                    Legal service provider published pricing
+                    <span>
+                      <a
+                        href="https://www.uscis.gov/forms/filing-fees"
+                        className="underline hover:text-teal-600"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        USCIS — Immigration Filing Fees
+                      </a>
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-teal-500" />
+                    <span>
+                      <a
+                        href="https://www.nolo.com/legal-encyclopedia/ctp/cost-of-divorce.html"
+                        className="underline hover:text-teal-600"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Nolo — Legal Cost Research &amp; Guides
+                      </a>
+                    </span>
                   </li>
                 </ul>
               </div>
@@ -160,7 +208,7 @@ export default function AboutPage() {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="flex-shrink-0 font-semibold text-teal-600">4.</span>
-                    Publish with source attribution and verification dates
+                    Publish ranges with reference to authoritative public sources
                   </li>
                 </ol>
               </div>

@@ -81,6 +81,144 @@
       "impeccableAudit": null,
       "impeccableCritique": null,
       "ultraplanSessionId": null
+    },
+    {
+      "id": "F5",
+      "name": "Credibility & Fact-Check Pass",
+      "priority": "P0",
+      "status": "pass",
+      "description": "YMYL credibility review: all fabricated source URLs removed from costs.json, about page over-claims softened, real authoritative citations surfaced in UI.",
+      "evidence": "2026-06-29: Brief-driven corrections applied. (1) costs.json: fabricated courts.state.XX.us / martindale / avvo UGC / stale nolo slugs / stale findlaw slug replaced with verified authoritative URLs; USCIS immigration fees updated to post-2024-04-01 values (I-130 $675, I-485 $1,440, etc.); biometrics fee qualified; uscourts.gov path corrected to /court-programs/*. (2) about/page.tsx: data-sources list replaced with real authorities (BLS OOH, Clio Legal Trends, uscourts.gov, uscis.gov, Nolo) with live links; 'cross-reference multiple sources' / 'source attribution and verification dates' overclaims removed; wording changed to 'illustrative estimates compiled from publicly available legal-cost research and official fee schedules'. (3) home page: visible FAQ section added with clickable Clio + BLS citations on the $150-$500+ hourly-rate answer; schema.org FAQ text softened to match. Build: npm run build green.",
+      "acceptance": [
+        "About page describes figures as illustrative estimates, not cross-referenced verified data",
+        "About page lists only real authoritative sources with live links (BLS, Clio, uscourts.gov, uscis.gov, Nolo)",
+        "Home page FAQ hourly-rate answer cites Clio Legal Trends and BLS with clickable links",
+        "costs.json: no fabricated courts.state.XX.us URLs",
+        "costs.json: no fabricated martindale per-state cost URLs",
+        "costs.json: USCIS immigration fees reflect post-2024-04-01 fee rule",
+        "costs.json: uscourts.gov paths use current canonical /court-programs/* paths",
+        "Build passes with 0 errors"
+      ],
+      "impeccableAudit": null,
+      "impeccableCritique": null,
+      "ultraplanSessionId": null
+    }
+  ,
+    {
+      "id": "F6",
+      "name": "Settlement Net Estimator",
+      "priority": "P1",
+      "status": "pass",
+      "description": "Pure-util settlement net estimator: net = gross * (1 - contingencyPct/100) - caseCosts, clamped >= 0. New page /settlement-estimator with interactive form, source citations (ABA Model Rule 1.5(c); Nolo), and mandatory UPL disclaimers top+bottom. Env-gated affiliate CTA infrastructure.",
+      "evidence": "2026-06-30: (1) src/lib/utils/settlement-estimator.ts — pure utility, validated inputs, 5 error types, DEFAULT_CONTINGENCY_PCT=33.33. (2) tests/settlement-estimator.test.ts — 21 tests (normal, zero costs, costs>net=>0, all invalid input permutations, constant check). (3) src/components/calculator/settlement-estimator-form.tsx — client component with Disclaimer top+bottom, source citations, aria-live results. (4) src/app/settlement-estimator/page.tsx — static page with BreadcrumbSchema, site-level Disclaimer top+bottom, formula explainer, AffiliateCTA. (5) Header + Footer nav updated. (6) src/lib/constants/affiliates.ts — affiliateUrl replaced by affiliateUrlEnvVar (no hardcoded URL); getAffiliateTrackingUrl() reads NEXT_PUBLIC_AFFILIATE_<SLUG>_URL and isSafeUrl-guards it. (7) src/components/shared/affiliate-cta.tsx — renders only when env-var-resolved tracking URL is present; null otherwise. Gate: lint 0 errors, 122/122 tests, build 833 pages (was 832).",
+      "acceptance": [
+        "estimateSettlementNet() returns correct net for normal inputs",
+        "Returns net = 0 (COSTS_EXCEED_NET) when case costs exceed post-fee amount",
+        "Returns INVALID_GROSS for zero/negative/NaN/Infinity gross",
+        "Returns INVALID_CONTINGENCY_PCT for 0, 100, negative, NaN contingency",
+        "Returns INVALID_CASE_COSTS for negative or NaN costs",
+        "/settlement-estimator page renders with disclaimer at top and bottom",
+        "Source citations to Nolo and ABA Model Rule 1.5(c) present",
+        "AffiliateCTA renders null when no NEXT_PUBLIC_AFFILIATE_*_URL env vars are set",
+        "AffiliateCTA renders clickable link only when isSafeUrl-guarded env var is present",
+        "No hardcoded affiliate tracking URL in codebase",
+        "npm run lint: 0 errors",
+        "npm test: 122/122 pass",
+        "npm run build: 833 pages, 0 TS errors"
+      ],
+      "impeccableAudit": null,
+      "impeccableCritique": null,
+      "ultraplanSessionId": null
+    }
+  ,
+    {
+      "id": "F7",
+      "name": "Contact Page",
+      "priority": "P1",
+      "status": "pass",
+      "description": "AdSense-approval-strengthening Contact page with validated server-side form. No fabricated contact details — email shown only when NEXT_PUBLIC_CONTACT_EMAIL env var is set by owner.",
+      "evidence": "2026-06-30: (1) src/app/api/contact/route.ts — POST endpoint validates name (≤100), email (RFC shape + ≤254), message (≤2000); returns 200 {ok:true} as safe no-op; mirrors /api/subscribe pattern with rateLimitGuard. (2) src/components/shared/contact-form.tsx — client component with labeled inputs, aria-live status region, focus-visible rings, character counter. (3) src/app/contact/page.tsx — static page, Disclaimer top+bottom, BreadcrumbSchema, ContactPage schema.org, NEXT_PUBLIC_CONTACT_EMAIL guard. (4) footer.tsx — Contact link added to Resources list. (5) tests/contact.test.ts — 42 new unit tests covering constants, getField helper, EMAIL_RE, server validation (valid + all rejection cases), client validateContactFields. Gate: lint 0 errors, 164/164 tests, build 834 pages.",
+      "acceptance": [
+        "/contact page renders with Disclaimer at top and bottom",
+        "Form has labeled inputs (Name, Email, Message) with focus-visible rings",
+        "aria-live region shows success/error status for screen readers",
+        "POST /api/contact validates name (required, ≤100 chars)",
+        "POST /api/contact validates email (required, valid shape, ≤254 chars)",
+        "POST /api/contact validates message (required, ≤2000 chars)",
+        "POST /api/contact returns 200 {ok:true} for valid payload (safe no-op)",
+        "POST /api/contact returns 400 for any missing or invalid field",
+        "Contact email shown only when NEXT_PUBLIC_CONTACT_EMAIL env var is set",
+        "Contact link present in footer Resources list",
+        "npm run lint: 0 errors",
+        "npm test: 164/164 pass",
+        "npm run build: 834 pages, 0 TS errors"
+      ],
+      "impeccableAudit": null,
+      "impeccableCritique": null,
+      "ultraplanSessionId": null
+    }
+  ,
+    {
+      "id": "F8",
+      "name": "Site-wide Feedback Widget",
+      "priority": "P1",
+      "status": "pass",
+      "description": "Floating Feedback button (fixed bottom-right, teal brand, Lucide icon) mounted globally in root layout. Click opens a compact panel (320–380 px) with type select (Bug/Feature/Other), message textarea (required, ≤2000 chars, live counter), optional email, Submit + Close. POST /api/feedback validates and forwards to FEEDBACK_ENDPOINT env var (server-side, 5 s timeout, try/catch); safe no-op when unset. Full a11y: labeled inputs, focus trap, Esc closes, aria-live status, focus-visible rings, prefers-reduced-motion via motion-safe:. Design tokens only; no forbidden patterns.",
+      "evidence": "2026-07-01: (1) src/lib/utils/feedback-validation.ts — pure validation helper; FEEDBACK_TYPES, getField, validateFeedbackBody, EMAIL_RE, constants. (2) src/app/api/feedback/route.ts — POST, force-dynamic, rateLimitGuard, 8 KB body cap, validates via helper, server-enriches with userAgent + receivedAt, forwards to FEEDBACK_ENDPOINT if set (5 s timeout, try/catch, never blocks user on failure). No DB/Supabase. (3) src/components/shared/feedback-widget.tsx — client component; focus trap + Esc; aria-live success/error region; motion-safe animation; FOCUS_RING tokens; teal brand colors; no forbidden CSS patterns. (4) src/app/layout.tsx — FeedbackWidget mounted globally after SiteChrome. (5) src/app/globals.css — fadeIn keyframe added. (6) tests/feedback.test.ts — 29 new tests: getField, EMAIL_RE, FEEDBACK_TYPES, validateFeedbackBody (valid + all rejection branches), API no-op when endpoint unset, API calls fetch when endpoint set, API returns 200 on forward failure. Gate: lint 0 errors, 193/193 tests, build 834 pages.",
+      "acceptance": [
+        "Feedback button visible on every page (global layout mount)",
+        "Button is fixed bottom-right, teal brand, Lucide MessageSquare icon + 'Feedback' label",
+        "Click opens compact panel (~320–380 px) with type select, message textarea, email input",
+        "Panel has labeled inputs, aria-live status region, focus trap, Esc closes",
+        "Successful submit shows 'Thanks — we got your feedback!' then auto-closes",
+        "POST /api/feedback validates type ∈ {bug,feature,other}",
+        "POST /api/feedback validates message required, trimmed, 1–2000 chars",
+        "POST /api/feedback validates optional email (≤254 + regex)",
+        "POST /api/feedback returns 200 {ok:true} when FEEDBACK_ENDPOINT is not set (safe no-op)",
+        "POST /api/feedback forwards to FEEDBACK_ENDPOINT when set (server-side fetch)",
+        "POST /api/feedback returns 200 {ok:true} even when forward fails",
+        "No DB / Supabase used",
+        "npm run lint: 0 errors",
+        "npm test: 193/193 pass",
+        "npm run build: 834 pages, 0 TS errors"
+      ],
+      "impeccableAudit": null,
+      "impeccableCritique": null,
+      "ultraplanSessionId": null
+    }
+  ,
+    {
+      "id": "F9",
+      "name": "No-Checkout Monetization Stack",
+      "priority": "P1",
+      "status": "pass",
+      "description": "ENV-gated unified monetization stack. All slots render null when their env var is unset. Single programmatic ad network selector (AdProvider). ResultMonetization inserted below cost result. ads.txt redirect support. .env.example fully documented.",
+      "evidence": "2026-07-01: (1) src/lib/monetization.ts — central config; parseFeaturedPartners, parseAdProvider, parsePrimaryCTAType, getMonetizationConfig; VERTICAL_DEFAULT_CTA_TYPE='call'. (2) src/components/monetization/AdProvider.tsx — single network selector; adsense reuses existing AdUnit; ezoic/raptive each inject one <script>; none renders null; never two providers. (3) src/components/monetization/ResultMonetization.tsx — PrimaryIntentCTA (call/cpl/affiliate/none), DisplaySlot (AdProvider, lazy IO), FeaturedPartnerTableBlock (FTC disclosure inline above table), SponsorSlot, EmailCapture reuse. (4) src/components/calculator/cost-result.tsx — ResultMonetization inserted directly below the cost card; existing AdUnit/EmailCapture removed from page to avoid two units. (5) src/app/[state]/[slug]/page.tsx — in-content AdUnits routed through AdProvider; page-level email capture + result-area AdUnit removed (now inside ResultMonetization). (6) src/app/ads.txt/route.ts — 301 redirect when NEXT_PUBLIC_ADSTXT_REDIRECT_URL is set; AdSense line preserved as default. (7) .env.example — all monetization keys documented. (8) tests/monetization.test.ts — 58 unit tests: parseFeaturedPartners (8), parseAdProvider (7), parsePrimaryCTAType (7), getMonetizationConfig env-unset (16), getMonetizationConfig env-set (13), single-provider invariant (3). Gate: lint 0 errors, 251/251 tests, build 833 pages (0 TS errors).",
+      "acceptance": [
+        "lib/monetization.ts: getMonetizationConfig returns nulls/false/[] when all env vars unset",
+        "lib/monetization.ts: parseFeaturedPartners returns [] for invalid/empty JSON",
+        "lib/monetization.ts: parseAdProvider defaults to 'adsense' when unset",
+        "lib/monetization.ts: VERTICAL_DEFAULT_CTA_TYPE is 'call' (legal vertical)",
+        "AdProvider renders adsense via existing AdUnit (no second script tag)",
+        "AdProvider renders ezoic via one <script> when NEXT_PUBLIC_AD_PROVIDER=ezoic and NEXT_PUBLIC_EZOIC_SCRIPT_SRC is set",
+        "AdProvider renders raptive via one <script> when NEXT_PUBLIC_AD_PROVIDER=raptive and NEXT_PUBLIC_RAPTIVE_SITE_ID is set",
+        "AdProvider renders null when NEXT_PUBLIC_AD_PROVIDER=none",
+        "ResultMonetization renders null for each block when its env var is unset",
+        "ResultMonetization PrimaryIntentCTA: call => tel: button; cpl => outbound link; affiliate => first configured partner",
+        "ResultMonetization DisplaySlot: single AdProvider unit, min-height reserved for CLS<0.1",
+        "ResultMonetization FeaturedPartnerTable: hidden when MON_FEATURED_PARTNERS unset; FTC disclosure inline above table",
+        "ResultMonetization SponsorSlot: plain-text label only (no HTML injection); null when both vars unset",
+        "ResultMonetization EmailCapture: reuses existing component; rendered only when NEXT_PUBLIC_EMAIL_CAPTURE=on",
+        "ResultMonetization inserted below cost card, never above it (LCP protected)",
+        "/ads.txt: 301 redirect when NEXT_PUBLIC_ADSTXT_REDIRECT_URL set; AdSense line preserved by default",
+        ".env.example: all monetization keys documented with placeholder examples",
+        "npm run lint: 0 errors",
+        "npm test: 251/251 pass (58 new)",
+        "npm run build: 833 pages, 0 TS errors"
+      ],
+      "impeccableAudit": null,
+      "impeccableCritique": null,
+      "ultraplanSessionId": null
     }
   ]
 }

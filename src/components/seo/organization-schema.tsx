@@ -12,23 +12,23 @@ export function OrganizationSchema() {
       {
         "@type": "WebSite",
         name: "LegalCostCalc",
-        url: "https://legalcostcalc.vercel.app",
+        url: "https://legalcostcalc.co",
         description:
           "Free legal cost calculator providing estimated attorney fees and court costs across all 50 US states for 8 legal categories.",
         publisher: {
           "@type": "Organization",
           name: "LegalCostCalc",
-          url: "https://legalcostcalc.vercel.app",
+          url: "https://legalcostcalc.co",
           logo: {
             "@type": "ImageObject",
-            url: "https://legalcostcalc.vercel.app/icon-512.svg",
+            url: "https://legalcostcalc.co/icon-512.svg",
           },
         },
       },
       {
         "@type": "Organization",
         name: "LegalCostCalc",
-        url: "https://legalcostcalc.vercel.app",
+        url: "https://legalcostcalc.co",
         description:
           "Transparent legal cost information tool providing source-verified cost estimates for common legal matters across all US states.",
         foundingDate: "2026",

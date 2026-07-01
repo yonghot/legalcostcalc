@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import { Inter, JetBrains_Mono } from "next/font/google";
-import { Header } from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
+import { SiteChrome } from "@/components/layout/site-chrome";
+import { ConsentedAnalytics } from "@/components/consent/consented-analytics";
+import { FeedbackWidget } from "@/components/shared/feedback-widget";
 import "./globals.css";
 
 const inter = Inter({
@@ -14,6 +14,25 @@ const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-jetbrains-mono",
 });
+
+const adsenseClientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
+const normalizedCaPub = adsenseClientId
+  ? adsenseClientId.startsWith("ca-")
+    ? adsenseClientId
+    : `ca-${adsenseClientId}`
+  : undefined;
+
+// Env guards: mirror the gating used in next.config.ts so the inline Consent
+// Mode script + resource hints are only emitted when Google scripts can load.
+const adsenseEnabled = Boolean(adsenseClientId);
+const gaEnabled = Boolean(
+  process.env.NEXT_PUBLIC_GA_ID || process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID,
+);
+
+// Google Consent Mode v2 defaults. Static literal — no untrusted input. Must
+// run before any Google script so the initial state is well-defined (denied).
+const CONSENT_MODE_DEFAULTS =
+  "window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied',wait_for_update:500});window.gtag=window.gtag||gtag;";
 
 export const metadata: Metadata = {
   title: {
@@ -31,12 +50,15 @@ export const metadata: Metadata = {
     "bankruptcy cost",
     "legal fees by state",
   ],
-  metadataBase: new URL("https://legalcostcalc.vercel.app"),
+  metadataBase: new URL("https://legalcostcalc.co"),
+  other: normalizedCaPub
+    ? { "google-adsense-account": normalizedCaPub }
+    : undefined,
   openGraph: {
     type: "website",
     locale: "en_US",
     siteName: "LegalCostCalc",
-    url: "https://legalcostcalc.vercel.app",
+    url: "https://legalcostcalc.co",
     images: [
       {
         url: "/opengraph-image",
@@ -66,24 +88,45 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
       <head>
-        {process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN && (
-          <Script
-            defer
-            data-domain={process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN}
-            src="https://plausible.io/js/script.js"
-            strategy="afterInteractive"
-          />
+        {/*
+          Google Consent Mode v2 DEFAULTS — must run BEFORE any Google script
+          (gtag.js / adsbygoogle.js) so the initial state is well-defined. Starts
+          DENIED everywhere; ConsentedAnalytics updates to granted per region
+          (US/opt-out immediately on load; EEA/UK/CH on banner Accept).
+          Emitted only when AdSense or GA is configured (env-guarded), so the
+          free/no-env build ships nothing here. Content is a static literal.
+        */}
+        {(adsenseEnabled || gaEnabled) && (
+          <script id="consent-mode-defaults">{CONSENT_MODE_DEFAULTS}</script>
         )}
-        {/* Google AdSense — only loads when a publisher ID (ca-pub-…) is configured.
-            Set NEXT_PUBLIC_ADSENSE_CLIENT in the environment after approval. */}
-        {process.env.NEXT_PUBLIC_ADSENSE_CLIENT && (
-          <Script
-            async
-            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_CLIENT}`}
-            crossOrigin="anonymous"
-            strategy="afterInteractive"
-          />
+
+        {/*
+          Resource hints for AdSense — only meaningful when AdSense is set, but
+          harmless always. Speeds up the ad request handshake (CWV).
+        */}
+        {adsenseEnabled && (
+          <>
+            <link
+              rel="preconnect"
+              href="https://pagead2.googlesyndication.com"
+              crossOrigin="anonymous"
+            />
+            <link
+              rel="dns-prefetch"
+              href="https://googleads.g.doubleclick.net"
+            />
+          </>
         )}
+
+        {/*
+          Analytics/advertising scripts load unconditionally (env-guarded) via
+          <ConsentedAnalytics>; whether personalized ads serve is governed by
+          Consent Mode v2 above, not by whether the banner was accepted.
+
+          EEA/UK AdSense consent: also configure Google's certified CMP in the
+          AdSense dashboard → Privacy & messaging using your publisher ID
+          (NEXT_PUBLIC_ADSENSE_CLIENT_ID) for TCF v2.2 compliance.
+        */}
       </head>
       <body className="min-h-screen bg-white font-sans text-slate-900 antialiased">
         <a
@@ -93,9 +136,9 @@ export default function RootLayout({
           Skip to main content
         </a>
         <div className="flex min-h-screen flex-col">
-          <Header />
-          <main id="main-content" className="flex-1">{children}</main>
-          <Footer />
+          <SiteChrome>{children}</SiteChrome>
+          <ConsentedAnalytics />
+          <FeedbackWidget />
         </div>
       </body>
     </html>

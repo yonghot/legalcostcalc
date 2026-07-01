@@ -7,6 +7,58 @@
 
 ---
 
+## [2026-06-29] Credibility & Fact-Check Pass (F5)
+
+### Summary
+YMYL credibility review pass driven by external brief. All verified corrections applied;
+no values were changed without brief-provided authoritative sources. Build: green.
+
+### Changes Applied
+
+**costs.json** (orchestrator pre-applied; not re-touched):
+- Fabricated `courts.state.XX.us` URLs removed across all 51 jurisdictions.
+- Fabricated Martindale per-state cost article URLs (408 rows) removed.
+- Fabricated Avvo UGC per-category slugs replaced with `avvo.com/topics/fees`.
+- Stale Nolo slug `/legal-encyclopedia/divorce-costs-fees.html` → real `/ctp/cost-of-divorce.html`.
+- Stale FindLaw PI slug → `findlaw.com/injury/accident-injury-law/using-a-personal-injury-lawyer.html`.
+- USCIS immigration fees updated to post-2024-04-01 values: I-130 $675, I-485 $1,440, N-400 $760, I-765 $520, I-131 $630. Old $460-$1,225 range retired.
+- Biometrics fee ($85) removed as standalone general immigration fee (now bundled for most USCIS forms).
+- Travel document fee corrected: $575 → $630 (I-131, eff. 2024-04-01).
+- uscourts.gov path updated: `/services-forms/bankruptcy/bankruptcy-basics` → `/court-programs/bankruptcy/bankruptcy-basics`.
+- Divorce Alabama low bound tightened: `$100-$400` → `~$145-$400, varies by county`.
+
+**src/app/about/page.tsx**:
+- Metadata description: removed "source-verified" overclaim.
+- Data Sources paragraph: changed to "illustrative estimates compiled from publicly available legal-cost research and official fee schedules."
+- Removed "We cross-reference multiple sources to ensure accuracy" (not true for current data).
+- Source list: replaced generic category bullets with 5 real authoritative sources with live links: BLS OOH lawyers, Clio Legal Trends, uscourts.gov bankruptcy, uscis.gov filing fees, Nolo.
+- Methodology step 4: changed "Publish with source attribution and verification dates" → "Publish ranges with reference to authoritative public sources."
+
+**src/app/page.tsx**:
+- HOME_FAQ_QUESTIONS: softened "Are estimates accurate?" answer to "illustrative ranges compiled from publicly available legal-cost research."
+- Added visible FAQ section with `<dl>` rendering 4 key questions; hourly-rate answer ($150-$500+) includes clickable citations to Clio Legal Trends and BLS.
+
+**feature_list.json**:
+- Added F5 "Credibility & Fact-Check Pass" (status: pass) with full evidence and acceptance criteria.
+
+### Build Result
+`npm run build` — PASS (0 errors)
+
+### Sources Used (from brief)
+- BLS OOH Lawyers: https://www.bls.gov/ooh/legal/lawyers.htm
+- Clio Legal Trends: https://www.clio.com/resources/legal-trends/compare-lawyer-rates/
+- uscourts.gov bankruptcy: https://www.uscourts.gov/court-programs/bankruptcy/bankruptcy-basics
+- uscourts.gov fee schedule: https://www.uscourts.gov/court-programs/fees/bankruptcy-court-miscellaneous-fee-schedule
+- uscis.gov filing fees: https://www.uscis.gov/forms/filing-fees
+- uscis.gov G-1055: https://www.uscis.gov/g-1055
+- Nolo divorce cost: https://www.nolo.com/legal-encyclopedia/ctp/cost-of-divorce.html
+
+### Not Changed (REVIEW items)
+- divorce-court-filing-fee-range: AL $100-$400 left as-is (defensible per brief verdict=imprecise).
+- immigration-appeals-110-675: left as-is (no verified replacement per brief verdict=outdated, no safe single value).
+
+---
+
 ## [2026-06-27] 하네스 마이그레이션 세션 — 프로젝트 이어받기 (GitHub 클론 + 누락 하네스 보완)
 
 ### 작업 개요

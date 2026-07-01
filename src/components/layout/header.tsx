@@ -14,6 +14,7 @@ import { FOCUS_RING } from "@/lib/utils/styles";
 const NAV_LINKS = [
   { href: "/", label: "Calculator" },
   { href: "/compare", label: "Compare" },
+  { href: "/settlement-estimator", label: "Settlement Estimator" },
   { href: "/about", label: "About" },
 ] as const;
 

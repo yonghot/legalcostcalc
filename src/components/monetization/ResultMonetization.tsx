@@ -25,6 +25,7 @@ import { isSafeUrl } from "@/lib/utils/sanitize";
 import { FOCUS_RING } from "@/lib/utils/styles";
 import { DISCLAIMER_SHORT } from "@/lib/constants/disclaimer";
 import { getPartnersForCategory, getAffiliateTrackingUrl } from "@/lib/constants/affiliates";
+import { AffiliateDisclosure } from "@/components/compliance/AffiliateDisclosure";
 
 interface ResultMonetizationProps {
   /** Optional context for the email capture form label. */
@@ -79,8 +80,9 @@ function PrimaryIntentCTA({
     return (
       <div className="rounded-lg border border-teal-200 bg-teal-50 p-5">
         <p className="text-xs font-medium uppercase tracking-wide text-teal-700">
-          Get Connected with an Attorney
+          Attorney Advertising
         </p>
+        <AffiliateDisclosure className="mt-1 text-teal-600" />
         <a
           href={url}
           target="_blank"
@@ -104,8 +106,9 @@ function PrimaryIntentCTA({
         return (
           <div className="rounded-lg border border-teal-200 bg-teal-50 p-5">
             <p className="text-xs font-medium uppercase tracking-wide text-teal-700">
-              Recommended Legal Service
+              Legal Service Advertisement
             </p>
+            <AffiliateDisclosure className="mt-1 text-teal-600" />
             <a
               href={trackingUrl}
               target="_blank"
@@ -115,10 +118,7 @@ function PrimaryIntentCTA({
               {partner.ctaText}
               <ExternalLink className="h-4 w-4" aria-hidden="true" />
             </a>
-            <p className="mt-2 text-xs text-teal-600">
-              Affiliate link — we may earn a commission at no cost to you.{" "}
-              {DISCLAIMER_SHORT}
-            </p>
+            <p className="mt-2 text-xs text-teal-600">{DISCLAIMER_SHORT}</p>
           </div>
         );
       }
@@ -140,11 +140,7 @@ function FeaturedPartnerTableBlock({
   return (
     <div>
       {/* FTC advertiser disclosure — inline directly ABOVE the table, not in footer */}
-      <p className="mb-3 text-xs font-medium text-slate-500">
-        Advertiser Disclosure: The companies listed in this table may compensate
-        LegalCostCalc when you click their links. This does not influence our
-        cost estimates or editorial content.
-      </p>
+      <AffiliateDisclosure className="mb-3" />
       <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
         <table className="min-w-full text-sm">
           <caption className="sr-only">Featured legal service providers</caption>
@@ -310,9 +306,12 @@ export function ResultMonetization({
       {/* (d) Sponsor slot */}
       <SponsorSlot />
 
-      {/* (e) Email capture — reuses existing component + /api/subscribe route */}
-      {cfg.emailCaptureEnabled && (
-        <EmailCapture context={context} />
+      {/* (e) Email capture — reuses existing component + /api/subscribe route.
+              CAN-SPAM requires a physical postal address on any commercial
+              email-collection form, so this also requires postalAddress to
+              be configured — not just emailCaptureEnabled. */}
+      {cfg.emailCaptureEnabled && cfg.postalAddress && (
+        <EmailCapture context={context} postalAddress={cfg.postalAddress} />
       )}
     </div>
   );

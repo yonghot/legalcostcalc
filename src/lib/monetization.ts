@@ -68,6 +68,14 @@ export interface MonetizationConfig {
   /** Whether to show the email capture block. */
   emailCaptureEnabled: boolean;
 
+  /**
+   * CAN-SPAM postal address, required to be shown alongside any email-capture
+   * form that collects addresses for future messages. When unset, the email
+   * capture block renders null regardless of `emailCaptureEnabled` — a
+   * physical postal address is a legal prerequisite, not a style choice.
+   */
+  postalAddress: string | null;
+
   /** Auto-affiliate provider for uncontracted links (e.g. "sovrn" or "skimlinks:id"). */
   autoAffiliate: string | null;
 }
@@ -157,6 +165,7 @@ export function getMonetizationConfig(): MonetizationConfig {
     sponsorHtml: readEnv("NEXT_PUBLIC_SPONSOR_HTML"),
     sponsorBackfillUrl: readEnv("NEXT_PUBLIC_SPONSOR_BACKFILL_URL"),
     emailCaptureEnabled: emailCaptureRaw === "on",
+    postalAddress: readEnv("NEXT_PUBLIC_POSTAL_ADDRESS"),
     autoAffiliate: readEnv("NEXT_PUBLIC_AUTOAFFILIATE"),
   };
 }

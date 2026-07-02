@@ -14,6 +14,7 @@ import { formatCurrency } from "@/lib/utils/format";
 import { useCompareCosts } from "@/lib/hooks/use-compare-costs";
 import { FOCUS_RING } from "@/lib/utils/styles";
 import { AffiliateCTA } from "@/components/shared/affiliate-cta";
+import { useTermsGate, TermsGateInline } from "@/components/compliance/TermsGate";
 import Link from "next/link";
 
 export default function ComparePage() {
@@ -33,6 +34,8 @@ export default function ComparePage() {
     reset,
   } = useCompareCosts();
 
+  const termsGate = useTermsGate();
+
   const handleCompareStates = useCallback(
     () => compareStates(state1, state2, category),
     [state1, state2, category, compareStates]
@@ -43,12 +46,24 @@ export default function ComparePage() {
     [state1, category, category2, compareCategories]
   );
 
-  const handleCompare = mode === "states" ? handleCompareStates : handleCompareCategories;
+  const runCompare = mode === "states" ? handleCompareStates : handleCompareCategories;
+
+  // Clickwrap gate: before the FIRST calculation, require active consent.
+  const handleCompare = useCallback(() => {
+    if (!termsGate.hasConsented) return;
+    runCompare();
+  }, [termsGate.hasConsented, runCompare]);
+
+  const handleGateAccept = useCallback(() => {
+    const accepted = termsGate.accept();
+    if (accepted) runCompare();
+  }, [termsGate, runCompare]);
 
   const isFormValid =
-    mode === "states"
+    (mode === "states"
       ? !!(state1 && state2 && category && state1 !== state2)
-      : !!(state1 && category && category2 && category !== category2);
+      : !!(state1 && category && category2 && category !== category2)) &&
+    Boolean(termsGate.hasConsented);
 
   const handleModeChange = (newMode: CompareMode) => {
     setMode(newMode);
@@ -96,6 +111,17 @@ export default function ComparePage() {
           isFormValid={isFormValid}
           loading={loading}
         />
+
+        {/* Clickwrap gate — shown until consent is recorded, then never again. */}
+        {termsGate.hasConsented === false && (
+          <div className="mt-4">
+            <TermsGateInline
+              checked={termsGate.checked}
+              onCheckedChange={termsGate.setChecked}
+              onAccept={handleGateAccept}
+            />
+          </div>
+        )}
 
         {error && (
           <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">

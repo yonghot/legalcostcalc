@@ -263,6 +263,10 @@ describe("getMonetizationConfig — all env vars unset", () => {
   it("autoAffiliate is null when unset", () => {
     expect(getMonetizationConfig().autoAffiliate).toBeNull();
   });
+
+  it("postalAddress is null when unset (CAN-SPAM gate)", () => {
+    expect(getMonetizationConfig().postalAddress).toBeNull();
+  });
 });
 
 // ── getMonetizationConfig — env set ──────────────────────────────────────────
@@ -327,6 +331,15 @@ describe("getMonetizationConfig — env vars set", () => {
   it("reads NEXT_PUBLIC_EMAIL_CAPTURE=off => emailCaptureEnabled=false", () => {
     cleanups.push(withEnv("NEXT_PUBLIC_EMAIL_CAPTURE", "off"));
     expect(getMonetizationConfig().emailCaptureEnabled).toBe(false);
+  });
+
+  it("reads NEXT_PUBLIC_POSTAL_ADDRESS (CAN-SPAM gate)", () => {
+    cleanups.push(
+      withEnv("NEXT_PUBLIC_POSTAL_ADDRESS", "LegalCostCalc, 123 Main St, Anytown, ST 00000"),
+    );
+    expect(getMonetizationConfig().postalAddress).toBe(
+      "LegalCostCalc, 123 Main St, Anytown, ST 00000",
+    );
   });
 
   it("reads MON_FEATURED_PARTNERS valid JSON", () => {

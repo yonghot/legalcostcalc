@@ -6,6 +6,7 @@ import {
 } from "@/lib/constants/affiliates";
 import { CARD_HOVER, FOCUS_RING } from "@/lib/utils/styles";
 import { isSafeUrl } from "@/lib/utils/sanitize";
+import { AffiliateDisclosure } from "@/components/compliance/AffiliateDisclosure";
 
 interface AffiliateCTAProps {
   categorySlug?: string;
@@ -45,12 +46,16 @@ export function AffiliateCTA({ categorySlug, stateName }: AffiliateCTAProps) {
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-6">
       <h3 className="text-lg font-semibold text-slate-900">
-        Need Legal Help{stateName ? ` in ${stateName}` : ""}?
+        Legal Service Providers{stateName ? ` in ${stateName}` : ""}
       </h3>
       <p className="mt-1 text-sm text-slate-500">
-        Connect with trusted legal service providers. These are affiliate links — we may earn a
-        commission at no extra cost to you.
+        Legal service providers that offer services relevant to this category.
+        Listing here is advertising, not a referral or recommendation.
       </p>
+
+      {/* FTC advertiser disclosure — placed immediately above the CTA links, since
+          this block is only reached once at least one partner link will render. */}
+      <AffiliateDisclosure className="mt-3" />
 
       <div className="mt-4 space-y-3">
         {activePartners.map(({ partner, trackingUrl }) => (
@@ -72,11 +77,6 @@ export function AffiliateCTA({ categorySlug, stateName }: AffiliateCTAProps) {
           </a>
         ))}
       </div>
-
-      <p className="mt-3 text-xs text-slate-500">
-        Affiliate disclosure: LegalCostCalc may receive compensation from the companies listed
-        above. This does not influence our cost data or estimates.
-      </p>
     </div>
   );
 }

@@ -1,3 +1,8 @@
+// DRAFT — REQUIRES REVIEW BY A LICENSED US ATTORNEY BEFORE RELIANCE
+// This Privacy Policy page is risk-mitigation copy prepared per an internal
+// legal-risk report. It has not been reviewed by a licensed attorney and must
+// not be relied upon as final legal language until that review occurs.
+
 import type { Metadata } from "next";
 import { Disclaimer } from "@/components/shared/disclaimer";
 import { DATA_VERSION_DATE } from "@/lib/constants/data-meta";
@@ -17,7 +22,7 @@ export const metadata: Metadata = {
  * This is intentionally separate from DATA_VERSION_DATE, which tracks when
  * cost data was last verified and drives sitemap/SEO signals.
  */
-const POLICY_EFFECTIVE_DATE = "June 28, 2026";
+const POLICY_EFFECTIVE_DATE = "July 2, 2026";
 
 const UPDATED = DATA_VERSION_DATE.toLocaleDateString("en-US", {
   year: "numeric",
@@ -56,6 +61,13 @@ export default function PrivacyPage() {
                 <li>
                   <strong>No personal accounts.</strong> We do not collect names, emails, or
                   payment details. Cost lookups you run are not tied to your identity.
+                </li>
+                <li>
+                  <strong>Calculator inputs.</strong> The category, state, and case-complexity
+                  selections you make in the cost calculator are used only to request matching
+                  cost ranges from our data. The Settlement Net Estimator&apos;s gross
+                  settlement, contingency percentage, and case-cost figures are processed
+                  entirely in your browser and are not transmitted to or stored on our servers.
                 </li>
                 <li>
                   <strong>Standard server logs.</strong> Our host (Vercel) and database

@@ -8,6 +8,14 @@ import { FOCUS_RING } from "@/lib/utils/styles";
 interface EmailCaptureProps {
   /** Optional context label, e.g. "Divorce cost in California". */
   context?: string;
+  /**
+   * Physical postal address, required by CAN-SPAM for any form that collects
+   * an email address for future commercial messages. The caller (currently
+   * ResultMonetization) only renders this component when a postal address is
+   * configured via NEXT_PUBLIC_POSTAL_ADDRESS — this prop is required (not
+   * optional) so that invariant is enforced at the type level too.
+   */
+  postalAddress: string;
   className?: string;
 }
 
@@ -20,8 +28,11 @@ interface EmailCaptureProps {
  *
  * It never throws or blocks the page when unconfigured. Real email-provider
  * (ESP) wiring is an owner task — see TODO(owner) in src/app/api/subscribe/route.ts.
+ *
+ * CAN-SPAM: renders the postal address and an unsubscribe line near the form,
+ * per 15 U.S.C. § 7704(a)(5).
  */
-export function EmailCapture({ context, className }: EmailCaptureProps) {
+export function EmailCapture({ context, postalAddress, className }: EmailCaptureProps) {
   const inputId = useId();
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "submitting" | "done" | "error">(
@@ -98,8 +109,10 @@ export function EmailCapture({ context, className }: EmailCaptureProps) {
         </p>
       )}
       <p className="mt-2 text-xs text-slate-400">
-        We respect your privacy. No spam — unsubscribe anytime.
+        We respect your privacy. You can unsubscribe at any time with one
+        click.
       </p>
+      <p className="mt-1 text-xs text-slate-400">{postalAddress}</p>
     </div>
   );
 }

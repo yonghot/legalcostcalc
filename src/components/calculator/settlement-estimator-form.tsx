@@ -11,6 +11,9 @@ import {
   type SettlementEstimatorOutput,
 } from "@/lib/utils/settlement-estimator";
 import { FOCUS_RING } from "@/lib/utils/styles";
+import { useTermsGate, TermsGateInline } from "@/components/compliance/TermsGate";
+import { ResultDisclaimer } from "@/components/compliance/ResultDisclaimer";
+import { SETTLEMENT_CONTINGENCY_FIGURE } from "@/lib/constants/figures";
 
 /** Formats a number as USD currency with no decimals (for display). */
 function formatUSD(n: number): string {
@@ -26,10 +29,13 @@ function formatUSD(n: number): string {
  * Rendered at the top AND bottom of the estimator per the product invariant.
  */
 const SETTLEMENT_DISCLAIMER =
-  "Illustrative estimate only, not legal advice; actual fees/costs vary and are " +
-  "set by your attorney agreement. The typical one-third contingency is a common " +
-  "pre-litigation rate (ABA Model Rule 1.5(c); Nolo, 'Contingency Fee Basics'), " +
-  "but your agreement may differ.";
+  "Illustrative estimate for general informational purposes only, not legal " +
+  "advice; we are not a law firm and no attorney-client relationship is " +
+  "created by using this tool. Actual fees and costs vary by case and " +
+  "jurisdiction and are set by the signed attorney-client agreement. The " +
+  "typical one-third contingency shown here is a common pre-litigation rate " +
+  "(ABA Model Rule 1.5(c); Nolo, 'Contingency Fee Basics'), not a prediction " +
+  "or recommendation for any specific agreement.";
 
 function SettlementDisclaimer() {
   return (
@@ -141,6 +147,7 @@ export function SettlementEstimatorForm() {
   const [costs, setCosts] = useState("0");
   const [output, setOutput] = useState<SettlementEstimatorOutput | null>(null);
   const [touched, setTouched] = useState(false);
+  const termsGate = useTermsGate();
 
   function parseInput(val: string, allowZero = true): number {
     const n = parseFloat(val);
@@ -148,7 +155,7 @@ export function SettlementEstimatorForm() {
     return n;
   }
 
-  function handleCalculate() {
+  function runCalculate() {
     setTouched(true);
     const result = estimateSettlementNet({
       grossSettlement: parseInput(gross, false),
@@ -158,7 +165,18 @@ export function SettlementEstimatorForm() {
     setOutput(result);
   }
 
-  const isDisabled = !gross || parseInput(gross, false) <= 0;
+  function handleCalculate() {
+    // Clickwrap gate: before the FIRST calculation, require active consent.
+    if (!termsGate.hasConsented) return;
+    runCalculate();
+  }
+
+  function handleGateAccept() {
+    const accepted = termsGate.accept();
+    if (accepted) runCalculate();
+  }
+
+  const isDisabled = !gross || parseInput(gross, false) <= 0 || !termsGate.hasConsented;
 
   return (
     <div className="space-y-6">
@@ -256,6 +274,15 @@ export function SettlementEstimatorForm() {
               Please enter a gross settlement amount.
             </p>
           )}
+
+          {/* Clickwrap gate — shown until consent is recorded, then never again. */}
+          {termsGate.hasConsented === false && (
+            <TermsGateInline
+              checked={termsGate.checked}
+              onCheckedChange={termsGate.setChecked}
+              onAccept={handleGateAccept}
+            />
+          )}
         </CardContent>
       </Card>
 
@@ -335,6 +362,22 @@ export function SettlementEstimatorForm() {
               )}
             </CardContent>
           </Card>
+        )}
+
+        {/* ResultDisclaimer — layered UPL disclaimer ADJACENT to the result,
+            supplementing SettlementDisclaimer above/below. No verified
+            last-updated date exists for the contingency-rate constant used
+            here (see lib/constants/figures.ts), so no date is shown — only
+            the cited primary source, consistent with the no-fabrication
+            rule. */}
+        {output !== null && (
+          <div className="mt-4">
+            <ResultDisclaimer
+              lastVerified={null}
+              sourceUrl={SETTLEMENT_CONTINGENCY_FIGURE.source}
+              sourceLabel="Nolo: Contingency Fee Basics"
+            />
+          </div>
         )}
       </div>
 

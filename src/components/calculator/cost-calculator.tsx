@@ -16,6 +16,7 @@ import { STATES } from "@/lib/constants/states";
 import { CostResult } from "./cost-result";
 import { Calculator } from "lucide-react";
 import { useCalculateCost } from "@/lib/hooks/use-calculate-cost";
+import { useTermsGate, TermsGateInline } from "@/components/compliance/TermsGate";
 
 interface CostCalculatorProps {
   initialCategory?: string;
@@ -29,8 +30,9 @@ export function CostCalculator({ initialCategory, initialState }: CostCalculator
 
   const { loading, error, results, calculate } = useCalculateCost();
   const resultRef = useRef<HTMLDivElement>(null);
+  const termsGate = useTermsGate();
 
-  const handleCalculate = useCallback(async () => {
+  const runCalculate = useCallback(async () => {
     const outcome = await calculate({ category, state: stateCode, complexity });
     if (outcome.hasResults) {
       setTimeout(() => {
@@ -38,6 +40,17 @@ export function CostCalculator({ initialCategory, initialState }: CostCalculator
       }, 100);
     }
   }, [category, stateCode, complexity, calculate]);
+
+  const handleCalculate = useCallback(async () => {
+    // Clickwrap gate: before the FIRST calculation, require active consent.
+    if (!termsGate.hasConsented) return;
+    await runCalculate();
+  }, [termsGate.hasConsented, runCalculate]);
+
+  const handleGateAccept = useCallback(() => {
+    const accepted = termsGate.accept();
+    if (accepted) void runCalculate();
+  }, [termsGate, runCalculate]);
 
   return (
     <div className="space-y-6">
@@ -99,13 +112,24 @@ export function CostCalculator({ initialCategory, initialState }: CostCalculator
             <div className="flex items-end">
               <Button
                 onClick={handleCalculate}
-                disabled={!category || !stateCode || loading}
+                disabled={!category || !stateCode || loading || !termsGate.hasConsented}
                 className="w-full"
               >
                 {loading ? "Calculating..." : "Calculate Cost"}
               </Button>
             </div>
           </div>
+
+          {/* Clickwrap gate — shown until consent is recorded, then never again. */}
+          {termsGate.hasConsented === false && (
+            <div className="mt-4">
+              <TermsGateInline
+                checked={termsGate.checked}
+                onCheckedChange={termsGate.setChecked}
+                onAccept={handleGateAccept}
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
 

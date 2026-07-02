@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { CostDisplay } from "@/components/shared/cost-display";
 import { Disclaimer } from "@/components/shared/disclaimer";
+import { ResultDisclaimer } from "@/components/compliance/ResultDisclaimer";
 import { LegalCostData } from "@/lib/types";
 import { formatCurrency } from "@/lib/utils/format";
 import { isSafeUrl } from "@/lib/utils/sanitize";
@@ -183,6 +184,15 @@ export const CostResult = memo(function CostResult({
           })()}
         </CardContent>
       </Card>
+
+      {/* ResultDisclaimer — layered UPL disclaimer ADJACENT to the result
+          (never footer-only), supplementing the top Disclaimer above. Shows
+          the figures' last-verified date and, when available, the first
+          verified source link. */}
+      <ResultDisclaimer
+        lastVerified={cost.lastVerifiedAt ?? undefined}
+        sourceUrl={safeSourceUrls[0]}
+      />
 
       {/* ResultMonetization — inserted directly below the cost result card.
           Never above the result (protects LCP). Disclaimer top+bottom remain

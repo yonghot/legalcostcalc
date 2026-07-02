@@ -234,10 +234,10 @@ export default function AboutPage() {
             <h2 className="text-lg font-semibold text-amber-700">Important Notice</h2>
             <p className="mt-2 text-sm text-amber-700">
               LegalCostCalc is an informational tool only. Our cost estimates are for general
-              reference purposes and should not be considered legal advice. Actual costs will
-              vary based on your specific circumstances. We recommend consulting with a
-              qualified attorney in your jurisdiction for accurate cost assessments of your
-              individual legal matter.
+              reference purposes and are not legal advice. We are not a law firm, and no
+              attorney-client relationship is created by using this Site. Actual costs vary by
+              case and jurisdiction. Consult a licensed attorney in your jurisdiction for
+              guidance specific to your legal matter.
             </p>
           </div>
         </div>

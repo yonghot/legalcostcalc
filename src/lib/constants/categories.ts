@@ -18,7 +18,7 @@ export const CATEGORIES: CategoryInfo[] = [
       {
         questionTemplate: "Can I file for divorce without a lawyer in {state}?",
         answerTemplate:
-          "Yes, you can file a pro se (self-represented) divorce in {state}, which reduces costs to court filing fees. However, for cases involving children, significant assets, or disputes, legal representation is strongly recommended. This information is for general awareness only and is not legal advice.",
+          "Yes, you can file a pro se (self-represented) divorce in {state}, which reduces costs to court filing fees. Cases involving children, significant assets, or disputes are typically more complex and often involve legal representation. This information is for general awareness only and is not legal advice.",
       },
     ],
   },

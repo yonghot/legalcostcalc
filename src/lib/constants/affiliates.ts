@@ -62,7 +62,7 @@ export const AFFILIATE_PARTNERS: AffiliatePartner[] = [
   {
     slug: "legalmatch",
     name: "LegalMatch",
-    description: "Get matched with pre-screened local attorneys for your case",
+    description: "Get matched with pre-screened local attorneys by practice area",
     url: "https://www.legalmatch.com",
     affiliateUrlEnvVar: "NEXT_PUBLIC_AFFILIATE_LEGALMATCH_URL",
     ctaText: "Find a Local Attorney",

@@ -1,5 +1,138 @@
 # PROGRESS.md — LegalCostCalc
 
+## F10 — Legal-Risk Compliance Pass / P0 UPL Mitigations (2026-07-02)
+
+### Summary
+Implemented P0 legal-risk mitigations per an internal legal-risk report
+(Appendix G). CRITICAL/UPL project — strong LEGAL disclaimer variant used
+throughout ("not legal advice; we are not a law firm; no attorney-client
+relationship is created; costs vary by case and jurisdiction"). This is
+risk-mitigation copy/code, not legal advice, and the Terms/Privacy pages are
+explicitly marked DRAFT pending licensed-attorney review.
+
+### A. Demand-letter / document-generation audit
+Grepped `src/app/api`, `src/lib/services`, and all of `src/` for
+demand-letter / document-generation patterns (`demand letter`, `generate
+document`, `draft letter`, `letter template`, etc.). **Result: no such
+feature exists in this repo.** LegalCostCalc is a cost calculator +
+informational settlement-net estimator only — no route to disable.
+
+### B. New compliance components (`src/components/compliance/`)
+1. **`ResultDisclaimer.tsx`** — layered disclaimer rendered ADJACENT to
+   calculator results (never footer-only), supplementing the existing
+   `Disclaimer` invariant. Shows "Figures last updated: {date}" (read from
+   `lib/constants/figures.ts`) and an optional HTTPS-only primary-source link.
+   Wired into `cost-result.tsx` (below the result card) and
+   `settlement-estimator-form.tsx` (below the breakdown card).
+2. **`TermsGate.tsx`** — clickwrap consent gate. `useTermsGate()` hook +
+   `TermsGateInline`/`TermsGateOverlay` components. Unchecked-by-default
+   checkbox, active affirmative action, ISO-timestamped localStorage
+   persistence (SSR-safe — read only inside `useEffect`), never re-shown once
+   accepted. Integrated into all three calculate/compare triggers:
+   `cost-calculator.tsx` ("Calculate Cost" button), `settlement-estimator-
+   form.tsx` ("Estimate My Net" button), and `app/compare/page.tsx`
+   ("Compare" button) — each button stays disabled until consent is recorded
+   and the inline gate card is shown beneath it.
+3. **`AffiliateDisclosure.tsx`** — FTC 16 CFR 255 disclosure ("We may earn a
+   commission... These are advertisements. We do not recommend or endorse any
+   attorney or service and receive flat advertising compensation, never a
+   share of fees.") Rendered immediately above every affiliate/lead CTA and
+   the featured-partner table — `affiliate-cta.tsx`,
+   `ResultMonetization.tsx` (cpl + affiliate CTA types, `FeaturedPartnerTableBlock`).
+
+### C. Terms / Privacy (both marked DRAFT — attorney review required)
+- **`src/app/terms/page.tsx`**: added §4A Indemnification, §4B Binding
+  Individual Arbitration & Class-Action Waiver (with jury-trial waiver and a
+  severability fallback), strengthened §2 (explicit no-attorney-client-
+  relationship language), §6 (advertising-not-referral clause), §9 Governing
+  Law & Venue (state left as an operator TODO comment — not fabricated).
+  Liability cap in §4 changed from a flat $50 to "greater of amount paid or
+  $10" since the site is free (no amount paid by users).
+- **`src/app/privacy/page.tsx`**: added a verified sentence — "Calculator
+  inputs are processed in your browser and are not transmitted to or stored
+  on our servers" — after confirming via grep that `use-calculate-cost.ts` /
+  `use-compare-costs.ts` only send category/state/complexity (not personal
+  data) to `/api/costs`, and `settlement-estimator.ts` is a pure client-side
+  function with zero I/O.
+
+### D. Privacy / pixel hygiene audit (C1/C2)
+Grepped for `fetch(`/POST calls carrying calculator input values and for
+`gtag(`/analytics event calls with sensitive payloads. **Result: already
+compliant** — no code changes needed. `use-calculate-cost.ts` and
+`use-compare-costs.ts` only build `URLSearchParams` for the same-origin
+`/api/costs` lookup (category/state/complexity, not sensitive); the
+Settlement Net Estimator (`settlement-estimator.ts`) never calls `fetch` at
+all. `gtag(...)` usage in `consented-analytics.tsx` is the standard
+`gtag('config', ...)` bootstrap only — no custom events push calculator
+inputs or sensitive query params.
+
+### E. CAN-SPAM email-capture gate (C3)
+- `lib/monetization.ts`: added `postalAddress` to `MonetizationConfig`, read
+  from `NEXT_PUBLIC_POSTAL_ADDRESS`.
+- `email-capture.tsx`: `postalAddress` is now a required prop; renders the
+  address plus a plain "You can unsubscribe at any time with one click."
+  line.
+- `ResultMonetization.tsx`: email capture now renders only when BOTH
+  `emailCaptureEnabled` AND `postalAddress` are set.
+- `.env.example`: documents `NEXT_PUBLIC_POSTAL_ADDRESS`.
+
+### F. Prescriptive-language copy audit (grep-based)
+Searched for "you should", "we recommend", "best ... for you", "guaranteed",
+"exact", "will save you", "you qualify", "accurate" (as a self-promise),
+"trusted", "strongly recommended" across `src/`. Replacements:
+
+| File | Before → After |
+|------|-----------------|
+| `src/app/about/page.tsx` | "We recommend consulting..." / "your specific circumstances" / "accurate cost assessments" → neutral "Consult a licensed attorney..." + explicit no-attorney-client-relationship sentence |
+| `src/lib/constants/affiliates.ts` | LegalMatch: "for your case" → "by practice area" |
+| `src/lib/constants/categories.ts` | Divorce FAQ: "legal representation is strongly recommended" → "often involve legal representation" |
+| `src/components/shared/affiliate-cta.tsx` | "Need Legal Help?" / "Connect with trusted legal service providers" → "Legal Service Providers" / "advertising, not a referral or recommendation" + `<AffiliateDisclosure>` |
+| `src/components/monetization/ResultMonetization.tsx` | CTA labels: "Recommended Legal Service" → "Legal Service Advertisement"; "Get Connected with an Attorney" → "Attorney Advertising" |
+| `src/components/calculator/settlement-estimator-form.tsx` | `SETTLEMENT_DISCLAIMER` strengthened with explicit not-a-law-firm / no-attorney-client-relationship language |
+
+Remaining "you should always consult a licensed attorney" phrasing (terms
+page) and "we do not recommend" (negation form) were intentionally kept —
+these are the required safe-harbor direction, not advice-giving.
+
+**Replacement counts**: 6 files touched, ~9 distinct phrase replacements
+(see table above; some files had multiple replacements within one paragraph).
+
+### G. Data-accuracy hygiene — `src/lib/constants/figures.ts` (new)
+Central figures metadata registry. `COST_DATASET_FIGURE` carries a real,
+repo-verifiable `lastVerified: "2026-06-29"` (sourced from the Phase-3
+Handoff Note in this file, where `DATA_VERSION_DATE` was bumped after the
+cost-data regression pass). `SETTLEMENT_CONTINGENCY_FIGURE` (the 33.33%
+default contingency rate) has **no verifiable verification date** in repo
+history, so `lastVerified: null` — reported below as an unsourced figure,
+never fabricated. Per-row `sources[]` in `src/data/seed/costs.json` are
+unaffected and continue to render inline via `CostResult`.
+
+**Unsourced figures (no fabricated date/source)**:
+- Settlement estimator default contingency fee (33.33%) — has a cited source
+  (Nolo, "Contingency Fee Basics") but no verifiable verification *date* in
+  repo history.
+
+### Test delta
+- 259 tests (F10) vs. prior baseline — added `tests/figures.test.ts` (8 new
+  tests) and 2 new tests in `tests/monetization.test.ts` (`postalAddress`
+  unset/set).
+
+### Gate results
+- `npm run lint`: 0 errors (1 pre-existing unrelated warning in
+  `software-application-schema.tsx`)
+- `npm test`: 259/259 passing
+- `npm run build`: 833 pages, TypeScript compiled successfully
+
+### Owner / attorney-review action required
+| Item | Action needed |
+|------|----------------|
+| `src/app/terms/page.tsx`, `src/app/privacy/page.tsx` | Licensed US attorney review before reliance (DRAFT banner added to both files) |
+| Governing-law state (`terms/page.tsx` §9) | Operator must specify the entity's actual state of organization/principal place of business — left as a TODO comment, not fabricated |
+| `NEXT_PUBLIC_POSTAL_ADDRESS` | Required (in addition to `NEXT_PUBLIC_EMAIL_CAPTURE=on`) to activate the email-capture block — CAN-SPAM requires a physical postal address |
+| Settlement contingency-fee constant | No verified `lastVerified` date exists in repo history — confirm and backfill in `lib/constants/figures.ts` if a verification date is later established |
+
+---
+
 ## F9 — No-Checkout Monetization Stack (2026-07-01)
 
 ### Summary

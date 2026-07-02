@@ -1,7 +1,7 @@
 {
   "project": "LegalCostCalc",
   "version": "0.1.0",
-  "lastUpdated": "2026-04-11T12:00:00Z",
+  "lastUpdated": "2026-07-02T00:00:00Z",
   "features": [
     {
       "id": "F1",
@@ -102,8 +102,7 @@
       "impeccableAudit": null,
       "impeccableCritique": null,
       "ultraplanSessionId": null
-    }
-  ,
+    },
     {
       "id": "F6",
       "name": "Settlement Net Estimator",
@@ -129,8 +128,7 @@
       "impeccableAudit": null,
       "impeccableCritique": null,
       "ultraplanSessionId": null
-    }
-  ,
+    },
     {
       "id": "F7",
       "name": "Contact Page",
@@ -156,8 +154,7 @@
       "impeccableAudit": null,
       "impeccableCritique": null,
       "ultraplanSessionId": null
-    }
-  ,
+    },
     {
       "id": "F8",
       "name": "Site-wide Feedback Widget",
@@ -185,8 +182,7 @@
       "impeccableAudit": null,
       "impeccableCritique": null,
       "ultraplanSessionId": null
-    }
-  ,
+    },
     {
       "id": "F9",
       "name": "No-Checkout Monetization Stack",
@@ -219,6 +215,14 @@
       "impeccableAudit": null,
       "impeccableCritique": null,
       "ultraplanSessionId": null
+    },
+    {
+      "id": "F10",
+      "name": "Legal-Risk Compliance Pass (P0 UPL Mitigations)",
+      "priority": "P0",
+      "status": "pass",
+      "description": "Site-wide UPL/FTC/CAN-SPAM risk-mitigation pass per internal legal-risk report (Appendix G). New components/compliance/ folder (ResultDisclaimer, TermsGate, AffiliateDisclosure). Clickwrap consent gate before first calculation on all three calculators (cost calculator, settlement estimator, compare). Strengthened /terms (indemnification, arbitration + class-action waiver, governing-law/venue, AS-IS/limitation-of-liability capped to nominal $10, advertising-not-referral clause) and /privacy (client-side-only calculator inputs confirmed + disclosed, CAN-SPAM postal-address gate). Prescriptive-language copy audit across FAQ/about/affiliate copy. Central figures registry (lib/constants/figures.ts) with honest lastVerified/source metadata (no fabrication).",
+      "evidence": "2026-07-02: (1) src/components/compliance/ResultDisclaimer.tsx — layered UPL disclaimer adjacent to results, reads figures.ts for 'Figures last updated' + optional source link. (2) src/components/compliance/TermsGate.tsx — useTermsGate() hook + TermsGateInline/TermsGateOverlay; localStorage-persisted ISO-timestamped consent, SSR-safe, active checkbox (never pre-checked). Integrated into cost-calculator.tsx, settlement-estimator-form.tsx, and app/compare/page.tsx (gates the calculate/compare button; button stays disabled until consent recorded). (3) src/components/compliance/AffiliateDisclosure.tsx — FTC 16 CFR 255 + 'advertising, not a referral/recommendation' copy; wired into affiliate-cta.tsx, ResultMonetization.tsx (cpl/affiliate CTA types + FeaturedPartnerTableBlock), replacing ad hoc inline disclosure text. (4) src/lib/constants/figures.ts (new) — COST_DATASET_FIGURE (lastVerified=2026-06-29, sourced from PROGRESS.md Phase-3 note) + SETTLEMENT_CONTINGENCY_FIGURE (lastVerified=null, no fabricated date, source=Nolo cite) with VERIFIED_FIGURES/UNSOURCED_FIGURES lists. (5) src/app/terms/page.tsx — DRAFT-review banner comment; added §4A Indemnification, §4B Arbitration + Class-Action Waiver; §4 liability cap changed from flat $50 to greater-of-amount-paid-or-$10 (site is free); §6/§2 strengthened to 'advertising, not referral/recommendation' + explicit no-attorney-client-relationship language; §9 governing law added venue clause (state left as an operator TODO — not fabricated). (6) src/app/privacy/page.tsx — DRAFT-review banner; added verified 'calculator inputs are processed in your browser, not transmitted' sentence (grep-verified: use-calculate-cost.ts/use-compare-costs.ts only send category/state/complexity to /api/costs; settlement-estimator.ts is a pure client-side function with zero I/O). (7) src/lib/monetization.ts + email-capture.tsx + ResultMonetization.tsx — postalAddress added to MonetizationConfig; EmailCapture now requires a postalAddress prop and renders it + a plain unsubscribe line; ResultMonetization only renders EmailCapture when BOTH emailCaptureEnabled AND postalAddress are set. .env.example documents NEXT_PUBLIC_POSTAL_ADDRESS. (8) Copy audit (grep-verified, before→after): about/page.tsx 'Important Notice' box (we recommend→consult; your specific circumstances→removed personalization; accurate-as-promise→removed), affiliates.ts LegalMatch description ('for your case'→'by practice area'), categories.ts divorce FAQ ('strongly recommended'→'often involve legal representation'), affiliate-cta.tsx heading+copy ('Need Legal Help?'/'trusted legal service providers'→'Legal Service Providers'/neutral advertising framing), ResultMonetization.tsx CTA labels ('Recommended Legal Service'→'Legal Service Advertisement', 'Get Connected with an Attorney'→'Attorney Advertising'). No demand-letter / document-generation route exists in this repo (grep-audited across src/app/api, src/lib/services — confirmed cost-calculator + informational settlement estimator only, no doc-gen to disable). tests/figures.test.ts (new, 8 tests) + tests/monetization.test.ts (+2 tests for postalAddress). Gate: lint 0 errors, 259/259 tests, build pending verification."
     }
   ]
 }

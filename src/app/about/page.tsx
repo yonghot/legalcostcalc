@@ -1,28 +1,18 @@
 import { Metadata } from "next";
-import Link from "next/link";
 import { Disclaimer } from "@/components/shared/disclaimer";
 import { BreadcrumbSchema } from "@/components/seo/breadcrumb-schema";
+import { Breadcrumbs } from "@/components/seo/breadcrumbs";
 import { safeJsonLd } from "@/lib/utils/json-ld";
 import { Shield, Database, Scale, RefreshCw } from "lucide-react";
-import { FOCUS_RING } from "@/lib/utils/styles";
+import { buildMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "About LegalCostCalc — Our Data & Methodology",
+export const metadata: Metadata = buildMeta({
+  title: "About LegalCostCalc: Our Data Sources & Methodology",
   description:
     "Learn how LegalCostCalc provides transparent legal cost estimates across all 50 US states. Our methodology, reference sources, and commitment to accuracy.",
-  alternates: {
-    canonical: "/about",
-  },
-  openGraph: {
-    title: "About LegalCostCalc — Our Data & Methodology",
-    description:
-      "Learn how LegalCostCalc provides transparent legal cost estimates across all 50 US states.",
-    type: "website",
-    url: "https://legalcostcalc.co/about",
-    siteName: "LegalCostCalc",
-    locale: "en_US",
-  },
-};
+  path: "/about",
+  skipFit: true,
+});
 
 export default function AboutPage() {
   const schema = {
@@ -55,16 +45,13 @@ export default function AboutPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <Disclaimer />
 
-          <nav className="mt-8 text-sm text-slate-500">
-            <Link
-              href="/"
-              className={`rounded-sm hover:text-teal-600 ${FOCUS_RING}`}
-            >
-              Home
-            </Link>
-            <span className="mx-2">/</span>
-            <span>About</span>
-          </nav>
+          <Breadcrumbs
+            className="mt-8"
+            items={[
+              { name: "Home", href: "/" },
+              { name: "About", href: "/about" },
+            ]}
+          />
 
           <div className="mt-4">
             <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">

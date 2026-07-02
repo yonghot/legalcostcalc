@@ -5,6 +5,7 @@ import { CATEGORIES } from "@/lib/constants/categories";
 import { DEFAULT_STATE_SLUG } from "@/lib/constants/costs";
 import { FOCUS_RING_DARK } from "@/lib/utils/styles";
 import { ManageConsentLink } from "@/components/consent/manage-consent-link";
+import { ClearMyData } from "@/components/shared/clear-my-data";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -95,6 +96,12 @@ export function Footer() {
               </li>
               <li>
                 <ManageConsentLink
+                  className={`text-left text-sm text-slate-400 hover:text-teal-400 transition-colors ${FOCUS_RING_DARK} rounded-sm`}
+                />
+              </li>
+              <li>
+                <ClearMyData
+                  variant="link"
                   className={`text-left text-sm text-slate-400 hover:text-teal-400 transition-colors ${FOCUS_RING_DARK} rounded-sm`}
                 />
               </li>

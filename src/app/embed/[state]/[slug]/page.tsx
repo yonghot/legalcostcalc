@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CostCalculator } from "@/components/calculator/cost-calculator";
 import { Disclaimer } from "@/components/shared/disclaimer";
+import { EmbedLoadedTracker } from "@/components/embed/embed-loaded-tracker";
 import { STATES, STATE_BY_SLUG } from "@/lib/constants/states";
 import { CATEGORIES, CATEGORY_MAP } from "@/lib/constants/categories";
 
@@ -64,9 +65,19 @@ export default async function EmbedCalculatorPage({ params }: PageProps) {
   }
 
   const canonicalUrl = `https://legalcostcalc.co/${stateInfo.slug}/${categoryInfo.slug}-cost`;
+  // Attribution link policy (T04): rel="nofollow sponsored" (Google manual-
+  // action vector for followed widget links), brand-name anchor text, and
+  // UTM params. utm_campaign uses a stable "embed" value — the parent host
+  // domain isn't knowable server-side at render time (that attribution lives
+  // in the embed_loaded event's host_domain param instead, via
+  // EmbedLoadedTracker below, which reads document.referrer client-side).
+  const attributionUrl = `${canonicalUrl}?utm_source=embed&utm_medium=widget&utm_campaign=embed`;
 
   return (
     <div className="bg-white px-4 py-6 sm:px-6">
+      {/* Widget must NOT load AdSense or track the host page's users beyond
+          this single mount event. */}
+      <EmbedLoadedTracker />
       <div className="mx-auto max-w-3xl space-y-6">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-slate-900">
@@ -82,9 +93,9 @@ export default async function EmbedCalculatorPage({ params }: PageProps) {
 
         <div className="border-t border-slate-100 pt-4 text-center">
           <a
-            href={canonicalUrl}
+            href={attributionUrl}
             target="_blank"
-            rel="noopener noreferrer"
+            rel="noopener nofollow sponsored"
             className="text-xs font-medium text-slate-500 hover:text-teal-600"
           >
             Powered by LegalCostCalc

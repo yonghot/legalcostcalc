@@ -1,23 +1,14 @@
 import { Metadata } from "next";
 import { safeJsonLd } from "@/lib/utils/json-ld";
+import { buildMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Compare Legal Costs — LegalCostCalc",
+export const metadata: Metadata = buildMeta({
+  title: "Compare Legal Costs: State vs. State, Category vs. Category",
   description:
     "Compare legal costs between states or across different legal categories. Side-by-side cost comparison for divorce, DUI, bankruptcy, and more.",
-  alternates: {
-    canonical: "/compare",
-  },
-  openGraph: {
-    title: "Compare Legal Costs — LegalCostCalc",
-    description:
-      "Compare legal costs between states or across different legal categories. Side-by-side cost comparison for divorce, DUI, bankruptcy, and more.",
-    type: "website",
-    url: "https://legalcostcalc.co/compare",
-    siteName: "LegalCostCalc",
-    locale: "en_US",
-  },
-};
+  path: "/compare",
+  skipFit: true,
+});
 
 export default function CompareLayout({
   children,

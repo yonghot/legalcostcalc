@@ -345,3 +345,192 @@ Implemented F8: Site-wide Feedback Widget — floating FAB + panel, `/api/feedba
 | `src/lib/utils/format.ts` | formatCurrency, formatCurrencyRange, slugToTitle — pure functions, easy to cover |
 | `src/lib/utils/data-freshness.ts` | Data-age warnings need deterministic date injection |
 | `src/api/` routes | API handler integration tests (request/response envelope validation) |
+
+---
+
+## GA4 Wave P0 (T01–T05) — Build Note (2026-07-02)
+
+### Summary
+Implemented 부속I GA4 수익지표개선 스펙 §4 T01–T05 (P0, dependency-ordered) per the machine-executable spec at `D:\ClaudeCode\AppFarm\보고서\부속I_GA4수익지표개선_구현스펙.md`. All events flow through the existing consent-gated gtag pipeline (`ConsentedAnalytics`); CMP/Consent Mode v2 untouched. legalcostcalc is IS_SENSITIVE_SITE=true — zero input values, matter details, or `result_bucket` in any event.
+
+### T01 — Gate GA4 to canonical production hostname
+- `src/components/consent/consented-analytics.tsx`: added `resolveGaLoadDecision()`. GA (gtag.js) now only injects when `NEXT_PUBLIC_VERCEL_ENV === 'production'` AND `window.location.hostname` matches the canonical `NEXT_PUBLIC_APP_URL` host (bare or `www.`). Off-canonical (localhost/preview/mirror) traffic gets GA skipped entirely UNLESS `NEXT_PUBLIC_GA_DEBUG=1`, in which case GA loads with `debug_mode:true` + `traffic_type:'internal'` (DebugView-only, never production reports). Wraps ONLY the script-injection step — consent flow/Consent Mode defaults untouched.
+- `.env.example`: documented `NEXT_PUBLIC_GA_ID`, `NEXT_PUBLIC_GA_DEBUG`, `NEXT_PUBLIC_SITE_ID`, and flagged `NEXT_PUBLIC_VERCEL_ENV` as an **owner action required** Vercel dashboard env var (Vercel's built-in `$VERCEL_ENV` is server-only; must be manually mirrored to a `NEXT_PUBLIC_` var per-environment). Gate fails closed (no GA) until the owner sets this.
+
+### T02 — Shared analytics module
+- `src/lib/analytics.ts` (new): `SITE_ID` (env `NEXT_PUBLIC_SITE_ID`, fallback `'legalcostcalc'`), `IS_SENSITIVE_SITE = true`, `EventName` string-literal union (`calc_input_start | calculator_complete | related_click | outbound_click | result_share | embed_loaded | state_restored | web_vitals | email_signup`), `trackEvent()` (no-op on server or when `window.gtag` isn't a function; merges `{site, ...params}`; adds `traffic_type:'internal'` from the `cc_traffic_type` localStorage marker; adds `debug_mode:true` when `NEXT_PUBLIC_GA_DEBUG=1`; caps at 25 params), `initTrafficMarker()` (`?crew=1`/`?crew=0` → localStorage marker + immediate `gtag('set', {traffic_type:'internal'})`).
+- `src/components/consent/analytics-init.tsx` (new): mounts `initTrafficMarker()` once at root layout.
+- `src/app/layout.tsx`: added `<AnalyticsInit />` alongside `<ConsentedAnalytics />`.
+- `tests/analytics.test.ts` (new, 10 tests): SSR no-op (real `window===undefined` path, no stubbing), no-op without `gtag`, param merge + site stamping, traffic_type/debug_mode injection, `initTrafficMarker` set/clear/no-op, module contract sanity.
+
+### T03 — Calculator funnel (calc_input_start / calculator_complete)
+- `src/lib/utils/calc-funnel.ts` (new): `shouldFireCalculatorComplete(hasUserInteracted, lastFiredAt, now)` — pure, injectable-clock guard shared by all three funnels. Never fires without `hasUserInteracted`; debounces to 1 fire per calc_type per `CALCULATOR_COMPLETE_DEBOUNCE_MS` (2000ms).
+- `src/components/calculator/cost-calculator.tsx`: `hasUserInteractedRef` set only by the three Select `onValueChange` handlers (never by effects/default state). `calc_input_start {calc_type}` fires once on first interaction; `calculator_complete {calc_type}` fires when a result renders AND the guard passes. `calc_type` = category slug (e.g. `divorce`, `dui`). No `result_bucket` (sensitive site).
+- `src/components/calculator/settlement-estimator-form.tsx`: same pattern, `calc_type: 'settlement_estimator'`, guarded on the three `NumberField` onChange handlers; fires only on `result.ok`.
+- `src/app/compare/page.tsx`: same pattern, `calc_type: 'compare'`; interaction guard on all 4 form-field change handlers; completion fires via a `useEffect` keyed on `stateResult`/`categoryResult` (both start `null`, only ever set inside the compare hooks — never on mount).
+- `tests/calc-funnel.test.ts` (new, 6 tests): no-interaction guard, first-fire, debounce-window suppression, post-window re-fire, exact-boundary (`>=`), default-`now` sanity.
+
+### T04 — Link/nav/embed events + embed link-policy audit
+- `related_click {link_module, link_url}`: wired into `src/components/seo/related-links.tsx` (converted to Client Component; `link_module:'inline'` — same-state other-category + same-category other-state links, incl. the "view more states" `<details>` expansion).
+- `outbound_click {link_domain, link_type}`: wired into `src/components/seo/related-calculators.tsx` (`link_type:'crosslink'`, sibling-site links), `src/components/shared/affiliate-cta.tsx` (`link_type:'affiliate'`), `src/components/calculator/cost-result.tsx` (`link_type:'citation'`, per-result Data Sources links), `src/components/calculator/settlement-estimator-form.tsx` (`link_type:'citation'`, Nolo/ABA citations).
+- `embed_loaded {host_domain}`: `src/components/embed/embed-loaded-tracker.tsx` (new) mounted once in `src/app/embed/[state]/[slug]/page.tsx`; reads `document.referrer` client-side for host attribution, fires once per mount.
+- Embed link-policy audit: both the copy-paste snippet (`src/components/embed/embed-snippet.tsx`) and the live embed page's "Powered by LegalCostCalc" attribution link now carry `rel="noopener nofollow sponsored"` (previously `rel="noopener noreferrer"`/`rel="noopener"` — a followed-link manual-action exposure) plus `utm_source=embed&utm_medium=widget&utm_campaign=embed[_snippet]`. Anchor text was already the brand name ("Powered by LegalCostCalc"), not a keyword anchor — no change needed there.
+- **Flagged, not fixed (out of wave scope)**: the embed route reuses the full `<CostCalculator>` → `<CostResult>` → `<ResultMonetization>` chain, which CAN load AdSense (`<AdProvider>`/`<AdUnit>`) inside the iframe when `NEXT_PUBLIC_ADSENSE_CLIENT_ID` is set — contradicting the page's own "Ads are intentionally OFF here" comment and the T04 guardrail "NO AdSense inside widgets." Predates this wave (introduced in commit `4d8e536`, monetization stack rollout). Spun off as a background task (`task_6cc7559b`) rather than expanded inline, since a clean fix requires threading an `ads-disabled` prop through 3 component layers — broader than T04's stated deliverables (link policy + events).
+
+### T05 — SPA ad-refill fix
+- `src/components/ads/ad-unit.tsx`: added `usePathname()`; `<ins>` now keyed `${slot}-${pathname}` so client-side route changes into a reused instance force a fresh DOM node. Push logic now checks `data-ad-status` before pushing (never re-pushes a `'filled'`/`'unfilled'` slot) and schedules exactly one 750ms retry if still unset after the first push attempt — no timer-based/recurring refresh. Existing lazy IntersectionObserver + min-height CLS reservation preserved unchanged.
+
+### Test delta
+- 275 tests total (+16 new: `tests/analytics.test.ts` ×10, `tests/calc-funnel.test.ts` ×6).
+
+### Gate results
+- `npm run lint`: 0 errors (1 pre-existing warning in `software-application-schema.tsx`, unrelated to this wave)
+- `npx tsc --noEmit`: 0 errors
+- `npm test`: 275/275 passed
+- `npm run build`: 833 pages (unchanged from prior wave), 0 TS errors, 0 new warnings
+
+### DebugView verification — NOT YET RUN (requires a live Vercel Preview deploy)
+Per spec §3.4/§6#11, Realtime validation is prohibited; DebugView on a Preview deploy with `NEXT_PUBLIC_GA_DEBUG=1` is the only trustworthy verification surface, and this repo has not been deployed as part of this session (deploy is the orchestrator's responsibility, not this wave). See the DebugView checklist in the structured report for what to verify once deployed.
+
+### Owner action required (see §5 O01–O11 in the spec — none of these were touched)
+| Env var | Purpose |
+|---------|---------|
+| `NEXT_PUBLIC_GA_ID` | GA4 Measurement ID (or `NEXT_PUBLIC_GA_MEASUREMENT_ID` alias) — GA stays fully inert until set. |
+| `NEXT_PUBLIC_VERCEL_ENV` | **Must be manually added** in Vercel Project Settings per-environment (`production` for Production; leave unset for Preview/Development) — Vercel's built-in `$VERCEL_ENV` is server-only and does not auto-populate a `NEXT_PUBLIC_` var. GA fails closed without this. |
+| `NEXT_PUBLIC_GA_DEBUG` | Set to `1` only on a Preview deployment env for DebugView verification. Never set in Production. |
+| `NEXT_PUBLIC_SITE_ID` | Optional; defaults to `'legalcostcalc'` in code. |
+| O01–O05, O07, O09, O10 | AdSense-GA4 linking, key-event marking (`calculator_complete`, `result_share`, `email_signup`), custom-dimension registration (`site`, `calc_type`, `link_module`, `link_domain`, `method`), Enhanced Measurement config, Explore reports, GSC verification, cross-domain measurement — all GA4/Search Console/Vercel dashboard tasks, owner-only per spec §3.5/§5. NOT attempted in this session. |
+
+---
+
+## GA4 Wave P1a (T06–T10) — Build Note (2026-07-02)
+
+### Summary
+Implemented 부속I GA4 수익지표개선 스펙 §4 T06–T10 (P1a) per the spec at `D:\ClaudeCode\AppFarm\보고서\부속I_GA4수익지표개선_구현스펙.md`, building on the P0 wave (T01–T05). All new `related_click` events flow through the existing `trackEvent()` pipeline from `src/lib/analytics.ts`. legalcostcalc remains `IS_SENSITIVE_SITE=true` — no result values, matter details, or input state in any new link/event.
+
+### T06 — RelatedCalculators at the result moment (INTERNAL sibling links)
+- `src/components/seo/related-matters.tsx` (new) — distinct from the existing `src/components/seo/related-calculators.tsx` (the T04 cross-SITE module, unchanged, still `link_type:'crosslink'`). Renders ONLY inside `CostResult` after a user-driven `results` array is set (same `hasUserInteractedRef`-gated state used by T03's `calculator_complete` guard in `cost-calculator.tsx`) — mounted directly below the result card + `ResultDisclaimer`, above `ResultMonetization`'s ad slot, with >=32px separation and visually distinct bordered-card styling (never ad-styled).
+- Suggests 3–5 sibling legal-matter categories in the SAME state (never input-derived — keyed only on the current category slug + state code, both non-sensitive route params), filtered through the T09 `hasUniqueData` gate. Every click fires `related_click {link_module:'result_related', link_url}`.
+- `src/components/calculator/cost-result.tsx` / `cost-calculator.tsx`: threaded `stateCode`/`stateSlug` props through so `CostResult` can mount `RelatedMatters`.
+- `tests/related-matters.test.ts` (new, 4 tests): build-time assertion that every generated href resolves to an existing page in `INDEXABLE_PAGES` across the full 408-page matrix; never suggests the current category; link count bounds (3–5).
+
+### T07 — Hub-and-spoke completion: breadcrumbs + hub pages + 3 automated link types/spoke
+- `src/components/seo/breadcrumbs.tsx` (new) — shared visible breadcrumb trail component (`related_click {link_module:'breadcrumb'}` on click), server-rendered `<Link>`s (crawlable without JS). Migrated the plain-`<span>` breadcrumb nav on `/[state]/[slug]`, `/about`, `/contact`, `/compare`, `/settlement-estimator` to this component. `BreadcrumbSchema` (JSON-LD) already existed from a prior wave — its hardcoded `https://legalcostcalc.co` origin was swapped for `CANONICAL_ORIGIN` (see T10) so it's environment-aware everywhere it's used.
+- **Hub index pages** (new, both use `generateStaticParams`, 7-day ISR): `src/app/[state]/page.tsx` (51 pages — lists all 8 categories for that state with a real median-cost data table) and `src/app/category/[category]/page.tsx` (8 pages — lists all 51 states for that category with a real median-cost data table). Both draw their listed rows exclusively from `INDEXABLE_PAGES` (T09) — never link a noindexed page. Both carry top+bottom `Disclaimer` (product invariant) and `BreadcrumbSchema`.
+- `src/components/seo/hub-links.tsx` (new) — shared data-table component for the two hub pages (real per-row `getModerateMedianCost()` figures — the "unique content" the spec requires, not filler); `related_click {link_module:'hub'}` on row click.
+- `src/components/seo/hub-links-bar.tsx` (new) — the spoke page's link to its state hub + category hub (link type #2 of the required 3 automated link types per spoke).
+- **Exactly 3 automated link types per spoke** (`/[state]/[slug]/page.tsx`): (1) breadcrumb parent link → state hub (was previously a plain non-link `<span>`, now a real `<Link>` to `/${state.slug}`), (2) `HubLinksBar` → state hub + category hub, (3) `RelatedLinks` sibling cross-links (existing component, retargeted — see below).
+- **Internal-link cap fix**: `RelatedLinks`' previous `<details>` "view N more states" expansion rendered all ~40 remaining state links directly in the DOM (not just visually collapsed), which combined with the new hub-bar/breadcrumb links would have pushed the page over the spec's 20-link cap. Replaced it with a single link to the new category hub page (`/category/[category]`, which itself lists all states in a real data table) and reduced `INITIAL_STATES_SHOWN` from 10 to 6. New per-page total: breadcrumb(2) + hub-bar(2) + otherCategories(7) + states(6) + "view all states" hub link(1) = 18, within the 20 cap with headroom.
+- `tests/internal-link-cap.test.ts` (new, 2 tests): replicates the exact link-count formula and asserts <=20 template-generated internal links across all 408 (state, category) spoke pages.
+
+### T08 — Comparison-chain module: SKIPPED (not applicable to this repo)
+Verified via `find` that this repo has no `/compare/[slug]`-style dynamic comparison-pair routes — `/compare` is a single client-side interactive comparison tool (`src/app/compare/page.tsx`, form-driven `useCompareCosts` hook), not a set of static `x-vs-y` pages. The spec's T08 explicitly scopes to "SaaSCostX (and any other repo with /compare routes)" — legalcostcalc has none. No chain-module or canonicalization work applies here.
+
+### T09 — hasUniqueData thin-page gate
+- `src/lib/page-index.ts` (new) — `PAGE_INDEX` / `INDEXABLE_PAGES` computed once at module load from the static seed dataset (`src/data/seed/costs.json`, bundled at build time — no Supabase round-trip needed for sitemap/metadata/static-generation contexts). `hasUniqueData` is derived programmatically (never hand-flagged): true only when a `(state, category)` pair has a moderate-complexity row with `cost_median > 0` AND `sources.length > 0`. Verified: **all 408/408 (state, category) combinations pass** — the full seed dataset has real, sourced data everywhere (confirmed by direct inspection before implementation).
+- `src/app/sitemap.ts`: now enumerates `INDEXABLE_PAGES` instead of the raw `STATES x CATEGORIES` cross product (a no-op today since all 408 pass, but structurally correct — a future thin page would drop out automatically), plus the two new hub route sitemaps. Also fixed the hardcoded `https://legalcostcalc.co` `BASE_URL` literal to use `CANONICAL_ORIGIN` (env-aware, see T10). Logs `sitemap: N indexable URLs (X/408 programmatic pages pass hasUniqueData)` in build output (confirmed in this session's build: `408/408`).
+- `src/app/[state]/[slug]/page.tsx` `generateMetadata`: added `robots: { index: false, follow: true }` when `hasUniqueData()` is false for that page (currently never triggers, but wired for when new low-data pages are added later).
+- T06 (`RelatedMatters`) and T07 (`HubLinks`, hub pages) both filter through `hasUniqueData`/`INDEXABLE_PAGES` — same filtered set as the sitemap, per the spec's consistency requirement.
+- `tests/page-index.test.ts` (new, 9 tests): asserts `hasUniqueData` is derived (re-computes independently from the raw JSON and compares), `INDEXABLE_PAGES` contains zero false entries, every indexable path matches the canonical URL shape, `getModerateMedianCost` returns real positive numbers for every indexable page.
+
+### T10 — Title/meta standardization: buildMeta() + explicit canonicals
+- `src/lib/seo.ts` (new) — distinct from the pre-existing `src/lib/utils/seo.ts` (legacy FAQ-schema helpers, left untouched). Exports `buildMeta({title, description, path, robots?, skipFit?})` and `fitTitle(core, year?)`. `fitTitle` takes a keyword-first core phrase (e.g. `"Divorce Cost in California"`) and tries a sequence of padded suffixes (`": {year} Attorney Fee Guide"`, `" ({year}) — LegalCostCalc"`, etc.) until the total lands in [50,60] chars, always preserving the core as the literal leading substring (guarantees primary-keyword-in-first-30-chars AND title-matches-H1-lead-phrase simultaneously). A hard-truncate safety net exists but is never exercised by the real dataset (verified by test).
+- **`CANONICAL_ORIGIN`** = `NEXT_PUBLIC_APP_URL` (trimmed) or the `https://legalcostcalc.co` fallback — mirrors the pattern already used by `consented-analytics.tsx`'s GA gate. Used by `buildMeta`, `sitemap.ts`, `robots.ts`, and `BreadcrumbSchema` (JSON-LD) so canonical/OG/sitemap/robots/breadcrumb URLs are all sourced from one place and can never resolve to a `*.vercel.app` preview host.
+- **Migrated `generateMetadata`/`metadata` to `buildMeta`**: `/[state]/[slug]` (408 pages, full `fitTitle` algorithm — verified all 408 titles land in [50,60] with keyword in first 30 chars), `/[state]` and `/category/[category]` (new hub pages), `/about`, `/contact`, `/compare` (via `compare/layout.tsx`), `/settlement-estimator` (all five via `skipFit: true` with hand-tuned 50–60 char titles matching their existing H1 lead phrases — e.g. About's H1 "About LegalCostCalc" vs. new title "About LegalCostCalc: Our Data Sources & Methodology"). `/privacy` and `/terms` were left untouched (marked DRAFT, pending licensed-attorney review — out of scope for a title-length pass). `/embed/[state]/[slug]` already carries `robots:{index:false,follow:false}` and was left as-is (deliberately non-indexed, not part of the indexable route/dataset matrix).
+- `tests/seo-meta.test.ts` (new, 9 tests): `fitTitle` asserted in-range over the FULL 408-page (state × category) matrix (not a sample), keyword-in-first-30-chars over the full matrix, title-starts-with-core over the full matrix, `buildMeta` canonical/OG-url/`skipFit`/robots-override behavior, and an explicit `CANONICAL_ORIGIN` not-`*.vercel.app` assertion.
+
+### Test delta
+- 275 tests (P0) → 299 tests (P1a). Added `tests/page-index.test.ts` (9), `tests/seo-meta.test.ts` (9), `tests/related-matters.test.ts` (4), `tests/internal-link-cap.test.ts` (2).
+
+### Gate results
+- `npm run lint`: 0 errors (1 pre-existing warning in `software-application-schema.tsx`, unrelated to this wave)
+- `npx tsc --noEmit`: 0 errors
+- `npm test`: 299/299 passed
+- `npm run build`: **892 pages** (833 prior + 51 new `/[state]` hub pages + 8 new `/category/[category]` hub pages), 0 TS errors, 0 new warnings. Build log: `sitemap: 471 indexable URLs (408/408 programmatic pages pass hasUniqueData)`.
+
+### DebugView verification — NOT YET RUN (requires a live Vercel Preview deploy)
+The only new events this wave adds are `related_click {link_module:'result_related'|'hub'}` (breadcrumb/inline/compare_chain link_module values already existed from T04). Per spec §3.4/§6#11, verify in DebugView on a Preview deploy with `NEXT_PUBLIC_GA_DEBUG=1`:
+- Click a `RelatedMatters` link after a calculation → `related_click {link_module:'result_related', link_url}`.
+- Click a state/category hub link from `HubLinksBar` or a hub page's data table → `related_click {link_module:'hub', link_url}`.
+- Click the "View all N states" link in `RelatedLinks` → `related_click {link_module:'hub', link_url:'/category/{slug}'}`.
+- Confirm no `result_bucket` or input-derived value appears in any of the above (sensitive-site invariant).
+
+### Owner action required
+No new env vars or owner console tasks introduced by T06–T10 (all client-side/build-time logic). O01–O11 from the P0 note remain outstanding and untouched.
+
+---
+
+## GA4 Wave P1b+P2 (T11–T17) — Build Note (2026-07-02)
+
+### Summary
+Implemented 부속I GA4 수익지표개선 스펙 §4 T11–T17 (P1b/P2) per `D:\ClaudeCode\AppFarm\보고서\부속I_GA4수익지표개선_구현스펙.md`, building on P0 (T01–T05) and P1a (T06–T10). legalcostcalc remains `IS_SENSITIVE_SITE=true` throughout — no input values, matter details, or `result_bucket` in any new event/URL/localStorage key added this wave.
+
+### T11 — E-E-A-T layer
+- **Fixed a deceptive-freshness bug**: `src/components/shared/author-byline.tsx`'s `lastUpdated` prop defaulted to `new Date()` when not passed, meaning "Last updated" would silently re-stamp to the current render date on every deploy regardless of whether the underlying data changed — a direct violation of §6 anti-pattern #10 ("misdated 'Updated' badges"). `lastUpdated` is now a required `string | null` prop; callers MUST pass a real verified-data field. The byline's "Last updated" line is omitted entirely (not fabricated) when null.
+- `src/app/[state]/[slug]/page.tsx`: `<AuthorByline>` now receives `moderateCost?.lastVerifiedAt ?? null` (the real per-row verified date already in the dataset) instead of nothing.
+- New `src/components/shared/updated-badge.tsx` — visible "Updated for {year}" badge next to the H1, reading the SAME `lastVerifiedAt` field (renders nothing when null — never fabricates a year).
+- `src/components/seo/software-application-schema.tsx`: added `dateModified` (omitted when the caller passes null/undefined — never `new Date()`) plus `author`/`publisher` Organization JSON-LD linkage. Wired on both the homepage (`DEFAULT_FIGURES_LAST_VERIFIED`) and every `/[state]/[slug]` page (`moderateCost?.lastVerifiedAt`).
+- `src/components/seo/organization-schema.tsx`: added `dateModified` (same real source) and a `contributor: {"@type":"Organization", name:"LegalCostCalc Editorial Team"}` entry — deliberately NOT a schema.org `Person` with an invented name/credentials (no-fabrication guardrail; `AuthorByline` already honestly discloses "reviewer pending", no real licensed reviewer exists yet).
+- Footer already links "About & Methodology" → `/about` sitewide (pre-existing from P0-adjacent compliance work; `/about` already contains a full Methodology section) — no duplication needed.
+- No invented credentials anywhere (manually reviewed all new/changed copy).
+
+### T12 — Instant default result + progressive disclosure: audited, already satisfied
+- `/[state]/[slug]/page.tsx` is an async Server Component that server-renders a "Quick answer" block with the REAL moderate-complexity cost range computed from `getCostForPage()` — visible in the initial HTML above the fold, no JS required (pre-existing from an earlier wave, verified still true).
+- `CostCalculator` exposes exactly 3 visible inputs (Legal Category, State, Case Complexity selects) + 1 button — within the spec's 3–4 cap; no "Advanced options" accordion needed. `SettlementEstimatorForm` has exactly 3 inputs (gross/pct/costs). Both already satisfy the cap without change.
+- The default/SSR render fires no `calculator_complete` (verified: `results` starts `null`, only set inside `runCalculate`, itself gated by `hasUserInteractedRef`).
+- `/settlement-estimator` and `/compare` were evaluated but left without an invented default result — unlike the 408 spoke pages (state+category are real, non-arbitrary route params), these two are generic tools with no natural "sensible default" that wouldn't require inventing example numbers; forcing one would risk misleading placeholder figures. Skip-with-reason, consistent with the spec's own firepath exception precedent.
+
+### T13 — Web Vitals → GA4 + ad-ordering fix
+- Added `web-vitals` (^5.3.0) as a direct dependency. New `src/components/shared/web-vitals-reporter.tsx` (`onLCP`/`onCLS`/`onINP` → `trackEvent('web_vitals', {metric_name, metric_value, metric_rating, metric_id})`, CLS scaled ×1000 per spec), mounted once in `src/app/layout.tsx` alongside `ConsentedAnalytics`/`AnalyticsInit`. Flows through the same consent-gated `trackEvent()` pipeline — no new script tag.
+- **Fixed a real "exactly ONE programmatic unit per page" violation**: `/[state]/[slug]/page.tsx` previously rendered up to THREE separate `<ins class="adsbygoogle">` ad units simultaneously — one standalone `<AdProvider>` ABOVE the calculator (before any result existed, violating "never at the very top of the page" AND "first in-content ad below result block"), one standalone `<AdProvider>` after `RelatedCalculators` near the bottom, PLUS `ResultMonetization`'s own `DisplaySlot` (also `<AdProvider>`) inside `CostResult`. Removed both standalone calls; the page's single ad slot is now exclusively `ResultMonetization`'s `DisplaySlot`, which was already correctly positioned below the result block with reserved min-height + lazy IntersectionObserver loading (T05's `AdUnit` SPA re-init logic untouched).
+- Verified ≥150px clearance between the ad slot and any interactive control: `ResultShare`, `ResultDisclaimer`, `RelatedMatters`, and (env-gated) `EmailMyResults` all sit between the result card and the ad slot, giving generous separation; the Calculate button lives in an entirely separate Card far above.
+
+### T14 — IndexNow post-deploy submission
+- New `scripts/indexnow.mjs` — two modes: `prebuild` (writes `public/{INDEXNOW_KEY}.txt` for ownership verification; no-op when `INDEXNOW_KEY` unset) and `postbuild` (POSTs the quality-gated URL list to `https://api.indexnow.org/indexnow`, chunked at 10,000, ONLY when `VERCEL_ENV==='production'` AND `INDEXNOW_KEY` is set; every failure mode — missing artifact, network error, non-2xx — is caught/logged, never throws, never fails the build).
+- URL list is read directly from the JUST-BUILT `sitemap.xml` (`.next/server/app/sitemap.xml[.body]`) rather than re-deriving state/category slugs from a plain Node script (avoids needing a TypeScript loader to import `.ts` constants from a `.mjs` script) — guarantees the submitted set is always identical to `src/app/sitemap.ts`'s quality-gated output by construction.
+- `package.json`: added `"prebuild"`/`"postbuild"` npm lifecycle scripts (auto-invoked by npm around `"build"`). Verified locally: both run and no-op cleanly with no env vars set; `npm run build` completes normally end-to-end.
+- `.env.example`: documented `INDEXNOW_KEY` (owner-generated 32-hex key).
+
+### T15 — Shareable result URLs (sensitive-site clean-URL rule)
+- New `src/components/shared/result-share.tsx` — "Copy link"/`navigator.share` buttons. **SENSITIVE SITE**: the share target is `${CANONICAL_ORIGIN}${usePathname()}` — the clean category/state (or `/settlement-estimator`) path, with ZERO query-string serialization of any input (unlike the spec's general non-sensitive-site pattern of `?s=<base64>` + hydration, which legalcostcalc explicitly must NOT do). `complexity` (the one calculator input on spoke pages) is deliberately excluded from the shared URL.
+- Wired into `CostResult` (gated on `categorySlug` — only renders on an actual `/[state]/[slug]` spoke page, since that's the only place `usePathname()` yields a stable clean category URL) and `SettlementEstimatorForm` (`calc_type: 'settlement_estimator'`).
+- `result_share {calc_type, method: 'copy_link'|'web_share'}` fires on click only — never on mount; a cancelled/failed `navigator.share()` does not fire the event.
+- No hydrate-from-param step exists (there's nothing to hydrate — the URL never carries state), so T15's "hydrating from param renders but doesn't fire calculator_complete" requirement is structurally satisfied by having no param path at all on this site.
+
+### T16 — localStorage persistence (`useCalculatorPersistence`)
+- New `src/lib/hooks/use-calculator-persistence.ts` — versioned (`schemaVersion`), keyed `cc_state_{calcType}`. **Sensitive-site allowlist gate**: every consumer must pass an explicit `allowedFields` list; fields outside it are silently dropped on BOTH write and read (so a value written under a looser historical allowlist can't leak back in later). `CostCalculator` wires exactly `["category", "stateCode", "complexity"]` — the same non-sensitive selector values already exposed in the URL path — under a fixed `"cost_calculator"` storage namespace (stable across category changes, since the category itself is one of the saved fields). No financial/free-text matter-detail field (settlement gross/pct/costs) is in any allowlist this wave — persistence for those stays fully OFF, consistent with "explicit toggle to enable" (no such toggle UI was built, so the safe default is OFF).
+- New `src/components/shared/continue-banner.tsx` ("Continue where you left off" + dismiss) and wired into `CostCalculator`. Applying it hydrates the three allowlisted fields and fires `state_restored {calc_type}` — the ONLY call site for that event, never automatic. Does NOT mark `hasUserInteractedRef` or fire `calculator_complete` — the user must still press Calculate (conservative: avoids ever over-firing the key event from a passive restore action).
+- New `src/components/shared/recent-calculations.tsx` — homepage "Recent calculations" (max 5, calc_type + date ONLY, zero result values), client-only, renders nothing when empty. Wired into `src/app/page.tsx` below the calculator.
+- New `src/components/shared/clear-my-data.tsx` — `clearAllCalculatorData()` wipes every `cc_*` key (saved state, recent list, T02's `cc_traffic_type` marker) in one action; wired into the footer (`variant="link"` to match the existing `ManageConsentLink` dark-theme styling) so it's sitewide and discoverable.
+
+### T17 — Env-gated "Email my results" (transactional-only)
+- New `src/app/api/email-results/route.ts` — zod-validated (`email`/`calcType`/`shareUrl`/`marketingOptIn`), per-IP rate-limited (reuses the existing `rateLimitGuard`), forwards to `EMAIL_CAPTURE_ENDPOINT` with `EMAIL_CAPTURE_API_KEY` as a bearer token (server-only, never exposed to the client). `shareUrl` is validated via the existing `isSafeUrl()` (HTTPS-only) before forwarding. **Absent (404) unless ALL THREE are set**: `EMAIL_CAPTURE_ENDPOINT` (server), `NEXT_PUBLIC_EMAIL_CAPTURE_ENABLED==='1'`, AND `NEXT_PUBLIC_POSTAL_ADDRESS` — reusing the SAME CAN-SPAM postal-address gate as the pre-existing marketing `EmailCapture`/`/api/subscribe` (repo guardrail: "both must be set"). Distinct from `/api/subscribe`: this route's ESP payload is tagged `template: 'transactional_result'` and the client copy states "No promotional content — just the estimate."
+- New `src/components/shared/email-my-results.tsx` — client-gated the same way (belt-and-suspenders; the server route is the real boundary). A SEPARATE, always-unchecked marketing opt-in checkbox is the only path to `marketing_opt_in: true` being forwarded. On success fires `trackEvent('email_signup', {placement: 'result_card'})` — `email_signup` was already in the `EventName` union from T02. Never gates viewing results behind email (only appears after a result already exists); never stores emails in this app's own DB.
+- Wired into `CostResult` (spoke pages) and `SettlementEstimatorForm`.
+- Added `zod` (^4.4.3, previously only a transitive dependency via `@supabase/*`) as a direct `package.json` dependency since a server route now imports it explicitly.
+
+### Test delta
+- 299 tests (P1a) → 334 tests (P1b+P2). New files: `tests/indexnow.test.ts` (6, subprocess-based — exercises the real CLI script without a live network call), `tests/result-share.test.ts` (5), `tests/calculator-persistence.test.ts` (8), `tests/email-results.test.ts` (16).
+
+### Gate results
+- `npx tsc --noEmit`: 0 errors
+- `npm run lint`: 0 errors (1 pre-existing warning in `software-application-schema.tsx`, unrelated to this wave — carried over from P1a's note)
+- `npm test`: 334/334 passed
+- `npm run build`: 892 pages (unchanged page count from P1a — this wave added no new routes besides `/api/email-results`), 0 TS errors, 0 new warnings. `prebuild`/`postbuild` (T14) both ran and no-op'd cleanly with no `INDEXNOW_KEY`/`VERCEL_ENV` set locally.
+
+### DebugView verification — NOT YET RUN (requires a live Vercel Preview deploy)
+Per spec §3.4/§6#11, Realtime validation is prohibited. New/changed events this wave, to verify in DebugView on a Preview deploy with `NEXT_PUBLIC_GA_DEBUG=1`:
+- `web_vitals {metric_name, metric_value, metric_rating, metric_id}` — fires automatically as CWV metrics settle on any page.
+- `result_share {calc_type, method:'copy_link'}` — click "Copy link to this result" after a calculation on a spoke page or the settlement estimator.
+- `result_share {calc_type, method:'web_share'}` — click "Share" on a device/browser exposing `navigator.share` (button is conditionally rendered only when the API exists).
+- `state_restored {calc_type}` — reload a spoke/homepage calculator after a prior calculation, confirm the "Continue where you left off" banner appears, click it, confirm the event fires exactly once and inputs are restored.
+- `email_signup {placement:'result_card'}` — ONLY testable once `EMAIL_CAPTURE_ENDPOINT` + `NEXT_PUBLIC_EMAIL_CAPTURE_ENABLED=1` + `NEXT_PUBLIC_POSTAL_ADDRESS` are all set on the preview env (all three are currently unset — form is absent from the DOM, verified via the env-gate unit tests instead).
+- Confirm zero `result_bucket` or input-derived value in any of the above (sensitive-site invariant) — verified structurally via `tests/result-share.test.ts` and the allowlist tests in `tests/calculator-persistence.test.ts`, but a live DebugView payload inspection is the spec's required final confirmation.
+
+### Owner action required (see §5 O01–O11 in the spec — none touched this session)
+| Env var | Purpose |
+|---------|---------|
+| `INDEXNOW_KEY` | Owner-generated 32-hex key (e.g. `openssl rand -hex 16`). Enables T14's key-file serving + Bing/Yandex/Naver submission. Both steps are no-ops until set. |
+| `EMAIL_CAPTURE_ENDPOINT` / `EMAIL_CAPTURE_API_KEY` / `NEXT_PUBLIC_EMAIL_CAPTURE_ENABLED` | T17 — ESP wiring per O11 (provision MailerLite/Buttondown, configure double opt-in + SPF/DKIM, THEN set these). `NEXT_PUBLIC_POSTAL_ADDRESS` (existing var, T17 also requires it) must already be set from the compliance workstream. |
+| O01–O05, O07, O09, O10 | Unchanged from prior waves — AdSense-GA4 linking, key-event marking, custom-dimension registration (add `metric_name`, `metric_rating` to the T13 web_vitals dimensions if not already covered by the P0 list), Enhanced Measurement, Explore reports, GSC verification, cross-domain measurement. NOT attempted in this session (owner-only per spec §3.5/§5). |
+| O01–O05, O07, O09, O10 | AdSense-GA4 linking, key-event marking (`calculator_complete`, `result_share`, `email_signup`), custom-dimension registration (`site`, `calc_type`, `link_module`, `link_domain`, `method`), Enhanced Measurement config, Explore reports, GSC verification, cross-domain measurement — all GA4/Search Console/Vercel dashboard tasks, owner-only per spec §3.5/§5. NOT attempted in this session. |

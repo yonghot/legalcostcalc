@@ -1,6 +1,20 @@
+"use client";
+
 import { ArrowUpRight } from "lucide-react";
 import { SIBLING_SITES } from "@/lib/constants/sibling-sites";
 import { CARD_HOVER, FOCUS_RING } from "@/lib/utils/styles";
+import { trackEvent } from "@/lib/analytics";
+
+function handleOutboundClick(url: string) {
+  const linkDomain = (() => {
+    try {
+      return new URL(url).hostname;
+    } catch {
+      return url;
+    }
+  })();
+  trackEvent("outbound_click", { link_domain: linkDomain, link_type: "crosslink" });
+}
 
 /**
  * "More free cost calculators" cross-link module linking the sibling network
@@ -31,6 +45,7 @@ export function RelatedCalculators() {
               href={site.url}
               target="_blank"
               rel="noopener noreferrer nofollow"
+              onClick={() => handleOutboundClick(site.url)}
               className={`flex items-start justify-between gap-3 rounded-lg border border-slate-200 bg-white p-4 ${CARD_HOVER} ${FOCUS_RING}`}
             >
               <span>

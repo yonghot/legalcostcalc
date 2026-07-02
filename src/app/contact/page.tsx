@@ -1,29 +1,20 @@
 import { Metadata } from "next";
-import Link from "next/link";
 import { Disclaimer } from "@/components/shared/disclaimer";
 import { ContactForm } from "@/components/shared/contact-form";
 import { BreadcrumbSchema } from "@/components/seo/breadcrumb-schema";
+import { Breadcrumbs } from "@/components/seo/breadcrumbs";
 import { safeJsonLd } from "@/lib/utils/json-ld";
 import { MessageSquare } from "lucide-react";
 import { FOCUS_RING } from "@/lib/utils/styles";
+import { buildMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Contact LegalCostCalc — Questions & Feedback",
+export const metadata: Metadata = buildMeta({
+  title: "Contact Us — Questions, Corrections & Feedback",
   description:
     "Questions, corrections, or feedback about our legal cost estimates? Send us a message and we'll get back to you within 1–2 business days.",
-  alternates: {
-    canonical: "/contact",
-  },
-  openGraph: {
-    title: "Contact LegalCostCalc — Questions & Feedback",
-    description:
-      "Questions, corrections, or feedback about our legal cost estimates? Send us a message.",
-    type: "website",
-    url: "https://legalcostcalc.co/contact",
-    siteName: "LegalCostCalc",
-    locale: "en_US",
-  },
-};
+  path: "/contact",
+  skipFit: true,
+});
 
 export default function ContactPage() {
   const schema = {
@@ -60,16 +51,13 @@ export default function ContactPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <Disclaimer />
 
-          <nav className="mt-8 text-sm text-slate-500">
-            <Link
-              href="/"
-              className={`rounded-sm hover:text-teal-600 ${FOCUS_RING}`}
-            >
-              Home
-            </Link>
-            <span className="mx-2">/</span>
-            <span>Contact</span>
-          </nav>
+          <Breadcrumbs
+            className="mt-8"
+            items={[
+              { name: "Home", href: "/" },
+              { name: "Contact", href: "/contact" },
+            ]}
+          />
 
           <div className="mt-4 flex items-start gap-4">
             <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-teal-100">

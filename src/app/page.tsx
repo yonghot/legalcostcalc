@@ -28,6 +28,8 @@ import { RelatedCalculators } from "@/components/seo/related-calculators";
 import { FaqSchema } from "@/components/seo/faq-schema";
 import { FOCUS_RING } from "@/lib/utils/styles";
 import { POPULAR_STATE_CODES } from "@/lib/constants/popular";
+import { DEFAULT_FIGURES_LAST_VERIFIED } from "@/lib/constants/figures";
+import { RecentCalculations } from "@/components/shared/recent-calculations";
 
 export const metadata: Metadata = {
   alternates: {
@@ -86,6 +88,7 @@ export default function HomePage() {
         name="LegalCostCalc — Legal Cost Calculator"
         description="Free legal cost calculator for all 50 US states. Estimate attorney fees, court costs, and total expenses for divorce, DUI, bankruptcy, personal injury, and more."
         url="https://legalcostcalc.co/"
+        dateModified={DEFAULT_FIGURES_LAST_VERIFIED}
       />
       <FaqSchema questions={HOME_FAQ_QUESTIONS} />
       {/* Hero Section */}
@@ -108,6 +111,9 @@ export default function HomePage() {
           <div className="mt-10">
             <CostCalculator />
           </div>
+
+          {/* T16 — Recent calculations (client-only, renders nothing when empty) */}
+          <RecentCalculations />
         </div>
       </section>
 

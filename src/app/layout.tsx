@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { SiteChrome } from "@/components/layout/site-chrome";
 import { ConsentedAnalytics } from "@/components/consent/consented-analytics";
+import { AnalyticsInit } from "@/components/consent/analytics-init";
 import { FeedbackWidget } from "@/components/shared/feedback-widget";
+import { WebVitalsReporter } from "@/components/shared/web-vitals-reporter";
 import "./globals.css";
 
 const inter = Inter({
@@ -138,6 +140,8 @@ export default function RootLayout({
         <div className="flex min-h-screen flex-col">
           <SiteChrome>{children}</SiteChrome>
           <ConsentedAnalytics />
+          <AnalyticsInit />
+          <WebVitalsReporter />
           <FeedbackWidget />
         </div>
       </body>

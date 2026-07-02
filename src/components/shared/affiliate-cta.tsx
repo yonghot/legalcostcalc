@@ -1,3 +1,5 @@
+"use client";
+
 import { ExternalLink } from "lucide-react";
 import {
   getPartnersForCategory,
@@ -7,6 +9,18 @@ import {
 import { CARD_HOVER, FOCUS_RING } from "@/lib/utils/styles";
 import { isSafeUrl } from "@/lib/utils/sanitize";
 import { AffiliateDisclosure } from "@/components/compliance/AffiliateDisclosure";
+import { trackEvent } from "@/lib/analytics";
+
+function handleOutboundClick(url: string) {
+  const linkDomain = (() => {
+    try {
+      return new URL(url).hostname;
+    } catch {
+      return url;
+    }
+  })();
+  trackEvent("outbound_click", { link_domain: linkDomain, link_type: "affiliate" });
+}
 
 interface AffiliateCTAProps {
   categorySlug?: string;
@@ -64,6 +78,7 @@ export function AffiliateCTA({ categorySlug, stateName }: AffiliateCTAProps) {
             href={trackingUrl}
             target="_blank"
             rel="noopener noreferrer nofollow"
+            onClick={() => handleOutboundClick(trackingUrl)}
             className={`flex flex-col gap-3 rounded-lg border border-slate-200 p-4 ${CARD_HOVER} ${FOCUS_RING} sm:flex-row sm:items-center sm:justify-between`}
           >
             <div>

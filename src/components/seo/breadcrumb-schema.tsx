@@ -1,4 +1,5 @@
 import { safeJsonLd } from "@/lib/utils/json-ld";
+import { CANONICAL_ORIGIN } from "@/lib/seo";
 
 interface BreadcrumbItem {
   name: string;
@@ -17,7 +18,7 @@ export function BreadcrumbSchema({ items }: BreadcrumbSchemaProps) {
       "@type": "ListItem",
       position: index + 1,
       name: item.name,
-      item: `https://legalcostcalc.co${item.href}`,
+      item: `${CANONICAL_ORIGIN}${item.href}`,
     })),
   };
 

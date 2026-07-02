@@ -1,20 +1,20 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Disclaimer } from "@/components/shared/disclaimer";
 import { SettlementEstimatorForm } from "@/components/calculator/settlement-estimator-form";
 import { AffiliateCTA } from "@/components/shared/affiliate-cta";
 import { BreadcrumbSchema } from "@/components/seo/breadcrumb-schema";
+import { Breadcrumbs } from "@/components/seo/breadcrumbs";
 import { FOCUS_RING } from "@/lib/utils/styles";
+import { buildMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMeta({
   title: "Settlement Net Estimator — How Much Will I Actually Receive?",
   description:
     "Estimate your net settlement after attorney contingency fees and case costs. " +
     "Illustrative calculator only — actual amounts are determined by your attorney agreement.",
-  alternates: {
-    canonical: "/settlement-estimator",
-  },
-};
+  path: "/settlement-estimator",
+  skipFit: true,
+});
 
 export default function SettlementEstimatorPage() {
   return (
@@ -31,13 +31,13 @@ export default function SettlementEstimatorPage() {
         <Disclaimer />
 
         {/* Breadcrumb */}
-        <nav className="mt-6 text-sm text-slate-500" aria-label="Breadcrumb">
-          <Link href="/" className={`hover:text-teal-600 ${FOCUS_RING} rounded-sm`}>
-            Home
-          </Link>
-          <span className="mx-2" aria-hidden="true">/</span>
-          <span aria-current="page">Settlement Net Estimator</span>
-        </nav>
+        <Breadcrumbs
+          className="mt-6"
+          items={[
+            { name: "Home", href: "/" },
+            { name: "Settlement Net Estimator", href: "/settlement-estimator" },
+          ]}
+        />
 
         {/* Page header */}
         <div className="mt-6">

@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Disclaimer } from "@/components/shared/disclaimer";
 import { ComparisonForm, CompareMode } from "@/components/compare/comparison-form";
 import { BreadcrumbSchema } from "@/components/seo/breadcrumb-schema";
+import { Breadcrumbs } from "@/components/seo/breadcrumbs";
 import { CATEGORIES } from "@/lib/constants/categories";
 import { STATES } from "@/lib/constants/states";
 import { VALID_COMPLEXITIES } from "@/lib/constants/costs";
@@ -15,7 +16,12 @@ import { useCompareCosts } from "@/lib/hooks/use-compare-costs";
 import { FOCUS_RING } from "@/lib/utils/styles";
 import { AffiliateCTA } from "@/components/shared/affiliate-cta";
 import { useTermsGate, TermsGateInline } from "@/components/compliance/TermsGate";
+import { trackEvent } from "@/lib/analytics";
+import { shouldFireCalculatorComplete } from "@/lib/utils/calc-funnel";
 import Link from "next/link";
+
+// calc_type slug for this page's analytics events.
+const CALC_TYPE = "compare";
 
 export default function ComparePage() {
   const [mode, setMode] = useState<CompareMode>("states");
@@ -35,6 +41,32 @@ export default function ComparePage() {
   } = useCompareCosts();
 
   const termsGate = useTermsGate();
+
+  // T03 guard: calculator_complete must NEVER fire on default/SSR render —
+  // only after a REAL user-driven input change. Set exclusively by the field
+  // change handlers passed to <ComparisonForm>, never by effects.
+  const hasUserInteractedRef = useRef(false);
+  const lastCompleteAtRef = useRef(0);
+
+  const markInteracted = useCallback(() => {
+    if (hasUserInteractedRef.current) return;
+    hasUserInteractedRef.current = true;
+    trackEvent("calc_input_start", { calc_type: CALC_TYPE });
+  }, []);
+
+  // Fire calculator_complete once a user-initiated comparison result renders.
+  // This effect only reacts to result state that is exclusively set inside
+  // compareStates/compareCategories (never on initial mount, since both start
+  // null), and is further gated by hasUserInteractedRef.
+  useEffect(() => {
+    if (!stateResult && !categoryResult) return;
+    const now = Date.now();
+    if (!shouldFireCalculatorComplete(hasUserInteractedRef.current, lastCompleteAtRef.current, now)) return;
+    lastCompleteAtRef.current = now;
+    // SENSITIVE SITE (legalcostcalc): never include result_bucket or any
+    // input-derived value — event name + calc_type + site only.
+    trackEvent("calculator_complete", { calc_type: CALC_TYPE });
+  }, [stateResult, categoryResult]);
 
   const handleCompareStates = useCallback(
     () => compareStates(state1, state2, category),
@@ -70,6 +102,26 @@ export default function ComparePage() {
     reset();
   };
 
+  const handleState1Change = useCallback((v: string) => {
+    markInteracted();
+    setState1(v);
+  }, [markInteracted]);
+
+  const handleState2Change = useCallback((v: string) => {
+    markInteracted();
+    setState2(v);
+  }, [markInteracted]);
+
+  const handleCategoryChange = useCallback((v: string) => {
+    markInteracted();
+    setCategory(v);
+  }, [markInteracted]);
+
+  const handleCategory2Change = useCallback((v: string) => {
+    markInteracted();
+    setCategory2(v);
+  }, [markInteracted]);
+
   return (
     <div className="bg-gradient-to-b from-teal-50 to-white py-16 sm:py-20">
       <BreadcrumbSchema
@@ -81,11 +133,13 @@ export default function ComparePage() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <Disclaimer />
 
-        <nav className="mt-8 text-sm text-slate-500">
-          <Link href="/" className={`hover:text-teal-600 ${FOCUS_RING} rounded-sm`}>Home</Link>
-          <span className="mx-2">/</span>
-          <span>Compare Costs</span>
-        </nav>
+        <Breadcrumbs
+          className="mt-8"
+          items={[
+            { name: "Home", href: "/" },
+            { name: "Compare Costs", href: "/compare" },
+          ]}
+        />
 
         <div className="mt-4 text-center">
           <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
@@ -100,13 +154,13 @@ export default function ComparePage() {
           mode={mode}
           onModeChange={handleModeChange}
           state1={state1}
-          onState1Change={setState1}
+          onState1Change={handleState1Change}
           state2={state2}
-          onState2Change={setState2}
+          onState2Change={handleState2Change}
           category={category}
-          onCategoryChange={setCategory}
+          onCategoryChange={handleCategoryChange}
           category2={category2}
-          onCategory2Change={setCategory2}
+          onCategory2Change={handleCategory2Change}
           onCompare={handleCompare}
           isFormValid={isFormValid}
           loading={loading}

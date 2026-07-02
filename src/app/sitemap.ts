@@ -2,50 +2,70 @@ import type { MetadataRoute } from "next";
 import { STATES } from "@/lib/constants/states";
 import { CATEGORIES } from "@/lib/constants/categories";
 import { DATA_VERSION_DATE } from "@/lib/constants/data-meta";
-
-const BASE_URL = "https://legalcostcalc.co";
+import { INDEXABLE_PAGES } from "@/lib/page-index";
+import { CANONICAL_ORIGIN } from "@/lib/seo";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = DATA_VERSION_DATE;
 
   const staticPages: MetadataRoute.Sitemap = [
     {
-      url: BASE_URL,
+      url: CANONICAL_ORIGIN,
       lastModified,
       changeFrequency: "monthly",
       priority: 1.0,
     },
     {
-      url: `${BASE_URL}/compare`,
+      url: `${CANONICAL_ORIGIN}/compare`,
       lastModified,
       changeFrequency: "monthly",
       priority: 0.8,
     },
     {
-      url: `${BASE_URL}/about`,
+      url: `${CANONICAL_ORIGIN}/about`,
       lastModified,
       changeFrequency: "monthly",
       priority: 0.6,
     },
     {
-      url: `${BASE_URL}/embed`,
+      url: `${CANONICAL_ORIGIN}/embed`,
       lastModified,
       changeFrequency: "monthly",
       priority: 0.4,
     },
   ];
 
-  const seoPages: MetadataRoute.Sitemap = [];
-  for (const state of STATES) {
-    for (const cat of CATEGORIES) {
-      seoPages.push({
-        url: `${BASE_URL}/${state.slug}/${cat.slug}-cost`,
-        lastModified,
-        changeFrequency: "weekly",
-        priority: 0.7,
-      });
-    }
-  }
+  // Hub index pages — core navigation, always indexable (state/category
+  // hubs derive their listed links from INDEXABLE_PAGES themselves).
+  const hubPages: MetadataRoute.Sitemap = [
+    ...STATES.map((state) => ({
+      url: `${CANONICAL_ORIGIN}/${state.slug}`,
+      lastModified,
+      changeFrequency: "weekly" as const,
+      priority: 0.6,
+    })),
+    ...CATEGORIES.map((cat) => ({
+      url: `${CANONICAL_ORIGIN}/category/${cat.slug}`,
+      lastModified,
+      changeFrequency: "weekly" as const,
+      priority: 0.6,
+    })),
+  ];
 
-  return [...staticPages, ...seoPages];
+  // T09: only pages that pass the hasUniqueData gate are emitted — see
+  // src/lib/page-index.ts. generateMetadata's robots directive and the
+  // T06/T07 link modules read from the same INDEXABLE_PAGES set.
+  const seoPages: MetadataRoute.Sitemap = INDEXABLE_PAGES.map((entry) => ({
+    url: `${CANONICAL_ORIGIN}${entry.path}`,
+    lastModified,
+    changeFrequency: "weekly",
+    priority: 0.7,
+  }));
+
+  console.log(
+    `sitemap: ${staticPages.length + hubPages.length + seoPages.length} indexable URLs ` +
+      `(${seoPages.length}/${STATES.length * CATEGORIES.length} programmatic pages pass hasUniqueData)`,
+  );
+
+  return [...staticPages, ...hubPages, ...seoPages];
 }

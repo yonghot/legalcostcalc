@@ -8,6 +8,15 @@
  * Whether personalized ads / analytics actually fire is governed by Google
  * Consent Mode v2 (defaults set inline in <head>, before any Google script).
  *
+ * GA4 hostname/environment gate (resolveGaLoadDecision, below): GA only loads
+ * when NEXT_PUBLIC_VERCEL_ENV === 'production' AND the hostname matches the
+ * canonical NEXT_PUBLIC_APP_URL host (bare or www.), which keeps
+ * preview/localhost/mirror traffic out of GA4 reports entirely. Set
+ * NEXT_PUBLIC_GA_DEBUG=1 on a Vercel Preview deploy to opt that deploy back
+ * in for DebugView verification — traffic is tagged debug_mode + traffic_type
+ * 'internal' so it never lands in production reports. AdSense loading and the
+ * consent flow below are untouched by this gate.
+ *
  * Geo-differentiated consent (owner-approved) — see consent-config.ts:
  *  - EEA / UK / Swiss: leave consent DENIED on load; the banner is the opt-in.
  *    On Accept, the banner calls grantConsent(). If a returning EEA visitor had
@@ -34,6 +43,42 @@ function injectScript(src: string, attrs: Record<string, string> = {}) {
   el.async = true;
   Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
   document.head.appendChild(el);
+}
+
+/**
+ * Determines whether GA4 should load on the current hostname, and whether it
+ * should load in "debug" mode (preview deploys only).
+ *
+ * - production on the canonical host (or www. variant) -> load normally.
+ * - anywhere else (localhost, *.vercel.app preview, mirrors) -> skip GA
+ *   entirely UNLESS NEXT_PUBLIC_GA_DEBUG=1 (set only on Vercel Preview env),
+ *   in which case GA loads WITH debug_mode + traffic_type:'internal' so the
+ *   traffic lands in DebugView / the internal filter and never in reports.
+ *
+ * This gate wraps ONLY the GA script-injection step — it does not touch the
+ * CMP/consent flow or Consent Mode v2 defaults, which already run upstream.
+ */
+function resolveGaLoadDecision(): { shouldLoad: boolean; debugMode: boolean } {
+  if (typeof window === "undefined") return { shouldLoad: false, debugMode: false };
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://legalcostcalc.co";
+  let canonicalHost: string;
+  try {
+    canonicalHost = new URL(appUrl).hostname;
+  } catch {
+    canonicalHost = "legalcostcalc.co";
+  }
+
+  const currentHost = window.location.hostname;
+  const isCanonicalHost =
+    currentHost === canonicalHost || currentHost === `www.${canonicalHost}`;
+  const isProductionEnv = process.env.NEXT_PUBLIC_VERCEL_ENV === "production";
+
+  const allowed = isProductionEnv && isCanonicalHost;
+  if (allowed) return { shouldLoad: true, debugMode: false };
+
+  const debugEnabled = process.env.NEXT_PUBLIC_GA_DEBUG === "1";
+  return { shouldLoad: debugEnabled, debugMode: debugEnabled };
 }
 
 /** Inject the third-party loaders (env-guarded, idempotent). */
@@ -63,7 +108,12 @@ function loadScripts() {
   const gaId =
     process.env.NEXT_PUBLIC_GA_ID ||
     process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
-  if (gaId) {
+
+  // Hostname/environment gate — see resolveGaLoadDecision() above. Kills
+  // preview/localhost/mirror noise so every later GA4 metric is honest.
+  const { shouldLoad, debugMode } = resolveGaLoadDecision();
+
+  if (gaId && shouldLoad) {
     injectScript(`https://www.googletagmanager.com/gtag/js?id=${gaId}`);
 
     if (!window.__gtagInitialised) {
@@ -81,7 +131,15 @@ function loadScripts() {
       // Expose for shared consent helpers (consent-config.ts).
       window.gtag = gtag;
       gtag("js", new Date());
-      gtag("config", gaId);
+      if (debugMode) {
+        // Preview-only escape hatch: tag every event debug_mode so it lands
+        // in GA4 DebugView, and mark the traffic internal so it never
+        // pollutes the Active/production reports.
+        gtag("config", gaId, { debug_mode: true });
+        gtag("set", { traffic_type: "internal" });
+      } else {
+        gtag("config", gaId);
+      }
     }
   }
 }

@@ -24,6 +24,14 @@ const SITE_ORIGIN = "https://legalcostcalc.co";
 export function EmbedSnippet({ embedPath, canonicalPath, label }: EmbedSnippetProps) {
   const [copied, setCopied] = useState(false);
 
+  // Attribution link policy (T04): rel="nofollow sponsored" (Google manual-
+  // action vector for followed widget links), brand-name anchor text (never
+  // a keyword anchor), and UTM params so referral attribution survives.
+  // utm_campaign uses a stable "embed_snippet" value here since the partner's
+  // eventual hosting domain isn't known at copy-paste time (contrast with the
+  // live /embed/[state]/[slug] page, which can read document.referrer).
+  const attributionHref = `${SITE_ORIGIN}${canonicalPath}?utm_source=embed&utm_medium=widget&utm_campaign=embed_snippet`;
+
   const snippet = `<iframe
   src="${SITE_ORIGIN}${embedPath}"
   title="${label}"
@@ -33,7 +41,7 @@ export function EmbedSnippet({ embedPath, canonicalPath, label }: EmbedSnippetPr
   loading="lazy"
 ></iframe>
 <p style="font-size:12px;text-align:center;">
-  <a href="${SITE_ORIGIN}${canonicalPath}" target="_blank" rel="noopener">
+  <a href="${attributionHref}" target="_blank" rel="noopener nofollow sponsored">
     Powered by LegalCostCalc
   </a>
 </p>`;

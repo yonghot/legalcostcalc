@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useId } from "react";
+import { useState, useId, useRef, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,13 @@ import { FOCUS_RING } from "@/lib/utils/styles";
 import { useTermsGate, TermsGateInline } from "@/components/compliance/TermsGate";
 import { ResultDisclaimer } from "@/components/compliance/ResultDisclaimer";
 import { SETTLEMENT_CONTINGENCY_FIGURE } from "@/lib/constants/figures";
+import { trackEvent } from "@/lib/analytics";
+import { shouldFireCalculatorComplete } from "@/lib/utils/calc-funnel";
+import { ResultShare } from "@/components/shared/result-share";
+import { EmailMyResults } from "@/components/shared/email-my-results";
+
+// calc_type slug for this calculator's analytics events.
+const CALC_TYPE = "settlement_estimator";
 
 /** Formats a number as USD currency with no decimals (for display). */
 function formatUSD(n: number): string {
@@ -149,6 +156,19 @@ export function SettlementEstimatorForm() {
   const [touched, setTouched] = useState(false);
   const termsGate = useTermsGate();
 
+  // T03 guard: calculator_complete must NEVER fire on default/SSR render —
+  // only after a REAL user-driven input change. `hasUserInteractedRef` is set
+  // exclusively by the field onChange handlers below, never by effects or
+  // the initial render.
+  const hasUserInteractedRef = useRef(false);
+  const lastCompleteAtRef = useRef(0);
+
+  const markInteracted = useCallback(() => {
+    if (hasUserInteractedRef.current) return;
+    hasUserInteractedRef.current = true;
+    trackEvent("calc_input_start", { calc_type: CALC_TYPE });
+  }, []);
+
   function parseInput(val: string, allowZero = true): number {
     const n = parseFloat(val);
     if (isNaN(n)) return allowZero ? 0 : NaN;
@@ -163,6 +183,16 @@ export function SettlementEstimatorForm() {
       caseCosts: parseInput(costs, true),
     });
     setOutput(result);
+
+    if (result.ok) {
+      const now = Date.now();
+      if (shouldFireCalculatorComplete(hasUserInteractedRef.current, lastCompleteAtRef.current, now)) {
+        lastCompleteAtRef.current = now;
+        // SENSITIVE SITE (legalcostcalc): never include result_bucket or any
+        // input-derived value — event name + calc_type + site only.
+        trackEvent("calculator_complete", { calc_type: CALC_TYPE });
+      }
+    }
   }
 
   function handleCalculate() {
@@ -202,7 +232,10 @@ export function SettlementEstimatorForm() {
               label="Gross Settlement Amount"
               hint="Total amount before any deductions"
               value={gross}
-              onChange={setGross}
+              onChange={(v) => {
+                markInteracted();
+                setGross(v);
+              }}
               prefix="$"
               placeholder="100,000"
               min="1"
@@ -213,7 +246,10 @@ export function SettlementEstimatorForm() {
               label="Attorney Contingency Fee"
               hint="Typically 25–40%; default is 33.33%"
               value={pct}
-              onChange={setPct}
+              onChange={(v) => {
+                markInteracted();
+                setPct(v);
+              }}
               suffix="%"
               placeholder="33.33"
               min="0.01"
@@ -225,7 +261,10 @@ export function SettlementEstimatorForm() {
               label="Total Case Costs"
               hint="Expenses advanced by attorney (medicals, experts, filing fees)"
               value={costs}
-              onChange={setCosts}
+              onChange={(v) => {
+                markInteracted();
+                setCosts(v);
+              }}
               prefix="$"
               placeholder="0"
               min="0"
@@ -243,6 +282,7 @@ export function SettlementEstimatorForm() {
                 href="https://www.nolo.com/legal-encyclopedia/contingency-fees-lawyers-payment-28563.html"
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => trackEvent("outbound_click", { link_domain: "www.nolo.com", link_type: "citation" })}
                 className={`underline hover:text-teal-700 ${FOCUS_RING} rounded-sm`}
               >
                 Nolo: Contingency Fee Basics
@@ -252,6 +292,7 @@ export function SettlementEstimatorForm() {
                 href="https://www.americanbar.org/groups/professional_responsibility/publications/model_rules_of_professional_conduct/rule_1_5_fees/"
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => trackEvent("outbound_click", { link_domain: "www.americanbar.org", link_type: "citation" })}
                 className={`underline hover:text-teal-700 ${FOCUS_RING} rounded-sm`}
               >
                 ABA Model Rule 1.5 (Fees)
@@ -362,6 +403,22 @@ export function SettlementEstimatorForm() {
               )}
             </CardContent>
           </Card>
+        )}
+
+        {/* T15 — ResultShare: shares the clean "/settlement-estimator" URL
+            (no query params — this tool's inputs are gross settlement/
+            contingency %/costs, all excluded per the sensitive-site rule). */}
+        {output !== null && output.ok && (
+          <div className="mt-4">
+            <ResultShare calcType={CALC_TYPE} />
+          </div>
+        )}
+
+        {/* T17 — env-gated transactional "Email my results" form. */}
+        {output !== null && output.ok && (
+          <div className="mt-4">
+            <EmailMyResults calcType={CALC_TYPE} />
+          </div>
         )}
 
         {/* ResultDisclaimer — layered UPL disclaimer ADJACENT to the result,

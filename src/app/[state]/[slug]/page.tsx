@@ -1,6 +1,5 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import { CostCalculator } from "@/components/calculator/cost-calculator";
 import { Disclaimer } from "@/components/shared/disclaimer";
 import { FaqSchema } from "@/components/seo/faq-schema";
@@ -13,14 +12,17 @@ import { CostDisplay } from "@/components/shared/cost-display";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AffiliateCTA } from "@/components/shared/affiliate-cta";
-import { FOCUS_RING } from "@/lib/utils/styles";
 import { BreadcrumbSchema } from "@/components/seo/breadcrumb-schema";
 import { SoftwareApplicationSchema } from "@/components/seo/software-application-schema";
 import { CostDetailsSection } from "@/components/seo/cost-details-section";
 import { RelatedLinks } from "@/components/seo/related-links";
 import { RelatedCalculators } from "@/components/seo/related-calculators";
-import { AdProvider } from "@/components/monetization/AdProvider";
 import { AuthorByline } from "@/components/shared/author-byline";
+import { UpdatedBadge } from "@/components/shared/updated-badge";
+import { buildMeta, CANONICAL_ORIGIN } from "@/lib/seo";
+import { hasUniqueData } from "@/lib/page-index";
+import { Breadcrumbs } from "@/components/seo/breadcrumbs";
+import { HubLinksBar } from "@/components/seo/hub-links-bar";
 
 interface PageProps {
   params: Promise<{ state: string; slug: string }>;
@@ -58,29 +60,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: "Not Found" };
   }
 
-  const year = new Date().getFullYear();
-  const title = categoryInfo.seoTitleTemplate
-    .replace("{state}", stateInfo.name)
-    .replace("{year}", String(year));
   const description = categoryInfo.seoDescriptionTemplate
     .replace("{state}", stateInfo.name)
-    .replace("{year}", String(year));
+    .replace("{year}", String(new Date().getFullYear()));
 
-  return {
-    title,
+  // T09 thin-page gate: pages without a real per-page data point are
+  // noindex,follow — never removed, never linked from T06/T07 modules.
+  const indexable = hasUniqueData(stateInfo.code, categoryInfo.slug);
+
+  return buildMeta({
+    title: `${categoryInfo.displayName} Cost in ${stateInfo.name}`,
     description,
-    alternates: {
-      canonical: `/${stateInfo.slug}/${categorySlug}-cost`,
-    },
-    openGraph: {
-      title,
-      description,
-      type: "website",
-      url: `https://legalcostcalc.co/${stateInfo.slug}/${categorySlug}-cost`,
-      siteName: "LegalCostCalc",
-      locale: "en_US",
-    },
-  };
+    path: `/${stateInfo.slug}/${categorySlug}-cost`,
+    robots: indexable ? undefined : { index: false, follow: true },
+  });
 }
 
 export default async function StateCategoryPage({ params }: PageProps) {
@@ -152,14 +145,15 @@ export default async function StateCategoryPage({ params }: PageProps) {
       <BreadcrumbSchema
         items={[
           { name: "Home", href: "/" },
-          { name: stateInfo.name, href: `/${stateInfo.slug}/${CATEGORIES[0].slug}-cost` },
+          { name: stateInfo.name, href: `/${stateInfo.slug}` },
           { name: `${categoryInfo.displayName} Cost`, href: `/${stateInfo.slug}/${categoryInfo.slug}-cost` },
         ]}
       />
       <SoftwareApplicationSchema
         name={`${categoryInfo.displayName} Cost Calculator — ${stateInfo.name}`}
         description={`Free calculator estimating ${categoryInfo.displayName.toLowerCase()} costs in ${stateInfo.name}, including attorney fees, court costs, and common fees.`}
-        url={`https://legalcostcalc.co/${stateInfo.slug}/${categoryInfo.slug}-cost`}
+        url={`${CANONICAL_ORIGIN}/${stateInfo.slug}/${categoryInfo.slug}-cost`}
+        dateModified={moderateCost?.lastVerifiedAt ?? null}
       />
 
       <section className="bg-gradient-to-b from-teal-50 to-white py-16 sm:py-20">
@@ -167,17 +161,21 @@ export default async function StateCategoryPage({ params }: PageProps) {
           <Disclaimer />
 
           <div className="mt-8">
-            <nav className="mb-4 text-sm text-slate-500">
-              <Link href="/" className={`hover:text-teal-600 ${FOCUS_RING} rounded-sm`}>Home</Link>
-              <span className="mx-2">/</span>
-              <span>{stateInfo.name}</span>
-              <span className="mx-2">/</span>
-              <span>{categoryInfo.displayName}</span>
-            </nav>
+            <Breadcrumbs
+              className="mb-4"
+              items={[
+                { name: "Home", href: "/" },
+                { name: stateInfo.name, href: `/${stateInfo.slug}` },
+                { name: categoryInfo.displayName, href: `/${stateInfo.slug}/${categoryInfo.slug}-cost` },
+              ]}
+            />
 
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-              How Much Does a {categoryInfo.displayName} Cost in {stateInfo.name}?
-            </h1>
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+                How Much Does a {categoryInfo.displayName} Cost in {stateInfo.name}?
+              </h1>
+              <UpdatedBadge lastVerified={moderateCost?.lastVerifiedAt ?? null} />
+            </div>
             <p className="mt-3 text-lg text-slate-600">
               {year} cost estimates for {categoryInfo.displayName.toLowerCase()} in {stateInfo.name},
               including attorney fees, court costs, and other expenses.
@@ -205,7 +203,7 @@ export default async function StateCategoryPage({ params }: PageProps) {
               </p>
             )}
 
-            <AuthorByline className="mt-4" />
+            <AuthorByline lastUpdated={moderateCost?.lastVerifiedAt ?? null} className="mt-4" />
           </div>
 
           {/* Quick stats */}
@@ -291,12 +289,14 @@ export default async function StateCategoryPage({ params }: PageProps) {
         />
       )}
 
-      {/* In-content ad — placed between the cost details and the calculator,
-          below the fold on most viewports. Routes through AdProvider so exactly
-          one programmatic network is active. */}
-      <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
-        <AdProvider className="w-full" />
-      </div>
+      {/* T13: the standalone in-content <AdProvider> that previously rendered
+          here (above the calculator/result) was removed — it violated both
+          "exactly ONE programmatic unit per page" (it stacked with
+          ResultMonetization's DisplaySlot once a result rendered) and "first
+          in-content ad sits BELOW the result block" (this slot sat ABOVE any
+          result, nearer the top of the page). The single programmatic slot
+          for this page is now exclusively ResultMonetization's DisplaySlot,
+          rendered inside CostResult directly below the result card. */}
 
       {/* Interactive Calculator — ResultMonetization is injected inside CostResult
           (via cost-result.tsx) so it appears directly below each result card.
@@ -320,6 +320,11 @@ export default async function StateCategoryPage({ params }: PageProps) {
         </div>
       </section>
 
+      {/* T07 — hub links: exactly the 2nd of 3 automated link types per spoke
+          (breadcrumb parent is #1 above; sibling cross-links via RelatedLinks
+          below are #3). Points to the real state + category hub index pages. */}
+      <HubLinksBar stateSlug={stateInfo.slug} stateName={stateInfo.name} categorySlug={categoryInfo.slug} categoryName={categoryInfo.displayName} />
+
       {/* Internal Links */}
       <RelatedLinks
         stateInfo={stateInfo}
@@ -331,11 +336,11 @@ export default async function StateCategoryPage({ params }: PageProps) {
       {/* Cross-link module — sibling cost-calculator network. */}
       <RelatedCalculators />
 
-      {/* In-content ad — after related links, before the bottom disclaimer.
-          Routes through AdProvider to keep exactly one programmatic network. */}
-      <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
-        <AdProvider className="w-full" />
-      </div>
+      {/* T13: the standalone in-content <AdProvider> that previously rendered
+          here (after RelatedCalculators) was removed for the same "exactly
+          ONE programmatic unit per page" reason as above — ResultMonetization's
+          DisplaySlot (inside CostResult, below the result block) is the page's
+          single ad slot. */}
 
       {/* Bottom Disclaimer */}
       <section className="py-8">

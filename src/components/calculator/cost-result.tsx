@@ -12,6 +12,21 @@ import { checkDataFreshness } from "@/lib/utils/data-freshness";
 import { Clock, DollarSign, FileText, ExternalLink, Percent } from "lucide-react";
 import { FOCUS_RING } from "@/lib/utils/styles";
 import { ResultMonetization } from "@/components/monetization/ResultMonetization";
+import { trackEvent } from "@/lib/analytics";
+import { RelatedMatters } from "@/components/seo/related-matters";
+import { ResultShare } from "@/components/shared/result-share";
+import { EmailMyResults } from "@/components/shared/email-my-results";
+
+function handleSourceClick(url: string) {
+  const linkDomain = (() => {
+    try {
+      return new URL(url).hostname;
+    } catch {
+      return url;
+    }
+  })();
+  trackEvent("outbound_click", { link_domain: linkDomain, link_type: "citation" });
+}
 
 interface CostResultProps {
   results: LegalCostData[];
@@ -19,6 +34,9 @@ interface CostResultProps {
   categoryName: string;
   /** Optional category slug for monetization partner filtering. */
   categorySlug?: string;
+  /** Optional state code + slug — enables the T06 RelatedMatters module when both are present. */
+  stateCode?: string;
+  stateSlug?: string;
 }
 
 export const CostResult = memo(function CostResult({
@@ -26,6 +44,8 @@ export const CostResult = memo(function CostResult({
   stateName,
   categoryName,
   categorySlug,
+  stateCode,
+  stateSlug,
 }: CostResultProps) {
   // Show the first result (filtered by complexity)
   const cost = results[0];
@@ -150,6 +170,7 @@ export const CostResult = memo(function CostResult({
                     href={source}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() => handleSourceClick(source)}
                     className={`inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-1 text-xs text-slate-600 hover:bg-slate-200 transition-colors ${FOCUS_RING}`}
                   >
                     Source {i + 1}
@@ -185,6 +206,17 @@ export const CostResult = memo(function CostResult({
         </CardContent>
       </Card>
 
+      {/* T15 — ResultShare: "Copy link"/Web Share for this result. SENSITIVE
+          SITE: shares the current clean category/state URL (usePathname())
+          with ZERO query params / input state — only rendered when we're on
+          an actual /[state]/[slug] spoke page (categorySlug present), since
+          that pathname IS the category-level clean share target. Not shown
+          from the homepage's generic calculator (no stable category URL to
+          share there). */}
+      {categorySlug && (
+        <ResultShare calcType={categorySlug} className="justify-center sm:justify-start" />
+      )}
+
       {/* ResultDisclaimer — layered UPL disclaimer ADJACENT to the result
           (never footer-only), supplementing the top Disclaimer above. Shows
           the figures' last-verified date and, when available, the first
@@ -193,6 +225,31 @@ export const CostResult = memo(function CostResult({
         lastVerified={cost.lastVerifiedAt ?? undefined}
         sourceUrl={safeSourceUrls[0]}
       />
+
+      {/* T06 — RelatedMatters: internal sibling matter-type links at the
+          result moment. Renders only after this user-driven result exists
+          (CostResult itself only mounts once `results` is set — see the
+          hasUserInteractedRef guard in cost-calculator.tsx), directly BELOW
+          the result block and clearly ABOVE the ResultMonetization ad slot
+          with >=24px separation (mt-8 on this block + ResultMonetization's
+          own mt-8 gives >=32px). Visually distinct card styling (bordered
+          white card, "More calculators" label) — never styled like an ad. */}
+      {stateCode && stateSlug && categorySlug && (
+        <RelatedMatters
+          stateCode={stateCode}
+          stateSlug={stateSlug}
+          stateName={stateName}
+          categorySlug={categorySlug}
+        />
+      )}
+
+      {/* T17 — EmailMyResults: env-gated transactional "email my results"
+          form (EMAIL_CAPTURE_ENDPOINT + NEXT_PUBLIC_EMAIL_CAPTURE_ENABLED='1').
+          Renders nothing when unset. Distinct from ResultMonetization's
+          marketing EmailCapture below (gated by NEXT_PUBLIC_EMAIL_CAPTURE +
+          NEXT_PUBLIC_POSTAL_ADDRESS) — this one sends ONLY the result
+          permalink, zero promo, via /api/email-results. */}
+      {categorySlug && <EmailMyResults calcType={categorySlug} />}
 
       {/* ResultMonetization — inserted directly below the cost result card.
           Never above the result (protects LCP). Disclaimer top+bottom remain

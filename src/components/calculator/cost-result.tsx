@@ -37,6 +37,8 @@ interface CostResultProps {
   /** Optional state code + slug — enables the T06 RelatedMatters module when both are present. */
   stateCode?: string;
   stateSlug?: string;
+  /** True on embed/iframe surfaces — suppresses the ResultMonetization stack entirely. */
+  monetizationDisabled?: boolean;
 }
 
 export const CostResult = memo(function CostResult({
@@ -46,6 +48,7 @@ export const CostResult = memo(function CostResult({
   categorySlug,
   stateCode,
   stateSlug,
+  monetizationDisabled,
 }: CostResultProps) {
   // Show the first result (filtered by complexity)
   const cost = results[0];
@@ -255,11 +258,14 @@ export const CostResult = memo(function CostResult({
           Never above the result (protects LCP). Disclaimer top+bottom remain
           intact via the Disclaimer component at the top of this component and
           on the page-level layout. Each block renders null when its env var is
-          unset (no empty boxes, no broken links). */}
+          unset (no empty boxes, no broken links). On the embed widget
+          (monetizationDisabled) the whole stack renders null — ads must never
+          load inside a third-party iframe. */}
       <ResultMonetization
         context={`${categoryName} cost in ${stateName}`}
         categorySlug={categorySlug}
         stateName={stateName}
+        monetizationDisabled={monetizationDisabled}
       />
     </div>
   );

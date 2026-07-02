@@ -25,6 +25,12 @@ import { ContinueBanner } from "@/components/shared/continue-banner";
 interface CostCalculatorProps {
   initialCategory?: string;
   initialState?: string;
+  /**
+   * True on embed/iframe surfaces (/embed/[state]/[slug]) — threads through
+   * CostResult to ResultMonetization so no ads/CTA/partner content ever
+   * renders inside a third-party iframe. Defaults to false everywhere else.
+   */
+  monetizationDisabled?: boolean;
 }
 
 // T16 — persistence allowlist for this calculator. `category`/`stateCode`/
@@ -42,7 +48,11 @@ const PERSISTENCE_ALLOWED_FIELDS: readonly (keyof PersistedCostCalculatorFields)
   "complexity",
 ];
 
-export function CostCalculator({ initialCategory, initialState }: CostCalculatorProps) {
+export function CostCalculator({
+  initialCategory,
+  initialState,
+  monetizationDisabled,
+}: CostCalculatorProps) {
   const [category, setCategory] = useState(initialCategory || "");
   const [stateCode, setStateCode] = useState(initialState || "");
   const [complexity, setComplexity] = useState("moderate");
@@ -135,7 +145,11 @@ export function CostCalculator({ initialCategory, initialState }: CostCalculator
         />
       )}
 
-      <Card className="border-slate-200 shadow-sm">
+      {/* K05 — passive marker (no behavior change) identifying the
+          inputs+Calculate-button widget as an ad-exclusion zone. Documented
+          in docs/ad-exclusion-zones.md for the owner to register with
+          AdSense Auto ads' page-level exclusion tool once approved. */}
+      <Card className="border-slate-200 shadow-sm" data-ad-exclusion-zone="calculator-widget">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-xl">
             <Calculator className="h-5 w-5 text-teal-600" aria-hidden="true" />
@@ -248,6 +262,7 @@ export function CostCalculator({ initialCategory, initialState }: CostCalculator
           categorySlug={category}
           stateCode={stateCode}
           stateSlug={STATE_MAP.get(stateCode)?.slug}
+          monetizationDisabled={monetizationDisabled}
         />
         </div>
       )}

@@ -19,7 +19,7 @@ export const VERTICAL_DEFAULT_CTA_TYPE = "call" as const;
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-export type AdProvider = "adsense" | "ezoic" | "raptive" | "none";
+export type AdProvider = "adsense" | "ezoic" | "raptive" | "journey" | "none";
 export type PrimaryCTAType = "call" | "cpl" | "affiliate" | "none";
 
 export interface FeaturedPartner {
@@ -41,6 +41,13 @@ export interface MonetizationConfig {
 
   /** Raptive site id. Null when unset. */
   raptiveSiteId: string | null;
+
+  /**
+   * Journey by Mediavine site id (K10 — dormant premium-tier network, wired
+   * ahead of the 1,000-sessions/month upgrade trigger in 부속M §6). Null
+   * when unset.
+   */
+  journeySiteId: string | null;
 
   /** /ads.txt redirect target. When set, route 301s there. */
   adsTxtRedirectUrl: string | null;
@@ -124,7 +131,7 @@ export function parseFeaturedPartners(raw: string | null): FeaturedPartner[] {
  * Defaults to "adsense" when unset (backward compatible).
  */
 export function parseAdProvider(raw: string | null): AdProvider {
-  if (raw === "ezoic" || raw === "raptive" || raw === "none") return raw;
+  if (raw === "ezoic" || raw === "raptive" || raw === "journey" || raw === "none") return raw;
   return "adsense";
 }
 
@@ -155,6 +162,7 @@ export function getMonetizationConfig(): MonetizationConfig {
     ezoicEnabled: readEnv("NEXT_PUBLIC_EZOIC_ENABLED") === "true",
     ezoicScriptSrc: readEnv("NEXT_PUBLIC_EZOIC_SCRIPT_SRC"),
     raptiveSiteId: readEnv("NEXT_PUBLIC_RAPTIVE_SITE_ID"),
+    journeySiteId: readEnv("NEXT_PUBLIC_JOURNEY_SITE_ID"),
     adsTxtRedirectUrl: readEnv("NEXT_PUBLIC_ADSTXT_REDIRECT_URL"),
     primaryCTAType: parsePrimaryCTAType(readEnv("NEXT_PUBLIC_PRIMARY_CTA_TYPE")),
     ppcNumber: readEnv("NEXT_PUBLIC_PPC_NUMBER"),

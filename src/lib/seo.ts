@@ -85,8 +85,13 @@ export interface BuildMetaParams {
   year?: number;
   /** Set true to fix the title verbatim (skip the fit algorithm) for short static pages. */
   skipFit?: boolean;
-  /** robots override — e.g. { index: false, follow: true } for thin-gated pages. */
-  robots?: Metadata["robots"];
+  /**
+   * robots override — e.g. { index: false, follow: true } for thin-gated
+   * pages. Object form only (not the string shorthand) so buildMeta() can
+   * safely merge in max-image-preview:large (K09) without a runtime type
+   * check — every real call site in this repo already passes an object.
+   */
+  robots?: Exclude<Metadata["robots"], string | null>;
 }
 
 /**
@@ -105,6 +110,18 @@ export function buildMeta({
 }: BuildMetaParams): Metadata {
   const finalTitle = skipFit ? title : fitTitle(title, year);
   const canonicalUrl = `${CANONICAL_ORIGIN}${path}`;
+
+  // K09 — Discover hygiene: every explicit robots override this helper emits
+  // also carries max-image-preview:large (Next.js's Metadata.robots does NOT
+  // deep-merge with the root layout's robots block — an explicit object here
+  // REPLACES it entirely, so omitting this would silently drop the sitewide
+  // Discover-eligibility directive on every page that passes an override,
+  // e.g. the T09 thin-page noindex gate on /[state]/[slug]). Pages that pass
+  // no override (robots: undefined) inherit the root layout's
+  // max-image-preview:large as-is.
+  const resolvedRobots: Metadata["robots"] | undefined = robots
+    ? { "max-image-preview": "large", ...robots }
+    : undefined;
 
   return {
     title: finalTitle,
@@ -126,6 +143,6 @@ export function buildMeta({
       title: finalTitle,
       description,
     },
-    ...(robots ? { robots } : {}),
+    ...(resolvedRobots ? { robots: resolvedRobots } : {}),
   };
 }

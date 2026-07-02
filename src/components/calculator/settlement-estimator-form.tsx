@@ -213,7 +213,12 @@ export function SettlementEstimatorForm() {
       {/* Top disclaimer — product invariant */}
       <SettlementDisclaimer />
 
-      <Card className="border-slate-200 shadow-sm">
+      {/* K05 — passive marker (no behavior change) identifying the
+          inputs+Calculate-button widget as an ad-exclusion zone. Documented
+          in docs/ad-exclusion-zones.md. This page has zero AdUnit/AdProvider
+          call sites today, but the marker keeps the widget self-documenting
+          if an ad slot is ever added later. */}
+      <Card className="border-slate-200 shadow-sm" data-ad-exclusion-zone="calculator-widget">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-xl">
             <Calculator className="h-5 w-5 text-teal-600" aria-hidden="true" />

@@ -534,3 +534,520 @@ Per spec §3.4/§6#11, Realtime validation is prohibited. New/changed events thi
 | `EMAIL_CAPTURE_ENDPOINT` / `EMAIL_CAPTURE_API_KEY` / `NEXT_PUBLIC_EMAIL_CAPTURE_ENABLED` | T17 — ESP wiring per O11 (provision MailerLite/Buttondown, configure double opt-in + SPF/DKIM, THEN set these). `NEXT_PUBLIC_POSTAL_ADDRESS` (existing var, T17 also requires it) must already be set from the compliance workstream. |
 | O01–O05, O07, O09, O10 | Unchanged from prior waves — AdSense-GA4 linking, key-event marking, custom-dimension registration (add `metric_name`, `metric_rating` to the T13 web_vitals dimensions if not already covered by the P0 list), Enhanced Measurement, Explore reports, GSC verification, cross-domain measurement. NOT attempted in this session (owner-only per spec §3.5/§5). |
 | O01–O05, O07, O09, O10 | AdSense-GA4 linking, key-event marking (`calculator_complete`, `result_share`, `email_signup`), custom-dimension registration (`site`, `calc_type`, `link_module`, `link_domain`, `method`), Enhanced Measurement config, Explore reports, GSC verification, cross-domain measurement — all GA4/Search Console/Vercel dashboard tasks, owner-only per spec §3.5/§5. NOT attempted in this session. |
+
+## P0 - Ad Revenue Maximization: Audits (K02-K05) + Reviewer Byline (K06) + Divorce Hub (K07) (2026-07-03)
+
+### Summary
+Implements the ad-revenue-maximization spec's section 9 tasks K02, K03, K04,
+K05 (wave P0-AUDITS, in that order), K06 (YMYL reviewer byline infra), and
+K07 (July seasonal build queue priority #2: divorce-cost-by-state hub). K01,
+K08-K11 are explicitly OUT OF SCOPE for this wave. No AdSense loader, Auto-ads
+state, ads.txt, or ad-push semantics were touched - audits only, plus one new
+additive page and one new env-gated byline slot.
+
+### K03 - Ad/search crawler accessibility audit (code-side)
+Grepped `middleware.ts`, `next.config.ts`, `src/lib/utils/api-security.ts`
+(the only rate limiter in the repo), and all of `src/` for any UA-based
+gating, bot-challenge, WAF/firewall, or CAPTCHA logic. Result: no bot-gating
+code path exists anywhere in this repo.
+- `middleware.ts` only sets a non-blocking geo cookie (`visitor_country`) and
+  explicitly excludes `api|_next/static|_next/image|favicon.ico|ads.txt|robots.txt|sitemap.xml|opengraph-image`
+  from its matcher - it never inspects or filters by User-Agent, and never
+  returns a non-200/redirect response.
+- `src/lib/utils/api-security.ts`'s `checkRateLimit`/`rateLimitGuard` (60
+  req/min per IP) is wired ONLY into `/api/contact`, `/api/costs`,
+  `/api/costs/compare`, `/api/email-results`, `/api/feedback`,
+  `/api/subscribe` - none of which are crawler-facing surfaces (ads.txt,
+  page routes, sitemap.xml are all untouched by it).
+- `robots.ts` allows `/` for all UAs, disallows only `/api/`.
+- `src/app/ads.txt/route.ts` serves unconditionally (no UA check) - either
+  the AdSense publisher line or a redirect to `NEXT_PUBLIC_ADSTXT_REDIRECT_URL`
+  when set, never a 4xx/challenge.
+- No `vercel.json` exists in the repo (confirmed via directory listing), so
+  no Vercel-level firewall/bot-challenge config is in play either.
+- The live curl checks (Mediapartners-Google/AdsBot/Googlebot -> 200) already
+  passed at the orchestrator level per the task brief; this audit found
+  nothing in the codebase that could contradict that at the code level.
+- No changes made (nothing to whitelist - there is no gate to widen).
+
+### K04 - SPA re-initialization / refresh-adjacency audit
+Traced every ad push/init call site: `src/components/ads/ad-unit.tsx` is the
+ONLY place `window.adsbygoogle.push({})` is called in the repo (confirmed via
+repo-wide grep). Its push-triggering `useEffect` dependency array is
+`[client, active, pathname]`, and the `<ins key={slot-pathname}>` remount key
+is ALSO pathname-only - so a push can only ever be triggered by a real route
+change, never by any other state transition. Verified this holds for every
+interactive path in the two calculator surfaces that render an ad slot
+(`CostCalculator` -> `CostResult` -> `ResultMonetization` -> `DisplaySlot` ->
+`AdProvider` -> `AdUnit`, used on `/` and `/[state]/[slug]`;
+`SettlementEstimatorForm` was also checked and has ZERO ad call sites):
+- Recalculation (`runCalculate`/`handleCalculate` in `cost-calculator.tsx`,
+  `runCalculate` in `settlement-estimator-form.tsx`): only sets local React
+  state (`results`/`output`) - never touches `pathname`, never remounts
+  `AdUnit`. No re-push.
+- Category/state/complexity select toggles: `onValueChange` handlers only
+  call `setCategory`/`setStateCode`/`setComplexity` - same as above, no
+  pathname involvement.
+- localStorage-restore re-render (`handleApplySavedState` ->
+  `persistence.restore()` in `use-calculator-persistence.ts`): applies saved
+  fields via `setCategory`/`setStateCode`/`setComplexity` only; fires
+  `state_restored` but never touches the URL, router, or pathname.
+- Share-URL / `history.replaceState`: repo-wide grep for
+  `replaceState|window.history` found matches ONLY in unrelated files
+  (privacy page copy, TermsGate/consent-banner localStorage,
+  `clear-my-data.tsx`, `recent-calculations.tsx`, `lib/analytics.ts`,
+  `use-calculator-persistence.ts`) - zero matches in any ad, calculator, or
+  share component. `ResultShare` (`src/components/shared/result-share.tsx`)
+  reads `usePathname()` only to build a copy-link URL; it never calls
+  `router.push`/`replaceState`, so a share action cannot trigger a pathname
+  change or an ad re-push.
+- Tabs/accordions: no tab or accordion UI exists in either calculator
+  (`CostCalculator`/`SettlementEstimatorForm` are flat forms; no
+  `Tabs`/`Accordion` primitive is used on either page).
+- This structural guarantee was already fully in place before this wave (see
+  the ad-unit.tsx docstring and the T13 comments in
+  `src/app/[state]/[slug]/page.tsx`, which record a PRIOR wave removing two
+  standalone `<AdProvider>` call sites specifically to enforce "exactly ONE
+  programmatic ad unit per page, placed only below the result"). No code
+  changes were needed - added `tests/ad-proximity.test.ts` (new) covering
+  the CostCalculator/SettlementEstimatorForm structural guarantee as
+  regression coverage (this test file's primary purpose is K05, see below,
+  but its "no ad marker in pre-calculation render" assertions double as K04
+  evidence that no ad exists to erroneously re-push in the first place).
+
+### K05 - Ad-proximity ("no accidental click") audit
+Verified via `tests/ad-proximity.test.ts` (new, 4 tests, all passing):
+1. In `CostResult`'s SSR output, the `adsbygoogle` marker only ever appears
+   AFTER "Estimated Total Cost" (the result content) - never before it.
+2. `ResultMonetization`'s wrapper carries `mt-8 space-y-6`, and its
+   `DisplaySlot` reserves `min-h-[90px]` (mobile) / `min-h-[250px]` (sm:+) -
+   a real, non-zero spacing+reservation buffer well over the spec's ~150px
+   guidance, verified structurally rather than just visually.
+3. `CostCalculator`'s pre-calculation render (inputs + "Calculate Cost"
+   button) contains zero ad markers - `CostResult`/`ResultMonetization`
+   aren't even mounted until a result exists.
+4. `SettlementEstimatorForm` (its own "Estimate My Net" button) has zero
+   `AdUnit`/`AdProvider` call sites at all - confirmed via source grep, so
+   there is no proximity risk on `/settlement-estimator` regardless of
+   Auto-ads configuration.
+- Added a passive `data-ad-exclusion-zone="calculator-widget"` DOM attribute
+  (no visual/behavioral change) to the inputs+button `Card` in both
+  `cost-calculator.tsx` and `settlement-estimator-form.tsx`, and wrote
+  `docs/ad-exclusion-zones.md` documenting the selector for the owner to
+  register in AdSense Auto ads' page-level CSS-selector exclusion tool
+  (console action - not performed here).
+
+### K02 - Indexable page-depth audit
+Baseline (BEFORE this wave's K07 addition): 471 indexable URLs - 408
+`/[state]/[slug]` spokes (all 408/408 state x category pairs pass
+`hasUniqueData`, confirmed by `tests/page-index.test.ts`'s existing coverage
+log and by direct inspection of `costs.json`: every row has a real
+`cost_median > 0` and a non-empty `sources[]`), 51 state hubs, 8 category
+hubs, and 4 static pages (home, compare, about, embed) - well above the
+15/site benchmark cited in the spec, and confirmed via a real `npm run build`
+(`sitemap.ts`'s own `console.log` line). Zero `hasUniqueData=false` pages
+exist in this repo - there is no borderline-page backlog to upgrade with real
+data (every state x category pair already has sourced simple/moderate/complex
+rows). AFTER this wave: 472 indexable URLs (+1, the new
+`/divorce-cost-by-state` hub added for K07 below) - confirmed by a second
+`npm run build` run: `sitemap: 472 indexable URLs (408/408 programmatic pages
+pass hasUniqueData)`.
+
+### K06 - YMYL reviewer-byline infra (env/config-driven)
+New `src/lib/reviewer.ts` - `getReviewerConfig()` reads
+`NEXT_PUBLIC_REVIEWER_NAME` (+ optional `NEXT_PUBLIC_REVIEWER_CREDENTIALS`),
+returns `null` when unset/blank (no fabrication). Wired into:
+- `src/components/shared/author-byline.tsx` - when a reviewer is configured,
+  renders "Reviewed by {name}[, {credentials}]"; when unset, renders the
+  EXACT SAME "(legal reviewer pending)" placeholder copy as before this wave
+  (verified byte-for-byte via `tests/reviewer.test.ts`'s AuthorByline
+  render-gate tests).
+- `src/components/seo/organization-schema.tsx` - when configured, adds a
+  `reviewedBy` schema.org `Person` entry alongside the existing (unchanged)
+  `contributor: Organization` entry; when unset, the JSON-LD graph is
+  byte-identical to before this wave.
+- Documented both env vars in `.env.example` with an explicit no-fabrication
+  warning (real reviewer sourcing is an owner action - this wave only wires
+  the render path).
+- New `tests/reviewer.test.ts` (10 tests): env-unset defaults, env-set exact
+  passthrough (never transformed/invented), whitespace handling, and
+  component-level render-gate assertions on `AuthorByline`.
+
+### K07 - divorce-cost-by-state hub (July seasonal build queue, priority #2)
+New static route `src/app/divorce-cost-by-state/page.tsx`:
+- Tool-intent title: "Divorce Cost by State Calculator" (verified it contains
+  "Calculator" and does not start with "what is" - the anti-pattern the spec
+  explicitly bans).
+- All-51-state comparison table (`src/components/seo/divorce-hub-table.tsx`,
+  new): every row's uncontested/contested figures are the REAL `simple`/
+  `complex` complexity-tier `cost_median` values from `costs.json` via a new
+  `getCostByComplexity()` helper added to `src/lib/page-index.ts` - no
+  interpolation, no invented numbers (verified in `tests/divorce-hub.test.ts`
+  by spot-checking 5 states' rendered figures against the real seed values).
+  Framed as simple=uncontested vs. complex=contested, matching the complexity
+  semantics already used sitewide (the same selector on every spoke page's
+  calculator).
+- UPL-safe copy: disclaimer top+bottom intact (`Disclaimer` component, same
+  as every other page), no advice-verb language anywhere on the page
+  (`tests/divorce-hub.test.ts` asserts against "you should", "we recommend",
+  "you need to", "will win", "guaranteed", etc.) - editorial copy explicitly
+  states "This is general cost information only, not legal advice."
+- Links to existing state spokes: every row links to the real,
+  already-indexable `/[state]/divorce-cost` page.
+- K06 integration: renders `AuthorByline`/`UpdatedBadge` using
+  `DEFAULT_FIGURES_LAST_VERIFIED` (the same real dataset-verification date
+  used sitewide) - never a fabricated freshness stamp.
+- Added to `src/app/sitemap.ts` (priority 0.8, weekly) - confirmed present in
+  the real build output as a static route.
+- Cross-linked from every divorce spoke page's `HubLinksBar`
+  (`src/components/seo/hub-links-bar.tsx` - new conditional third link,
+  divorce-category-only, verified NOT to appear on non-divorce spokes).
+- New supporting client components: `src/components/seo/divorce-hub-table.tsx`,
+  `src/components/seo/divorce-hub-faq-link.tsx` (both follow the existing
+  `HubLinks`/`Breadcrumbs` "server page + thin client wrapper for click
+  tracking" pattern already used sitewide).
+- New `tests/divorce-hub.test.ts` (11 tests).
+- Does NOT touch `/category/divorce` (the existing generic per-category hub)
+  - the new page is additive, framed differently (uncontested/contested vs.
+  a single moderate-median column), and both stay live with distinct
+  canonical URLs (no duplicate-content risk: different H1, different table
+  columns, different copy).
+- No new FAQ schema.org markup added (FAQ rich results ended per the spec -
+  the FAQ section on this page is plain content, not JSON-LD).
+
+### Test delta
+- 350 tests (F10 baseline before this wave) -> 364 tests. New files:
+  `tests/ad-proximity.test.ts` (4), `tests/reviewer.test.ts` (10),
+  `tests/divorce-hub.test.ts` (11).
+
+### Gate results (this wave)
+- `npx tsc --noEmit`: 0 errors
+- `npm run lint`: 0 errors (1 pre-existing warning in
+  `software-application-schema.tsx`, unrelated to this wave, carried over
+  from prior waves' notes)
+- `npm test`: 364/364 passed
+- `npm run build`: succeeded, 472 indexable sitemap URLs (up from 471),
+  `/divorce-cost-by-state` built as a static route, no new TypeScript errors,
+  no new warnings.
+
+### Not touched (guardrails)
+No AdSense loader/script, `ads.txt` route logic, Auto-ads console state, or
+any ad-push/init semantics were modified. `AdProvider`'s single-network
+invariant, the pathname-only re-init guard, and the below-result-only
+placement are unchanged - this wave only added test coverage and
+documentation confirming they already hold, plus one passive DOM marker
+attribute. No commit/deploy performed (orchestrator-owned).
+
+## K01 - On-Page Editorial Depth for Indexable Calculator Pages (2026-07-03)
+
+### Summary
+Implements K01 (the #1 approval lever, explicitly out of scope for the prior
+P0-AUDITS wave): entity-level on-page editorial depth for every indexable
+`/[state]/[slug]` spoke (408/408 pages passing `hasUniqueData`, 51 states x 8
+categories). Adds a "How [Category] Costs Work" section, a per-state WORKED
+EXAMPLE interpolated from the page's own real `costs.json` data, and a
+VISIBLE (rendered `<dt>`/`<dd>` text, not JSON-LD-only) FAQ section reusing
+the FAQ question/answer pairs the page already computes for `FaqSchema`.
+
+### New: `src/components/seo/category-editorial.tsx`
+Server component, zero client JS. Renders three sections below the
+calculator/result area (after `RelatedCalculators`, before the bottom
+`Disclaimer` — LCP and the calculator's ad-exclusion zone are unaffected):
+1. **How [Category] Costs Work** — per-CATEGORY entity-level editorial from
+   the new `categoryInfo.costFormationNotes` field (see below). Only this
+   category's real cost-formation mechanics — never a noun-swapped template.
+2. **Worked Example: [Category] in [State]** — built entirely from the
+   page's own `costs` prop (the same `LegalCostData[]` the page already
+   fetches via `getCostForPage`): median/low/high cost, an hourly-rate ->
+   implied-billable-hours calculation, typical duration, top common fees,
+   and a simple-vs-complex comparison. Every figure is read directly from
+   the page's real data — nothing interpolated or invented. Renders nothing
+   (no fabricated placeholder) when there is no moderate-complexity row.
+3. **Frequently Asked Questions** — the SAME `faqQuestions` array the page
+   already builds for `FaqSchema`'s JSON-LD, now ALSO rendered as visible
+   `<dt>`/`<dd>` text. Previously this FAQ content existed only inside the
+   invisible `<script type="application/ld+json">` block — a real content-
+   depth gap for AdSense's "low-value tool-UI-only page" reviewer signal.
+   4-6 questions per page (4 shared + up to 2 category-specific).
+
+Component returns `null` (renders nothing) when there is no cost data AND no
+`costFormationNotes` — no-fabrication guard, consistent with the rest of the
+codebase's pattern (e.g. `CostDetailsSection`'s existing conditional guard).
+
+### New: `categoryInfo.costFormationNotes` (`src/lib/types/category.ts`,
+`src/lib/constants/categories.ts`)
+Added a `costFormationNotes: string[]` field to `CategoryInfo` and populated
+it with 2 distinct paragraphs per category (all 8: divorce, DUI, personal
+injury, bankruptcy, real estate closing, estate planning/probate, criminal
+defense, immigration) describing how THAT category's costs actually form —
+e.g. divorce's contested-vs-uncontested + discovery/mediation/expert-witness
+cost drivers; DUI's attorney-fee vs. non-attorney-cost (fines, interlock,
+insurance) split; personal injury's contingency-fee mechanics; bankruptcy's
+Chapter 7 vs. 13 billing difference; real estate's title/closing cost
+stack; estate planning's pre-death-flat-fee vs. post-death-probate-billing
+split; criminal defense's charge-severity/plea-vs-trial cost driver;
+immigration's attorney-fee vs. federal-USCIS-fee split. Verified
+programmatically (test) that no two categories share any text and that each
+category's notes reference concepts specific to that practice area (e.g.
+"BAC"/"ignition interlock" only in DUI, "USCIS"/"green card" only in
+immigration) - this is the anti-scaled-content-trap guardrail from the spec.
+
+### Wired into `src/app/[state]/[slug]/page.tsx`
+Added `<CategoryEditorial categoryInfo stateInfo costs faqQuestions />`
+after `RelatedCalculators` and before the final bottom `Disclaimer` -
+reuses the page's existing `costs` and `faqQuestions` values rather than
+recomputing or duplicating any data source. No other section was
+restructured; `CostDetailsSection`, `HubLinksBar`, `RelatedLinks`,
+`RelatedCalculators`, and both `Disclaimer` instances are unchanged.
+
+### Word-count verification (`tests/category-editorial.test.ts`, 11 tests)
+Since this repo's Supabase-backed cost data (`getCostForPage`) is not
+reachable during a local build (see prior session's local-dev-quirks note -
+`/[state]/[slug]` pages render their Supabase-dependent sections, including
+the pre-existing `CostDetailsSection`, as empty-state copy in a local
+`npm run build`), the word-count assertion targets `CategoryEditorial`
+directly with REAL data drawn straight from `src/data/seed/costs.json` (the
+same dataset the production Supabase table is seeded from) rather than
+through the full page + a mocked network layer. This is the same
+"seed-data-as-source-of-truth" pattern `tests/page-index.test.ts` and
+`tests/divorce-hub.test.ts` already use. Confirmed via direct build-output
+inspection that the "How Costs Work" and FAQ sections (both independent of
+Supabase - they read only `categoryInfo` and template-derived FAQ text) DO
+render correctly in the actual `.next` server HTML output for
+`/alabama/divorce-cost`; the Worked Example section correctly renders
+nothing in that same local build because `costs` is empty there (the
+pre-existing Supabase-unreachable-locally condition, not a regression -
+`CostDetailsSection`'s pre-existing "Common Fees"/"Attorney Hourly Rate"
+sections are equally absent in the same local HTML for the same reason).
+Assertions:
+- Every category, rendered for a representative state (California) with its
+  full real seed dataset, produces >= 400 words of visible text.
+- A low-population state (Wyoming) also clears 400 words.
+- Worked-example dollar figures match `formatCurrency` of the real
+  `cost_median`/`cost_low`/`cost_high` seed values exactly, for 5 sampled
+  (state, category) pairs.
+- FAQ text renders as visible `<dt>`/`<dd>`, count is 4-6 per page.
+- No advice-verb/outcome-prediction language (`you should`, `we recommend`,
+  `guaranteed`, `will win`, etc.) appears in any category's rendered output.
+- Tool-intent, distinct H2s ("How Divorce Costs Work", "Worked Example:
+  Divorce in California", "Frequently Asked Questions") - not generic labels.
+- Full 51-state x 8-category real-data coverage sweep renders without
+  throwing for every pair that has seed data.
+
+### Test delta
+- 364 tests (P0-AUDITS baseline) -> 375 tests. New file:
+  `tests/category-editorial.test.ts` (11).
+
+### Gate results (this wave)
+- `npx tsc --noEmit`: 0 errors
+- `npm run lint`: 0 errors (1 pre-existing warning in
+  `software-application-schema.tsx`, unrelated, carried over from prior
+  waves)
+- `npm test`: 375/375 passed
+- `npm run build`: succeeded, 472 indexable sitemap URLs (unchanged - K01 is
+  depth-only, no new pages, no `hasUniqueData` gate changes), all 408
+  `/[state]/[slug]` static pages generated successfully.
+
+### Not touched (guardrails)
+No AdSense loader/script, ad-push/init semantics, `hasUniqueData` gate logic,
+disclaimer copy/placement, or any compliance component were modified. No
+new FAQ JSON-LD schema was added (the existing `FaqSchema` JSON-LD is
+untouched - this wave only adds the human-visible rendering of the same
+question/answer content, per the spec's "FAQ JSON-LD optional/harmless"
+guidance). No commit/deploy performed (orchestrator-owned).
+
+## Wave P1 - Discover Hygiene (K09) + Journey Ad Provider (K10) + Day-1
+Runbook (K11) (2026-07-03)
+
+### Summary
+Implements the ad-revenue-maximization spec's section 9 tasks K09, K10, and
+K11 for this repo. K06 (YMYL reviewer-byline infra) and K07 (July seasonal
+build queue priority #2: divorce-cost-by-state hub) were verified
+**already fully implemented and gate-green** in the prior P0 wave (see
+"P0 - Ad Revenue Maximization" note above) - re-audited this wave and found
+no regressions, no further changes needed, nothing re-done. K01-K05, K08 are
+explicitly out of scope for this wave. No AdSense loader, Auto-ads state,
+ads.txt, or ad-push semantics were touched.
+
+### K06/K07 re-audit (no changes - confirming prior wave still holds)
+- K06: `src/lib/reviewer.ts`'s `getReviewerConfig()` still gates
+  `NEXT_PUBLIC_REVIEWER_NAME`/`NEXT_PUBLIC_REVIEWER_CREDENTIALS` correctly
+  (unset -> honest "(legal reviewer pending)" placeholder; both env vars
+  documented in `.env.example` with an explicit no-fabrication warning).
+  `tests/reviewer.test.ts` (10 tests) still passing.
+- K07: `/divorce-cost-by-state` still builds as a static route in the
+  sitemap (472 indexable URLs, same as the prior wave's post-K07 count),
+  still uses real `getCostByComplexity()` simple/complex seed-data lookups
+  (no interpolation), still UPL-safe (disclaimer top+bottom, no advice-verb
+  language), still tool-intent titled ("Divorce Cost by State Calculator").
+  `tests/divorce-hub.test.ts` (11 tests) still passing. This wave's only
+  *addition* to the K07 surface is the new OG image
+  (`src/app/divorce-cost-by-state/opengraph-image.tsx`, part of K09 below)
+  - the page content/copy/data itself is untouched.
+
+### K09 - Discover hygiene
+Two-part requirement: (1) `max-image-preview:large` robots directive on all
+indexable pages, and (2) hub/insight pages get a >=1200px-wide, 16:9-ish OG
+image built from real dataset figures.
+
+**Part 1 - robots meta directive**:
+- `src/app/layout.tsx`'s root `metadata.robots` now sets
+  `"max-image-preview": "large"` alongside the existing `index: true, follow:
+  true` - this is the sitewide default every page inherits UNLESS it passes
+  its own explicit `robots` override (Next.js's `Metadata.robots` does NOT
+  deep-merge across route segments - a child route's explicit robots object
+  REPLACES the parent layout's entirely rather than merging with it).
+- `src/lib/seo.ts`'s `buildMeta()` - the single helper nearly every route's
+  metadata goes through - now injects `"max-image-preview": "large"` into
+  ANY explicit `robots` override a caller passes (e.g. the T09 thin-page
+  `noindex,follow` gate on `/[state]/[slug]` when `hasUniqueData` is false),
+  so that override doesn't silently lose Discover-eligibility by replacing
+  the layout's robots block. A caller-supplied `max-image-preview` value
+  still wins if one is explicitly passed (verified in
+  `tests/seo-meta.test.ts`'s new "caller intent takes precedence" test).
+  `BuildMetaParams.robots` was narrowed from `Metadata["robots"]` (which
+  includes the `string` shorthand form) to the object-only subtype so the
+  merge is type-safe without a runtime check - every real call site in this
+  repo already passes an object.
+- `src/app/embed/[state]/[slug]/page.tsx`'s hand-rolled `noindex,nofollow`
+  override (doesn't route through `buildMeta`) also now explicitly carries
+  `"max-image-preview": "large"` for consistency, though it's a no-op in
+  practice since the route is never crawled/indexed.
+- Audited every other metadata call site: `/about`, `/category/[category]`,
+  `/compare`, `/contact`, `/divorce-cost-by-state`, `/settlement-estimator`,
+  `/[state]` all route through `buildMeta()` and pass no robots override
+  (inherit the layout default as-is). `/`, `/embed`, `/privacy`, `/terms`
+  hand-roll a `Metadata` object but declare no `robots` field, so they also
+  inherit the layout default untouched.
+
+**Part 2 - new OG images for hub/insight pages** (next/og `ImageResponse`,
+edge runtime, matching the existing site pattern in
+`src/app/opengraph-image.tsx` / `src/app/[state]/[slug]/opengraph-image.tsx`
+- teal brand tokens, 1200x630, no purple/blue gradients):
+- `src/app/[state]/opengraph-image.tsx` (new) - state-hub OG image. Key stat
+  is the REAL median across that state's own indexable category costs,
+  computed from `INDEXABLE_PAGES` + `getModerateMedianCost()` (the same
+  source of truth `/[state]/page.tsx` itself renders from) - no fabricated
+  or interpolated figures.
+- `src/app/category/[category]/opengraph-image.tsx` (new) - category-hub OG
+  image. Key stat is the REAL nationwide median across all 51
+  states' costs for that category, same data source as the hub page.
+- `src/app/divorce-cost-by-state/opengraph-image.tsx` (new) - K07 hub OG
+  image. Shows the REAL uncontested (simple) vs. contested (complex)
+  nationwide medians side by side, via `getCostByComplexity()` - matching
+  the page's own uncontested/contested framing exactly.
+- New `tests/k09-discover-hygiene.test.ts` (24 tests): robots-directive
+  source audit (layout default, buildMeta merge behavior, the T09 noindex
+  override, the embed noindex override, and confirmation that hand-rolled
+  metadata objects declare no shadowing robots field) + OG-image source
+  audit for all three new routes (1200x630 size, edge runtime, next/og
+  import, real-data source calls, teal brand token, no forbidden
+  purple/blue-gradient/pure-black tokens per `design/forbidden.md`).
+- Updated `tests/seo-meta.test.ts`'s pre-existing "applies the robots
+  override" test to assert the new merged shape (was a breaking assertion
+  change caused intentionally by this wave's `buildMeta()` behavior change -
+  not a bug fix to a failing test, a spec-required behavior change) and
+  added a new test confirming an explicit caller-supplied
+  `max-image-preview` still overrides the K09 default.
+
+### K10 - AdProvider `journey` option (dormant)
+Added `"journey"` as a fifth member of the `AdProvider` union
+(`"adsense" | "ezoic" | "raptive" | "journey" | "none"`) in
+`src/lib/monetization.ts`:
+- `parseAdProvider()` now recognizes `"journey"` (falls back to `"adsense"`
+  for any other unrecognized value, same as before).
+- New `journeySiteId: string | null` field on `MonetizationConfig`, read
+  from `NEXT_PUBLIC_JOURNEY_SITE_ID` (null when unset, same pattern as
+  `raptiveSiteId`/`ezoicScriptSrc`).
+- `src/components/monetization/AdProvider.tsx` - new `JourneySlot`
+  component, copied structurally from the existing `EzoicSlot`/`RaptiveSlot`
+  pattern (same `IntersectionObserver` lazy-load gate, same
+  `min-h-[90px] sm:min-h-[250px]` CLS-safe reservation, same idempotent
+  `injectScript()` helper - no new script-injection code path, reuses the
+  existing one). Renders nothing when `NEXT_PUBLIC_JOURNEY_SITE_ID` is
+  unset. Wired into `AdProvider`'s provider switch alongside the existing
+  ezoic/raptive branches - the switch structure itself already guarantees
+  the single-provider invariant (exactly one `if (provider === ...)` branch
+  can match, since `parseAdProvider()` returns exactly one value from a
+  mutually exclusive union), so `journey` inherits that guarantee for free
+  rather than needing new isolation logic.
+- Documented `NEXT_PUBLIC_JOURNEY_SITE_ID` in `.env.example` with an
+  explicit "DO NOT set until ~1,000 real sessions/month" eligibility note
+  (부속M §6, verified 2026-01-15 threshold) and the same
+  never-loads-alongside-another-provider invariant language as the other
+  three network blocks. Updated the `NEXT_PUBLIC_AD_PROVIDER` valid-values
+  comment to include `journey`.
+- Extended `tests/monetization.test.ts` (existing file, +8 tests): journey
+  recognized by `parseAdProvider`, `journeySiteId` null-when-unset and
+  reads-when-set, `NEXT_PUBLIC_AD_PROVIDER=journey` config round-trip, and
+  the single-provider-invariant `describe` block updated to check all five
+  providers (was four) plus a new explicit "journey never coexists with
+  another provider" assertion.
+- No render-level test was added for `AdProvider.tsx` itself (matching the
+  pre-existing pattern - Ezoic/Raptive are also only unit-tested at the
+  `parseAdProvider`/config layer, never at the component-render layer; the
+  closest existing component-level ad coverage is `tests/ad-proximity.test.ts`,
+  which tests the AdSense/`AdUnit` path specifically and was left
+  unchanged).
+
+### K11 - AdSense Day-1 runbook
+New `docs/adsense-day1.md` - faithfully transcribes 부속M §3 ("승인 후 첫
+90일 설정 시퀀스") for this repo, following the exact structure/tone already
+established in the sibling `firepath`/`SaaSCostX`/`DentalCostFinder`/
+`LaunchCostCalc` repos' versions of this same doc from their own P1 waves
+(read all four as reference before writing this one; DentalCostFinder's -
+also YMYL - was the closest structural analog). Contents: the 2026 Auto ads
+default-change context (vignette triggers 3/9, load-slider removal 4/16,
+dynamic-anchor 6/19, ad-intents Gemini insertion 6/30 no-opt-out), the Day-1
+settings audit (vignette additional-triggers off + YMYL full-OFF override,
+ad intents off, anchor mobile-on/bottom-only + >1000px off, banner max-2 +
+generous spacing, ad-exclusion-area registration referencing this repo's
+own `docs/ad-exclusion-zones.md` selectors, side rails OK), Week-1 CLS
+recheck (referencing this repo's real `WebVitalsReporter` `web_vitals` GA4
+event), Month-1 Auto-only, Month-2-3 single manual slot gated on two clean
+Policy Center weeks (referencing this repo's real `ResultMonetization`/
+`AdProvider` below-result placement and `tests/ad-proximity.test.ts`),
+Experiments-off-90-days, the IVT house rules (never render live ads
+logged-in, never ask anyone to look at the site, never buy/exchange
+traffic, don't react to "being assessed" serving limits), and the rollback
+trigger (`calculator_complete` -10-15% => revert immediately, referencing
+this repo's real GA4 instrumentation from 부속I T03/T13). All figures/event
+names/file references are this repo's real ones (`ad-exclusion-zones.md`'s
+actual selector, `WebVitalsReporter`, `calculator_complete`, the real
+`ResultMonetization`/`CostResult` placement chain) - no invented specifics.
+Pure documentation, no code path - not unit-tested, consistent with
+`docs/ad-exclusion-zones.md` (K05) also being untested directly.
+
+### Test delta
+- 375 tests (K01 wave baseline) -> 408 tests. New file:
+  `tests/k09-discover-hygiene.test.ts` (24). Extended:
+  `tests/monetization.test.ts` (+8), `tests/seo-meta.test.ts` (+1 net: 1
+  existing test's assertion updated for the new merge behavior, 1 new test
+  added).
+
+### Gate results (this wave)
+- `npx tsc --noEmit`: 0 errors (required narrowing `BuildMetaParams.robots`
+  from `Metadata["robots"]` to `Exclude<Metadata["robots"], string | null>`
+  to fix a "spread types may only be created from object types" error
+  introduced by the K09 merge - the underlying `Metadata.robots` type
+  permits a string-shorthand form that no real call site in this repo uses)
+- `npm run lint`: 0 errors (1 pre-existing warning in
+  `software-application-schema.tsx`, unrelated to this wave, carried over
+  from prior waves' notes)
+- `npm test`: 408/408 passed
+- `npm run build`: succeeded, 472 indexable sitemap URLs (unchanged - K09/
+  K10/K11 add zero new indexable pages; the three new OG image routes are
+  image-generation endpoints, not pages), three new OG image routes
+  confirmed in build output (`/[state]/opengraph-image`,
+  `/category/-/opengraph-image` (bundle path for the dynamic
+  `/category/[category]/opengraph-image`), `/divorce-cost-by-state/opengraph-image`),
+  no new TypeScript errors, no new warnings beyond the pre-existing one.
+
+### Not touched (guardrails)
+No AdSense loader/script, `ads.txt` route logic, Auto-ads console state, or
+any ad-push/init semantics were modified. `AdProvider`'s single-network
+invariant is preserved and extended (not weakened) by adding a fifth
+mutually-exclusive option. K01-K05 (editorial depth, page-depth audit,
+crawler accessibility, SPA re-init audit, ad-proximity audit) and K08
+(IndexNow) were not touched this wave. No commit/deploy performed
+(orchestrator-owned).

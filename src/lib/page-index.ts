@@ -97,3 +97,25 @@ export function getModerateMedianCost(stateCode: string, categorySlug: string): 
   );
   return row ? row.cost_median : null;
 }
+
+/**
+ * K07 — median cost for a (state, category) pair at a SPECIFIC complexity
+ * tier ("simple" | "moderate" | "complex"), read directly from the static
+ * seed dataset. Used by the divorce-cost-by-state hub, which frames
+ * simple/complex as the real uncontested/contested cost split (real data
+ * only — never interpolated/invented). Returns null when no row exists for
+ * that (state, category, complexity) triple.
+ */
+export function getCostByComplexity(
+  stateCode: string,
+  categorySlug: string,
+  complexity: "simple" | "moderate" | "complex",
+): number | null {
+  const row = SEED_ROWS.find(
+    (r) =>
+      r.state_code === stateCode &&
+      r.category === categorySlug &&
+      r.complexity === complexity,
+  );
+  return row ? row.cost_median : null;
+}

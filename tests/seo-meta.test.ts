@@ -84,14 +84,36 @@ describe("seo: buildMeta()", () => {
     expect(meta.title).toBe("Contact Us — Questions, Corrections & Feedback");
   });
 
-  it("applies the robots override when provided (T09 thin-page gate)", () => {
+  it("applies the robots override when provided (T09 thin-page gate), merged with K09's max-image-preview:large", () => {
     const meta = buildMeta({
       title: "Divorce Cost in California",
       description: "Test description.",
       path: "/california/divorce-cost",
       robots: { index: false, follow: true },
     });
-    expect(meta.robots).toEqual({ index: false, follow: true });
+    // K09 — buildMeta() always injects max-image-preview:large into any
+    // explicit robots override it emits (Metadata.robots does not deep-merge
+    // with the root layout across route segments, so an override without
+    // this key would silently drop Discover-eligibility on that page).
+    expect(meta.robots).toEqual({
+      index: false,
+      follow: true,
+      "max-image-preview": "large",
+    });
+  });
+
+  it("lets an explicit max-image-preview override win over K09's default (caller intent takes precedence)", () => {
+    const meta = buildMeta({
+      title: "Divorce Cost in California",
+      description: "Test description.",
+      path: "/california/divorce-cost",
+      robots: { index: false, follow: true, "max-image-preview": "standard" },
+    });
+    expect(meta.robots).toEqual({
+      index: false,
+      follow: true,
+      "max-image-preview": "standard",
+    });
   });
 
   it("omits robots override by default (indexable pages get no explicit override)", () => {

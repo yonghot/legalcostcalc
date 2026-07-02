@@ -22,6 +22,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
+      // K07 — divorce-cost-by-state hub (July seasonal build queue priority #2).
+      url: `${CANONICAL_ORIGIN}/divorce-cost-by-state`,
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
+    {
       url: `${CANONICAL_ORIGIN}/about`,
       lastModified,
       changeFrequency: "monthly",

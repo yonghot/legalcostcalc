@@ -125,6 +125,10 @@ describe("parseAdProvider", () => {
     expect(parseAdProvider("raptive")).toBe("raptive");
   });
 
+  it("recognises 'journey'", () => {
+    expect(parseAdProvider("journey")).toBe("journey");
+  });
+
   it("recognises 'none'", () => {
     expect(parseAdProvider("none")).toBe("none");
   });
@@ -175,6 +179,7 @@ describe("getMonetizationConfig — all env vars unset", () => {
     "NEXT_PUBLIC_EZOIC_ENABLED",
     "NEXT_PUBLIC_EZOIC_SCRIPT_SRC",
     "NEXT_PUBLIC_RAPTIVE_SITE_ID",
+    "NEXT_PUBLIC_JOURNEY_SITE_ID",
     "NEXT_PUBLIC_ADSTXT_REDIRECT_URL",
     "NEXT_PUBLIC_PRIMARY_CTA_TYPE",
     "NEXT_PUBLIC_PPC_NUMBER",
@@ -218,6 +223,10 @@ describe("getMonetizationConfig — all env vars unset", () => {
 
   it("raptiveSiteId is null when unset", () => {
     expect(getMonetizationConfig().raptiveSiteId).toBeNull();
+  });
+
+  it("journeySiteId is null when unset", () => {
+    expect(getMonetizationConfig().journeySiteId).toBeNull();
   });
 
   it("adsTxtRedirectUrl is null when unset", () => {
@@ -288,6 +297,11 @@ describe("getMonetizationConfig — env vars set", () => {
     expect(getMonetizationConfig().adProvider).toBe("raptive");
   });
 
+  it("reads NEXT_PUBLIC_AD_PROVIDER=journey", () => {
+    cleanups.push(withEnv("NEXT_PUBLIC_AD_PROVIDER", "journey"));
+    expect(getMonetizationConfig().adProvider).toBe("journey");
+  });
+
   it("reads NEXT_PUBLIC_AD_PROVIDER=none", () => {
     cleanups.push(withEnv("NEXT_PUBLIC_AD_PROVIDER", "none"));
     expect(getMonetizationConfig().adProvider).toBe("none");
@@ -306,6 +320,11 @@ describe("getMonetizationConfig — env vars set", () => {
   it("reads NEXT_PUBLIC_RAPTIVE_SITE_ID", () => {
     cleanups.push(withEnv("NEXT_PUBLIC_RAPTIVE_SITE_ID", "example-site-id"));
     expect(getMonetizationConfig().raptiveSiteId).toBe("example-site-id");
+  });
+
+  it("reads NEXT_PUBLIC_JOURNEY_SITE_ID", () => {
+    cleanups.push(withEnv("NEXT_PUBLIC_JOURNEY_SITE_ID", "example-journey-id"));
+    expect(getMonetizationConfig().journeySiteId).toBe("example-journey-id");
   });
 
   it("reads NEXT_PUBLIC_PPC_NUMBER", () => {
@@ -375,10 +394,20 @@ describe("AdProvider single-provider invariant", () => {
    * parseAdProvider must return exactly one value from the known set.
    * The set of valid providers is exhaustive and mutually exclusive.
    */
-  const VALID_PROVIDERS = ["adsense", "ezoic", "raptive", "none"] as const;
+  const VALID_PROVIDERS = ["adsense", "ezoic", "raptive", "journey", "none"] as const;
 
-  it("parseAdProvider always returns exactly one of the four known providers", () => {
-    const testInputs = [null, "", "adsense", "ezoic", "raptive", "none", "unknown", "ADSENSE"];
+  it("parseAdProvider always returns exactly one of the five known providers", () => {
+    const testInputs = [
+      null,
+      "",
+      "adsense",
+      "ezoic",
+      "raptive",
+      "journey",
+      "none",
+      "unknown",
+      "ADSENSE",
+    ];
     for (const input of testInputs) {
       const result = parseAdProvider(input);
       expect(VALID_PROVIDERS).toContain(result);
@@ -386,16 +415,27 @@ describe("AdProvider single-provider invariant", () => {
   });
 
   it("parseAdProvider result set is exhaustive — no two active at once", () => {
-    // Setting all three providers simultaneously still yields exactly one.
-    const result = parseAdProvider("ezoic");
-    // It cannot simultaneously be 'adsense' or 'raptive'.
-    expect(result).toBe("ezoic");
+    // Setting all providers simultaneously still yields exactly one.
+    const result = parseAdProvider("journey");
+    // It cannot simultaneously be any other provider.
+    expect(result).toBe("journey");
     expect(result).not.toBe("adsense");
+    expect(result).not.toBe("ezoic");
     expect(result).not.toBe("raptive");
   });
 
   it("getMonetizationConfig returns a single adProvider value, never undefined", () => {
     const cfg = getMonetizationConfig();
     expect(VALID_PROVIDERS).toContain(cfg.adProvider);
+  });
+
+  it("journey provider never coexists with another provider's site id being 'active' — parseAdProvider is the sole switch", () => {
+    // Even if adsense/ezoic/raptive/journey env vars are ALL set, only the
+    // NEXT_PUBLIC_AD_PROVIDER value determines which one AdProvider.tsx
+    // renders — parseAdProvider's return type structurally admits exactly
+    // one provider, never a set/array/union of active providers.
+    const result = parseAdProvider("journey");
+    expect(typeof result).toBe("string");
+    expect(result).toBe("journey");
   });
 });

@@ -5,23 +5,32 @@
  * T11: adds a `contributor` entry describing the honest editorial-team
  * authorship model already disclosed in <AuthorByline> ("LegalCostCalc
  * Editorial Team", reviewer pending) — deliberately NOT a schema.org Person
- * with an invented name/credentials (no-fabrication guardrail; there is no
- * real named/licensed reviewer yet). `dateModified` is driven by the same
- * real, verified dataset date used everywhere else
- * (DEFAULT_FIGURES_LAST_VERIFIED), never a render-time stamp.
+ * with an invented name/credentials (no-fabrication guardrail).
+ * `dateModified` is driven by the same real, verified dataset date used
+ * everywhere else (DEFAULT_FIGURES_LAST_VERIFIED), never a render-time stamp.
+ *
+ * K06: when a real reviewer is configured (src/lib/reviewer.ts,
+ * NEXT_PUBLIC_REVIEWER_NAME), an ADDITIONAL `reviewedBy` Person entry is
+ * included — this only ever reflects an owner-supplied real name/credential,
+ * never a fabricated one. When unset, the schema graph is unchanged from
+ * before this wave.
  *
  * Security note (unchanged pattern from before this wave): content is
  * rendered via `safeJsonLd()`, which escapes '<' before injection into
  * `dangerouslySetInnerHTML`, matching every other JSON-LD component in this
- * repo (see src/lib/utils/json-ld.ts). All fields here are internal,
- * hardcoded/constant strings — no user or request-derived content.
+ * repo (see src/lib/utils/json-ld.ts) — this is the repo's established safe
+ * pattern for structured data (not raw/untrusted HTML), and all fields here
+ * are internal, hardcoded/constant strings or owner-supplied env values, not
+ * user/request-derived content.
  */
 
 import { safeJsonLd } from "@/lib/utils/json-ld";
 import { CANONICAL_ORIGIN } from "@/lib/seo";
 import { DEFAULT_FIGURES_LAST_VERIFIED } from "@/lib/constants/figures";
+import { getReviewerConfig } from "@/lib/reviewer";
 
 export function OrganizationSchema() {
+  const reviewer = getReviewerConfig();
   const schema = {
     "@context": "https://schema.org",
     "@graph": [
@@ -63,6 +72,17 @@ export function OrganizationSchema() {
           "@type": "Organization",
           name: "LegalCostCalc Editorial Team",
         },
+        // K06 — only present when a real reviewer is env-configured (see
+        // module docs above). No name/credential is ever invented here.
+        ...(reviewer
+          ? {
+              reviewedBy: {
+                "@type": "Person",
+                name: reviewer.name,
+                ...(reviewer.credentials ? { honorificSuffix: reviewer.credentials } : {}),
+              },
+            }
+          : {}),
       },
     ],
   };

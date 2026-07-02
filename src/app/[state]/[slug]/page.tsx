@@ -23,6 +23,7 @@ import { buildMeta, CANONICAL_ORIGIN } from "@/lib/seo";
 import { hasUniqueData } from "@/lib/page-index";
 import { Breadcrumbs } from "@/components/seo/breadcrumbs";
 import { HubLinksBar } from "@/components/seo/hub-links-bar";
+import { CategoryEditorial } from "@/components/seo/category-editorial";
 
 interface PageProps {
   params: Promise<{ state: string; slug: string }>;
@@ -335,6 +336,20 @@ export default async function StateCategoryPage({ params }: PageProps) {
 
       {/* Cross-link module — sibling cost-calculator network. */}
       <RelatedCalculators />
+
+      {/* K01 — entity-level editorial depth (how-it-works + worked example +
+          visible FAQ text). Placed below the calculator/result area and every
+          existing monetization/link module so LCP and the ad-exclusion zone
+          around the calculator widget are unaffected. Reuses the same
+          faqQuestions array already powering FaqSchema's JSON-LD above, so
+          this is the human-readable rendering of that same content — not a
+          duplicate content source. */}
+      <CategoryEditorial
+        categoryInfo={categoryInfo}
+        stateInfo={stateInfo}
+        costs={costs}
+        faqQuestions={faqQuestions}
+      />
 
       {/* T13: the standalone in-content <AdProvider> that previously rendered
           here (after RelatedCalculators) was removed for the same "exactly

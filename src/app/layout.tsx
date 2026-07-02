@@ -79,6 +79,11 @@ export const metadata: Metadata = {
   robots: {
     index: true,
     follow: true,
+    // K09 — Discover hygiene (부속M §5/§9): allow large image previews so
+    // hub/insight pages are eligible for Google Discover surfacing. Applies
+    // sitewide via metadata inheritance; buildMeta()'s explicit robots
+    // overrides (thin-page noindex gate) also set this — see src/lib/seo.ts.
+    "max-image-preview": "large",
   },
 };
 

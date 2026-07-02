@@ -43,7 +43,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   return {
     title,
-    robots: { index: false, follow: false },
+    // K09 — max-image-preview:large kept for consistency even though this
+    // route is noindex,nofollow (never crawled/surfaced, so it's a no-op in
+    // practice — the canonical /[state]/[slug] page is what Discover sees).
+    robots: { index: false, follow: false, "max-image-preview": "large" },
   };
 }
 
@@ -86,9 +89,13 @@ export default async function EmbedCalculatorPage({ params }: PageProps) {
           <Disclaimer variant="compact" />
         </div>
 
+        {/* monetizationDisabled enforces the "Ads are intentionally OFF here"
+            invariant: ResultMonetization (AdSense/AdProvider, CTAs, partner
+            table, sponsor, email capture) renders null inside the iframe. */}
         <CostCalculator
           initialCategory={categoryInfo.slug}
           initialState={stateInfo.code}
+          monetizationDisabled
         />
 
         <div className="border-t border-slate-100 pt-4 text-center">

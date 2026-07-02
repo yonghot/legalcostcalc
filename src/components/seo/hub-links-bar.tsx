@@ -24,6 +24,10 @@ function handleHubClick(linkUrl: string) {
 export function HubLinksBar({ stateSlug, stateName, categorySlug, categoryName }: HubLinksBarProps) {
   const stateHubHref = `/${stateSlug}`;
   const categoryHubHref = `/category/${categorySlug}`;
+  // K07 — divorce spokes additionally link to the dedicated
+  // /divorce-cost-by-state comparison hub (uncontested vs. contested
+  // framing), keeping that page internally linked from every divorce spoke.
+  const isDivorce = categorySlug === "divorce";
 
   return (
     <section className="border-t border-slate-100 bg-white py-8">
@@ -45,6 +49,16 @@ export function HubLinksBar({ stateSlug, stateName, categorySlug, categoryName }
             <LayoutGrid className="h-4 w-4 text-teal-600" aria-hidden="true" />
             {categoryName} cost by state
           </Link>
+          {isDivorce && (
+            <Link
+              href="/divorce-cost-by-state"
+              onClick={() => handleHubClick("/divorce-cost-by-state")}
+              className={`inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 ${CARD_HOVER} ${FOCUS_RING}`}
+            >
+              <LayoutGrid className="h-4 w-4 text-teal-600" aria-hidden="true" />
+              Uncontested vs. contested divorce cost
+            </Link>
+          )}
         </div>
       </div>
     </section>

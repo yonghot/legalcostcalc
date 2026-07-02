@@ -34,6 +34,13 @@ interface ResultMonetizationProps {
   categorySlug?: string;
   /** State name for affiliate partner label. */
   stateName?: string;
+  /**
+   * True on embed/iframe surfaces (the /embed/[state]/[slug] widget): the
+   * ENTIRE stack renders null — no AdProvider/AdUnit (AdSense policy forbids
+   * serving ads inside third-party iframes we don't control), no CTA,
+   * partner table, sponsor slot, or email capture.
+   */
+  monetizationDisabled?: boolean;
   className?: string;
 }
 
@@ -286,8 +293,14 @@ export function ResultMonetization({
   context,
   categorySlug,
   stateName: _stateName, // eslint-disable-line @typescript-eslint/no-unused-vars
+  monetizationDisabled = false,
   className,
 }: ResultMonetizationProps) {
+  // Embed-widget invariant: never serve ads or partner/CTA content inside a
+  // third-party iframe. No hooks are called in this body, so the early
+  // return is safe.
+  if (monetizationDisabled) return null;
+
   const cfg = getMonetizationConfig();
 
   return (

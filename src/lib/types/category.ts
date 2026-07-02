@@ -11,6 +11,15 @@ export interface CategoryInfo {
   seoDescriptionTemplate: string;
   sortOrder: number;
   faqTemplates?: FaqTemplate[];
+  /**
+   * K01 — entity-level "how this cost forms" editorial, one distinct set of
+   * paragraphs per CATEGORY (not per state; state figures are interpolated
+   * into the worked example separately using the page's own cost data).
+   * Each entry describes the real cost-driving mechanics of that practice
+   * area — never a noun-swapped template. See
+   * src/components/seo/category-editorial.tsx.
+   */
+  costFormationNotes?: string[];
 }
 
 export type LegalCategorySlug =

@@ -3,11 +3,16 @@
 /**
  * AdProvider — The SINGLE programmatic ad network selector.
  *
- * Reads NEXT_PUBLIC_AD_PROVIDER (adsense|ezoic|raptive|none; default adsense).
- * Loads EXACTLY ONE provider:
+ * Reads NEXT_PUBLIC_AD_PROVIDER (adsense|ezoic|raptive|journey|none; default
+ * adsense). Loads EXACTLY ONE provider:
  *   - adsense → reuses the existing <AdUnit> component (no second script tag)
  *   - ezoic   → a single <script> via NEXT_PUBLIC_EZOIC_SCRIPT_SRC
  *   - raptive → a single <script> via NEXT_PUBLIC_RAPTIVE_SITE_ID
+ *   - journey → a single <script> via NEXT_PUBLIC_JOURNEY_SITE_ID (K10 —
+ *     Journey by Mediavine, dormant premium-tier network; see 부속M §6. Not
+ *     eligible until a site crosses ~1,000 real sessions/month — this wiring
+ *     exists so the upgrade is a one-env-var flip, not a code change, once
+ *     that trigger fires)
  *   - none / unset NEXT_PUBLIC_AD_PROVIDER → renders nothing
  *
  * NEVER loads two providers at once. All slots route through this component.
@@ -130,6 +135,54 @@ function RaptiveSlot({ lazy }: { lazy: boolean }) {
   );
 }
 
+/** Journey by Mediavine injection via NEXT_PUBLIC_JOURNEY_SITE_ID (K10, dormant). */
+function JourneySlot({ lazy }: { lazy: boolean }) {
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [active, setActive] = useState(
+    () => !lazy || typeof IntersectionObserver === "undefined",
+  );
+
+  useEffect(() => {
+    if (!lazy || active) return;
+    const node = wrapRef.current;
+    if (!node || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setActive(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "400px" },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [lazy, active]);
+
+  useEffect(() => {
+    if (!active) return;
+    const siteId = process.env.NEXT_PUBLIC_JOURNEY_SITE_ID;
+    if (!siteId) return;
+    // Journey (Mediavine) loader — standard head-script injection point,
+    // Next.js-compatible per 부속M §6 verification (not a WordPress-only tag).
+    injectScript(
+      `https://journey.mediavine.com/${siteId}/journey.js`,
+      { "data-journey-site": siteId },
+    );
+  }, [active]);
+
+  const siteId = process.env.NEXT_PUBLIC_JOURNEY_SITE_ID;
+  if (!siteId) return null;
+
+  return (
+    <div ref={wrapRef} className="min-h-[90px] sm:min-h-[250px]" aria-hidden="true">
+      <p className="mb-1 text-center text-[10px] font-medium uppercase tracking-wide text-slate-400">
+        Advertisement
+      </p>
+    </div>
+  );
+}
+
 export function AdProvider({ slot, className, lazy = true }: AdProviderProps) {
   const provider: AdProviderType = parseAdProvider(
     process.env.NEXT_PUBLIC_AD_PROVIDER ?? null,
@@ -153,6 +206,16 @@ export function AdProvider({ slot, className, lazy = true }: AdProviderProps) {
     return (
       <div className={className}>
         <RaptiveSlot lazy={lazy} />
+      </div>
+    );
+  }
+
+  if (provider === "journey") {
+    const siteId = process.env.NEXT_PUBLIC_JOURNEY_SITE_ID;
+    if (!siteId) return null;
+    return (
+      <div className={className}>
+        <JourneySlot lazy={lazy} />
       </div>
     );
   }

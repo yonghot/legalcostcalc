@@ -1,4 +1,5 @@
 import { Users, ShieldCheck, CalendarClock } from "lucide-react";
+import { getReviewerConfig } from "@/lib/reviewer";
 
 interface AuthorBylineProps {
   /**
@@ -17,13 +18,20 @@ interface AuthorBylineProps {
 
 /**
  * E-E-A-T byline shown on tool/result pages: a generic editorial-team author,
- * a clearly-marked reviewer PLACEHOLDER (we do NOT fabricate a named licensed
- * attorney — a real reviewer is listed under ownerNeeded), and a "Last updated"
- * date sourced ONLY from real verified-data fields (never `new Date()`).
- * Keeps trust signals honest and policy-safe for YMYL legal content.
+ * a reviewer line, and a "Last updated" date sourced ONLY from real
+ * verified-data fields (never `new Date()`).
+ *
+ * K06 — reviewer identity is env/config-driven (see src/lib/reviewer.ts):
+ * when NEXT_PUBLIC_REVIEWER_NAME (+ optionally _CREDENTIALS) is set, the byline
+ * shows the real named/licensed reviewer. When unset, it falls back to the
+ * existing honest "(legal reviewer pending)" placeholder copy — we NEVER
+ * fabricate a name or credential. Actual reviewer sourcing/contracting is an
+ * owner action (P04 in the ad-revenue spec); this component only renders
+ * whatever the owner has configured.
  */
 export function AuthorByline({ lastUpdated, className }: AuthorBylineProps) {
   const updatedLabel = formatUpdated(lastUpdated);
+  const reviewer = getReviewerConfig();
 
   return (
     <div
@@ -35,8 +43,22 @@ export function AuthorByline({ lastUpdated, className }: AuthorBylineProps) {
       </span>
       <span className="inline-flex items-center gap-1.5">
         <ShieldCheck className="h-4 w-4 text-slate-400" aria-hidden="true" />
-        {/* Placeholder — replace with a real licensed attorney reviewer (ownerNeeded). */}
-        Reviewed for accuracy <span className="italic text-slate-400">(legal reviewer pending)</span>
+        {reviewer ? (
+          <>
+            Reviewed by{" "}
+            <span className="font-medium text-slate-600">
+              {reviewer.name}
+              {reviewer.credentials ? `, ${reviewer.credentials}` : ""}
+            </span>
+          </>
+        ) : (
+          <>
+            {/* Placeholder — replace by setting NEXT_PUBLIC_REVIEWER_NAME once a
+                real licensed attorney reviewer is contracted (ownerNeeded). */}
+            Reviewed for accuracy{" "}
+            <span className="italic text-slate-400">(legal reviewer pending)</span>
+          </>
+        )}
       </span>
       {updatedLabel && (
         <span className="inline-flex items-center gap-1.5">

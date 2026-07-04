@@ -29,6 +29,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
+      // CODE-04 — statistics/data "linkable asset" page.
+      url: `${CANONICAL_ORIGIN}/legal-cost-statistics`,
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
+    {
       url: `${CANONICAL_ORIGIN}/about`,
       lastModified,
       changeFrequency: "monthly",

@@ -24,15 +24,25 @@ const SITE_ORIGIN = "https://legalcostcalc.co";
 export function EmbedSnippet({ embedPath, canonicalPath, label }: EmbedSnippetProps) {
   const [copied, setCopied] = useState(false);
 
-  // Attribution link policy (T04): rel="nofollow sponsored" (Google manual-
-  // action vector for followed widget links), brand-name anchor text (never
-  // a keyword anchor), and UTM params so referral attribution survives.
-  // utm_campaign uses a stable "embed_snippet" value here since the partner's
-  // eventual hosting domain isn't known at copy-paste time (contrast with the
-  // live /embed/[state]/[slug] page, which can read document.referrer).
+  // Attribution link policy (CODE-03, reconciling T04): rel="nofollow ugc" —
+  // Google's official stance is that widget-embedded/user-generated-context
+  // links must be nofollow or they are a link-scheme violation (부속P §4
+  // CODE-03 / §8 anti-pattern #2). "ugc" additionally signals this link
+  // lives inside user-embedded/third-party content, which "sponsored" did
+  // not. Brand-name anchor text (never a keyword anchor), plus UTM params so
+  // referral attribution survives. utm_campaign uses a stable "embed_snippet"
+  // value here since the partner's eventual hosting domain isn't known at
+  // copy-paste time (contrast with the live /embed/[state]/[slug] page,
+  // which can read document.referrer).
   const attributionHref = `${SITE_ORIGIN}${canonicalPath}?utm_source=embed&utm_medium=widget&utm_campaign=embed_snippet`;
+  const iframeId = "legalcostcalc-embed";
 
+  // CODE-03: height-resize listener — matches the postMessage type emitted
+  // by EmbedResizeReporter (rendered inside the iframe itself) so the host
+  // page's <iframe> auto-sizes to fit the widget's real content height
+  // instead of clipping it at the fallback height="720" above.
   const snippet = `<iframe
+  id="${iframeId}"
   src="${SITE_ORIGIN}${embedPath}"
   title="${label}"
   width="100%"
@@ -41,10 +51,19 @@ export function EmbedSnippet({ embedPath, canonicalPath, label }: EmbedSnippetPr
   loading="lazy"
 ></iframe>
 <p style="font-size:12px;text-align:center;">
-  <a href="${attributionHref}" target="_blank" rel="noopener nofollow sponsored">
+  <a href="${attributionHref}" target="_blank" rel="noopener nofollow ugc">
     Powered by LegalCostCalc
   </a>
-</p>`;
+</p>
+<script>
+  window.addEventListener("message", function (event) {
+    if (!event.data || event.data.type !== "legalcostcalc:embed-resize") return;
+    var frame = document.getElementById("${iframeId}");
+    if (frame && typeof event.data.height === "number") {
+      frame.style.height = event.data.height + "px";
+    }
+  });
+</script>`;
 
   async function copy() {
     try {

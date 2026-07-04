@@ -24,8 +24,9 @@ import {
 import { AffiliateCTA } from "@/components/shared/affiliate-cta";
 import { OrganizationSchema } from "@/components/seo/organization-schema";
 import { SoftwareApplicationSchema } from "@/components/seo/software-application-schema";
+import { ArticleSchema } from "@/components/seo/article-schema";
 import { RelatedCalculators } from "@/components/seo/related-calculators";
-import { FaqSchema } from "@/components/seo/faq-schema";
+import { CANONICAL_ORIGIN } from "@/lib/seo";
 import { FOCUS_RING } from "@/lib/utils/styles";
 import { POPULAR_STATE_CODES } from "@/lib/constants/popular";
 import { DEFAULT_FIGURES_LAST_VERIFIED } from "@/lib/constants/figures";
@@ -48,34 +49,6 @@ const CATEGORY_ICONS: Record<string, LucideIcon> = {
   immigration: Globe,
 };
 
-const HOME_FAQ_QUESTIONS = [
-  {
-    question: "How much does hiring a lawyer cost in the United States?",
-    answer:
-      "Attorney fees vary widely by practice area, state, and case complexity. Hourly rates typically range from $150 to $500+, while some cases use flat fees or contingency arrangements. Use our free calculator to get cost estimates specific to your legal matter and state.",
-  },
-  {
-    question: "What factors affect legal costs?",
-    answer:
-      "The main factors are: the type of legal matter (divorce, DUI, bankruptcy, etc.), your state, case complexity (simple, moderate, or complex), attorney experience, and whether the case goes to trial. Court filing fees and expert witness costs can also add to the total.",
-  },
-  {
-    question: "Are the cost estimates on LegalCostCalc accurate?",
-    answer:
-      "Our estimates are illustrative ranges compiled from publicly available legal-cost research and official fee schedules. Actual costs may vary based on individual circumstances. This tool provides general information, not legal advice.",
-  },
-  {
-    question: "How can I reduce my legal costs?",
-    answer:
-      "Common strategies include: choosing the right level of legal help (self-help vs. limited scope vs. full representation), gathering documents and information in advance, understanding fee structures (hourly vs. flat fee vs. contingency), and comparing costs across attorneys. Our state-by-state comparison tool can help you understand regional cost differences.",
-  },
-  {
-    question: "What legal categories does LegalCostCalc cover?",
-    answer:
-      "We currently cover 8 legal categories across all 50 US states plus DC: Divorce, DUI/DWI, Personal Injury, Bankruptcy, Real Estate Closing, Estate Planning/Probate, Criminal Defense, and Immigration. Each category includes cost ranges, hourly rates, typical duration, and common fees.",
-  },
-];
-
 export default function HomePage() {
   const popularStates = STATES.filter((s) =>
     (POPULAR_STATE_CODES as readonly string[]).includes(s.code),
@@ -90,7 +63,17 @@ export default function HomePage() {
         url="https://legalcostcalc.co/"
         dateModified={DEFAULT_FIGURES_LAST_VERIFIED}
       />
-      <FaqSchema questions={HOME_FAQ_QUESTIONS} />
+      {/* CODE-02: FAQPage JSON-LD removed (deprecated for SERP display in
+          2026). The Q&A remains as visible on-page text in the FAQ section
+          below (GEO-relevant), just no longer emitted as schema. Replaced by
+          the still-supported rich-result set (Article here + WebSite/
+          SearchAction via OrganizationSchema above). */}
+      <ArticleSchema
+        headline="How Much Will Your Legal Matter Really Cost?"
+        description="Free legal cost calculator for all 50 US states. Get estimated costs for divorce, DUI, bankruptcy, personal injury, and more."
+        url={CANONICAL_ORIGIN}
+        dateModified={DEFAULT_FIGURES_LAST_VERIFIED}
+      />
       {/* Hero Section */}
       <section className="bg-gradient-to-b from-teal-50 to-white py-16 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

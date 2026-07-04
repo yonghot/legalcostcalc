@@ -6,8 +6,16 @@
  * repo's pages are statically enumerable (STATES x CATEGORIES), so we
  * replicate RelatedMatters' selection algorithm here and assert every
  * generated href is (a) a real (state, category) combination and (b) passes
- * the T09 hasUniqueData gate — the same guarantee "resolves 200 to a
+ * the T09/CODE-06 hasUniqueData gate — the same guarantee "resolves 200 to a
  * quality-gated page" reduces to for this static site.
+ *
+ * NOTE: since CODE-06 strengthened hasUniqueData into a >=4-fact
+ * information-gain gate (src/lib/page-index.ts), NOT every (state,category)
+ * pair passes anymore — a handful of pages whose moderate-complexity row is
+ * a full-signature duplicate of a sibling state's row (same category) now
+ * fail the gate and are excluded as sibling-link candidates too. The
+ * MIN_LINKS floor (module renders null below 3) is asserted to still hold
+ * for every page regardless.
  */
 import { describe, expect, it } from "vitest";
 import { CATEGORIES } from "@/lib/constants/categories";
@@ -63,15 +71,29 @@ describe("RelatedMatters (T06): link resolution", () => {
     }
   });
 
-  it("since every (state,category) pair passes hasUniqueData in this dataset, all 408 pages get the full 5-link module", () => {
-    // Every state has all 8 categories with real data (verified in
-    // page-index.test.ts), so category count - 1 = 7 candidates, capped at 5.
+  it("never drops below the MIN_LINKS floor for any page — RelatedMatters would render null instead of a thin 1-2 item module", () => {
+    // CODE-06 strengthened hasUniqueData: a small number of (state,category)
+    // pairs now fail the 4-fact information-gain gate (structurally
+    // duplicate sibling rows — see page-index.test.ts), so not every page
+    // has 7 real sibling candidates anymore. The invariant that actually
+    // matters (and that RelatedMatters' own MIN_LINKS check enforces) is
+    // that no page ever ends up with a 1-2 item module — it's either >=3
+    // or the component renders nothing at all.
+    let atMax = 0;
+    let belowMax = 0;
     for (const state of STATES) {
       for (const cat of CATEGORIES) {
         const candidates = computeRelatedMatterLinks(state.code, cat.slug);
-        expect(candidates.length).toBe(MAX_LINKS);
-        expect(candidates.length).toBeGreaterThanOrEqual(MIN_LINKS);
+        expect(candidates.length).toBeLessThanOrEqual(MAX_LINKS);
+        if (candidates.length > 0) {
+          expect(candidates.length).toBeGreaterThanOrEqual(MIN_LINKS);
+        }
+        if (candidates.length === MAX_LINKS) atMax++;
+        else belowMax++;
       }
     }
+    // Sanity: the overwhelming majority of pages still get the full 5-link
+    // module — only the CODE-06-excluded siblings reduce the count.
+    expect(atMax).toBeGreaterThan(belowMax);
   });
 });

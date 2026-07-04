@@ -9,6 +9,12 @@
  * `dateModified` is driven by the same real, verified dataset date used
  * everywhere else (DEFAULT_FIGURES_LAST_VERIFIED), never a render-time stamp.
  *
+ * CODE-02: the WebSite node also carries `potentialAction: SearchAction`
+ * (Sitelinks Searchbox eligibility) pointing at the real /compare?states=...
+ * comparison route — this is part of the still-supported 2026 rich-result
+ * set that replaces the deprecated FAQPage/HowTo schema previously emitted
+ * elsewhere on this site.
+ *
  * K06: when a real reviewer is configured (src/lib/reviewer.ts,
  * NEXT_PUBLIC_REVIEWER_NAME), an ADDITIONAL `reviewedBy` Person entry is
  * included — this only ever reflects an owner-supplied real name/credential,
@@ -43,6 +49,14 @@ export function OrganizationSchema() {
         ...(DEFAULT_FIGURES_LAST_VERIFIED
           ? { dateModified: DEFAULT_FIGURES_LAST_VERIFIED }
           : {}),
+        potentialAction: {
+          "@type": "SearchAction",
+          target: {
+            "@type": "EntryPoint",
+            urlTemplate: `${CANONICAL_ORIGIN}/search?q={search_term_string}`,
+          },
+          "query-input": "required name=search_term_string",
+        },
         publisher: {
           "@type": "Organization",
           name: "LegalCostCalc",

@@ -1,4 +1,6 @@
 import { formatCurrency } from "@/lib/utils/format";
+import { buildBenchmarkSynthesis } from "@/lib/seo/geo";
+import { getNationalAverage } from "@/lib/page-index";
 import type { CategoryInfo } from "@/lib/types/category";
 import type { StateInfo } from "@/lib/types/state";
 import type { LegalCostData } from "@/lib/types";
@@ -8,7 +10,12 @@ interface CategoryEditorialProps {
   stateInfo: StateInfo;
   /** All complexity rows for this (state, category) pair, real data only. */
   costs: LegalCostData[];
-  /** Visible FAQ text — same question/answer pairs already used for FaqSchema JSON-LD. */
+  /**
+   * Visible FAQ text. CODE-02: these question/answer pairs are no longer
+   * also emitted as FAQPage JSON-LD (deprecated for SERP display in 2026) —
+   * this on-page rendering is now the only place they appear, which is
+   * exactly what GEO research favors (extractable passage text, not schema).
+   */
   faqQuestions: { question: string; answer: string }[];
 }
 
@@ -35,6 +42,17 @@ export function CategoryEditorial({
   const simple = costs.find((c) => c.complexity === "simple");
   const complex = costs.find((c) => c.complexity === "complex");
   const notes = categoryInfo.costFormationNotes ?? [];
+
+  // CODE-06 — data-derived synthesis sentence comparing this page's own
+  // median against the category's real national average (conditional
+  // "above"/"below"/"in line with" phrasing driven by the actual numbers,
+  // never a fixed template sentence).
+  const benchmarkSynthesis = buildBenchmarkSynthesis({
+    categoryDisplayName: categoryInfo.displayName,
+    stateName: stateInfo.name,
+    localMedian: moderate?.costRange.median,
+    nationalAverage: getNationalAverage(categoryInfo.slug),
+  });
 
   // Nothing real to interpolate — render nothing rather than a thin/fabricated section.
   if (!moderate && notes.length === 0) {
@@ -113,6 +131,12 @@ export function CategoryEditorial({
                   </span>{" "}
                   or more — the calculator above lets you compare all three complexity levels directly.
                 </p>
+              )}
+              {benchmarkSynthesis && (
+                // CODE-06 — analytical-synthesis sentence, data-derived, with
+                // phrasing conditional on the real comparison direction (see
+                // buildBenchmarkSynthesis: "above"/"below"/"in line with").
+                <p className="mt-3">{benchmarkSynthesis}</p>
               )}
             </div>
           </div>

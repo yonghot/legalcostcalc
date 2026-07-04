@@ -1,6 +1,7 @@
 import { ImageResponse } from "next/og";
 import { INDEXABLE_PAGES, getCostByComplexity } from "@/lib/page-index";
 import { formatCurrency } from "@/lib/utils/format";
+import { getOgAsOfLabel } from "@/lib/seo/og-freshness";
 
 export const runtime = "edge";
 export const alt = "Divorce Cost by State: Uncontested vs. Contested";
@@ -29,6 +30,7 @@ export default function OGImage() {
       : null;
   const contestedMedian =
     contestedCosts.length > 0 ? contestedCosts[Math.floor(contestedCosts.length / 2)] : null;
+  const asOfLabel = getOgAsOfLabel();
 
   return new ImageResponse(
     (
@@ -147,6 +149,9 @@ export default function OGImage() {
         <p style={{ fontSize: "20px", color: "#475569", textAlign: "center", marginTop: "24px" }}>
           All 50 states &amp; DC compared &middot; Sourced &amp; dated estimates
         </p>
+        {asOfLabel && (
+          <p style={{ fontSize: "16px", color: "#94A3B8", marginTop: "6px" }}>{asOfLabel}</p>
+        )}
       </div>
     ),
     { ...size },

@@ -1,6 +1,9 @@
 import { ImageResponse } from "next/og";
 import { STATE_BY_SLUG } from "@/lib/constants/states";
 import { CATEGORY_MAP } from "@/lib/constants/categories";
+import { getModerateCostRange } from "@/lib/page-index";
+import { formatCurrency } from "@/lib/utils/format";
+import { getOgAsOfLabel } from "@/lib/seo/og-freshness";
 
 export const runtime = "edge";
 export const alt = "Legal Cost Estimate";
@@ -26,7 +29,14 @@ export default async function OGImage({
 
   const stateName = stateInfo?.name ?? stateSlug;
   const categoryName = categoryInfo?.displayName ?? categorySlug ?? "Legal";
-  const year = new Date().getFullYear();
+
+  // CODE-05 — the KEY computed result baked in as text: this entity's REAL
+  // moderate-complexity cost range, read directly from the static seed
+  // dataset (same source of truth as getModerateMedianCost/page-index.ts —
+  // no interpolated or invented figures, no fake ratings/superlatives).
+  const range =
+    stateInfo && categoryInfo ? getModerateCostRange(stateInfo.code, categoryInfo.slug) : null;
+  const asOfLabel = getOgAsOfLabel();
 
   return new ImageResponse(
     (
@@ -40,14 +50,14 @@ export default async function OGImage({
           alignItems: "center",
           justifyContent: "center",
           fontFamily: "Inter, sans-serif",
-          padding: "60px",
+          padding: "56px",
         }}
       >
         <div
           style={{
             display: "flex",
             alignItems: "center",
-            marginBottom: "32px",
+            marginBottom: "24px",
           }}
         >
           <div
@@ -82,7 +92,7 @@ export default async function OGImage({
           style={{
             display: "flex",
             gap: "12px",
-            marginBottom: "24px",
+            marginBottom: "20px",
           }}
         >
           <div
@@ -114,42 +124,52 @@ export default async function OGImage({
 
         <h1
           style={{
-            fontSize: "52px",
+            fontSize: "44px",
             fontWeight: 700,
             color: "#0F172A",
             textAlign: "center",
             lineHeight: 1.2,
-            marginBottom: "16px",
+            marginBottom: "20px",
           }}
         >
           How Much Does a {categoryName}
           <br />
-          Cost in{" "}
-          <span style={{ color: "#0D9488" }}>{stateName}</span>?
+          Cost in <span style={{ color: "#0D9488" }}>{stateName}</span>?
         </h1>
-        <p
-          style={{
-            fontSize: "22px",
-            color: "#475569",
-            textAlign: "center",
-          }}
-        >
-          {year} Attorney Fees, Court Costs &amp; More
-        </p>
 
-        <div
-          style={{
-            display: "flex",
-            gap: "32px",
-            marginTop: "32px",
-            fontSize: "16px",
-            color: "#94A3B8",
-          }}
-        >
-          <span>Simple &middot; Moderate &middot; Complex</span>
-          <span>|</span>
-          <span>Data from multiple sources</span>
-        </div>
+        {range !== null && (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              background: "white",
+              border: "2px solid #0D9488",
+              borderRadius: "16px",
+              padding: "18px 36px",
+              marginBottom: "18px",
+            }}
+          >
+            <span
+              style={{
+                fontSize: "52px",
+                fontWeight: 700,
+                color: "#0D9488",
+                fontFamily: "monospace",
+              }}
+            >
+              {formatCurrency(range.median)}
+            </span>
+            <span style={{ fontSize: "18px", color: "#64748B" }}>
+              typical range {formatCurrency(range.low)} – {formatCurrency(range.high)}
+            </span>
+          </div>
+        )}
+
+        <p style={{ fontSize: "18px", color: "#94A3B8", textAlign: "center" }}>
+          {asOfLabel ? `${asOfLabel} · ` : ""}
+          Sourced &amp; dated estimates
+        </p>
       </div>
     ),
     { ...size }

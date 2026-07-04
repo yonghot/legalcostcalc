@@ -1,5 +1,500 @@
 # PROGRESS.md — LegalCostCalc
 
+## Traffic-Maximization Wave P2 (CODE-07) — Build Note (2026-07-04)
+
+Implements 부속P_트래픽극대화_딥리서치.md §4 CODE-07, building on top of Wave P0
+(CODE-01/02/03) and Wave P1 (CODE-04/05/06) below, and the pre-existing GA4
+consent-gated pipeline (`ConsentedAnalytics`/`trackEvent`) — none re-specced.
+
+### CODE-07 — AI-referral & rich-context detection in the GA4 layer
+`src/lib/analytics.ts` gains a pure, independently-testable referrer
+classifier and a browser-side first-load wrapper, both additive to the
+existing module (no changes to `trackEvent`'s signature, the `<=25`-param
+budget, the internal-traffic marker, or the debug-mode gate):
+
+- **`classifyReferralSource(referrer, currentUrl?)`** (pure function, no
+  `window` access beyond the two string args) — matches `document.referrer`'s
+  hostname (exact or subdomain, e.g. `chat.openai.com` matches the
+  `openai.com` table entry) against three lookup tables and returns
+  `{ kind, source }`:
+  - **AI engines** (`kind: "ai"`): `chatgpt.com`/`chat.openai.com`/
+    `openai.com` -> `chatgpt`; `perplexity.ai` -> `perplexity`;
+    `gemini.google.com`/`bard.google.com` -> `gemini`;
+    `copilot.microsoft.com`/`bing.com` -> `copilot`. A conservative
+    Google-AI-Overview pattern detector (`isAiOverviewPattern`) additionally
+    classifies a `google.*` referrer as `ai-overview` ONLY when it carries an
+    explicit AI-mode marker (`udm=50`, or a `utm_source` containing
+    `aiovw`/`ai-overview`) — a bare organic Google referrer is deliberately
+    left unclassified (stays regular search, not guessed as AI).
+  - **Embed-referral** (`kind: "embed"`): reads `?host=` off the CURRENT
+    page's own URL (the query param CODE-03's attribution-link/copy-embed
+    flow appends on click-through from an embedded widget back to the
+    canonical page) — checked first/highest-priority since it's a same-site
+    signal, not a cross-origin referrer.
+  - **Directory/community referrers** (`kind: "directory"`): `reddit.com`/
+    `old.reddit.com` -> `reddit`; `producthunt.com` -> `producthunt`;
+    `quora.com` -> `quora`; `pinterest.com` -> `pinterest`;
+    `news.ycombinator.com` -> `hackernews`; `betalist.com` -> `betalist`.
+  - Never throws on a malformed referrer/URL string; returns
+    `{ kind: null, source: null }` when nothing matches.
+- **`trackReferralSource()`** (browser side-effect wrapper) — calls the
+  classifier against `document.referrer`/`window.location.href` and fires
+  exactly one tagged event through the EXISTING `trackEvent()` pipeline
+  (same consent-gate, `site`/`traffic_type`/`debug_mode` stamping, `<=25`
+  param trim — nothing bypassed):
+  - AI match -> new `ai_referral` event, `{ source }`.
+  - Embed match -> reuses the existing `embed_loaded` event name (so embed
+    click-through referral sessions land in the same GA4 funnel as CODE-03's
+    in-iframe `EmbedLoadedTracker` mount event), `{ host_domain, referral_kind:
+    'embed_referral' }` — the `referral_kind` tag distinguishes a click-
+    through-back-to-canonical session from the iframe-mount event itself.
+  - Directory/community match -> reuses the existing `outbound_click` event,
+    `{ referral_kind: 'directory', source }`.
+  - No match -> no event fired (does not burn the once-per-session guard).
+  - Idempotent per session via a `sessionStorage` guard (`cc_referral_tagged`)
+    — a client-side route change never re-fires the same classification,
+    since `document.referrer` only reflects the original cross-site
+    navigation. Falls back to firing every mount (rather than throwing) if
+    `sessionStorage` is unavailable (private mode/quota/disabled), consistent
+    with the existing `localStorage`-unavailable handling elsewhere in this
+    module.
+- `"ai_referral"` added to the `EventName` string-literal union (compile-time
+  typo guard, per the module's documented contract).
+- Wired into the EXISTING root-mounted `AnalyticsInit` client component
+  (`src/components/consent/analytics-init.tsx`, already mounted once in
+  `src/app/layout.tsx` alongside `ConsentedAnalytics`) — `trackReferralSource()`
+  is called immediately after the pre-existing `initTrafficMarker()` call on
+  the same `useEffect` mount. Zero UI change; no new component was added to
+  the render tree.
+
+Pure measurement — no page/routing/schema/embed changes. `npm run build`'s
+sitemap output is unchanged at 434 indexable URLs, confirming no accidental
+side effects on CODE-04/06 output.
+
+### Test delta
+473 tests (P1 baseline, this session's re-run showed 499 total after this
+wave — see note below) -> `tests/code-07-ai-referral.test.ts` (new, 26 tests):
+`classifyReferralSource` coverage for every AI engine host + the AI-Overview
+query-marker path + the bare-Google-organic non-match, the embed `?host=`
+path (including its priority over a simultaneous AI referrer), every
+directory/community host, the null/malformed-input fallthroughs (never
+throws), an `EventName` compile-time sanity check for `"ai_referral"`, and
+`trackReferralSource`'s browser-side behavior (SSR no-op, fires the correct
+tagged event per referral kind via a stubbed `window.gtag`, no-op when
+nothing matches, and the per-session idempotency guard).
+
+Note: this wave's actual full-suite run showed 499/499 passing (473 P1
+baseline + 26 new) — no other test file was touched.
+
+### DebugView verification steps (owner/operator)
+1. Set `NEXT_PUBLIC_GA_DEBUG=1` on a Vercel Preview deployment (the existing
+   T01 hostname/environment gate already documents this escape hatch —
+   GA4 loads in `debug_mode` and is tagged `traffic_type: 'internal'`, so it
+   never lands in production reports).
+2. Open the Preview URL with the referrer spoofed to `https://www.perplexity.ai/`
+   — e.g. via a browser extension, DevTools' "Override document.referrer",
+   or a controlled test harness page whose only content is a link/redirect
+   from `perplexity.ai`'s origin. Confirm in GA4 DebugView: an `ai_referral`
+   event fires with `source: "perplexity"` and `debug_mode: true`.
+3. Repeat with `chatgpt.com`, `gemini.google.com`, `copilot.microsoft.com` referrers
+   to confirm each maps to its own `source` value.
+4. Visit `.../california/divorce-cost?host=example-partner.com` directly
+   (simulating a click-through from an embedded widget's attribution link)
+   and confirm an `embed_loaded` event fires in DebugView with
+   `host_domain: "example-partner.com"` and `referral_kind: "embed_referral"`.
+5. Repeat with a `reddit.com`/`producthunt.com` referrer and confirm an
+   `outbound_click` event fires with `referral_kind: "directory"` and the
+   matching `source`.
+6. Reload the same tab a second time without changing the referrer/URL and
+   confirm NO second event fires (per-session idempotency guard) — then open
+   a fresh tab/session to confirm it fires again there.
+
+### Gate results (this wave)
+- `npx tsc --noEmit`: 0 errors.
+- `npm run lint`: 0 errors (same 3 pre-existing `react/no-danger`
+  unused-eslint-disable-directive warnings on `article-schema.tsx`,
+  `dataset-schema.tsx`, `software-application-schema.tsx` as prior waves —
+  unrelated to this wave).
+- `npm test`: 499/499 passed.
+- `npm run build`: succeeded, 897 pages generated, `sitemap: 434 indexable
+  URLs (369/408 programmatic pages pass hasUniqueData)` — unchanged from the
+  P1 wave, confirming this wave made no page/sitemap-affecting changes.
+
+### Not touched (guardrails)
+No UI/component render-tree change (only the existing `AnalyticsInit`
+side-effect body gained one more function call). No new script injection,
+no Consent Mode change, no bypass of the T01 hostname/environment gate or
+the `<=25`-param GA4 budget — `trackReferralSource` calls the EXISTING
+`trackEvent()` for every fired event. No raw calculator inputs, legal-matter
+details, or personalized/user-input data enter any event param (YMYL
+invariant preserved — only referrer hostnames and a same-site `?host=` query
+value, never anything derived from calculator state). CODE-01–06 (answer
+blocks, schema, embed nofollow-ugc hardening, statistics page, OG images,
+info-gain gate) were not touched or re-specced. No owner-distribution action
+(OWN-01–07) was taken — code only. No commit/deploy performed
+(orchestrator-owned).
+
+## Traffic-Maximization Wave P1 (CODE-04/05/06) — Build Note (2026-07-04)
+
+Implements 부속P_트래픽극대화_딥리서치.md §4 CODE-04/05/06, building on top of
+Wave P0 (CODE-01/02/03, below) and the pre-existing 부속I SEO infra
+(breadcrumbs/meta/IndexNow/Web Vitals/thin-page gate) — none of it re-specced.
+
+### CODE-06 — hasUniqueData strengthened into a 4-fact information-gain gate
+`src/lib/page-index.ts` (T09's original single-fact check — "has a sourced
+moderate row" — passed all 408 (state,category) pairs) now scores FOUR
+independent, real facts per page: (1) local average (sourced moderate
+median), (2) local range (non-degenerate low-high spread), (3)
+sample-scenario result (simple + complex tiers both real/sourced), (4) a
+computed comparison-vs-benchmark against the category's real national
+average (`getNationalAverage`, computed from the seed dataset, never
+hardcoded) — **fact 4 fails** when a page's moderate row is a byte-for-byte
+duplicate of another state's row in the same category
+(`hasDuplicateSiblingSignature`), which is the actual near-duplicate-
+template anti-pattern 부속P §8 #3 warns about. A page needs all 4 facts
+(`factCount >= 4`) to be `hasUniqueData`/indexable.
+
+Real-dataset impact (verified, not simulated): **39 of 408 pages** now fail
+the gate — exactly the pairs whose full cost-row signature (low/median/
+high/hourly/duration) is identical to a sibling state's row for the same
+category (e.g. real-estate: ID/IA/MO share one signature, ME/MI another;
+similar duplicate clusters exist in bankruptcy, estate-planning,
+personal-injury, immigration). `sitemap.ts`, `generateMetadata`'s `robots`
+override, and every internal-link module (RelatedMatters/hub pages) already
+read exclusively from `INDEXABLE_PAGES`/`hasUniqueData`, so this change
+required zero re-wiring downstream — build output confirms
+`sitemap: 434 indexable URLs (369/408 programmatic pages pass hasUniqueData)`.
+
+Also added the CODE-06 "conditional phrasing + >=1 data-derived synthesis
+sentence" requirement: `buildBenchmarkSynthesis()` (new export in
+`src/lib/seo/geo.ts`) compares a page's real moderate median against the
+real category national average and renders "runs X% above/below the
+national average" (or "in line with" when the difference is <3%) —
+phrasing is conditional on the actual real-number comparison, never a fixed
+template. Wired into `CategoryEditorial`'s worked-example block (renders
+only when both figures are real; never fabricates).
+
+Tests: `tests/code-06-info-gain.test.ts` (new, 13 tests) — asserts the gate
+math, the sitemap-exclusion acceptance criterion (a `<4-fact` page is
+absent from `INDEXABLE_PAGES` AND from the actual `sitemap()` output), and
+`buildBenchmarkSynthesis`'s conditional phrasing (above/below/in-line-with,
+each only when numerically true). `tests/page-index.test.ts` rewritten to
+independently re-derive the 4-fact score (not just re-assert the module's
+own internal logic) and to assert the specific real-dataset duplicate-
+signature failure case. `tests/related-matters.test.ts` fixed one test that
+had hardcoded the now-false assumption "every (state,category) pair passes
+hasUniqueData" (pre-existing test, broken by the stricter gate) — replaced
+with an assertion that no page ever drops below the `MIN_LINKS` floor
+(RelatedMatters renders null below 3, never a thin 1-2 item module) while
+confirming the majority of pages still get the full 5-link module.
+
+### CODE-04 — `/legal-cost-statistics` data/statistics page + JSON/CSV feeds
+New `src/lib/seo/statistics.ts` exports `buildStatisticsAggregate()` — a
+pure function aggregating the SAME `INDEXABLE_PAGES` (CODE-06-gated) real
+dataset into: one row per category (national average, highest-cost state,
+lowest-cost state, high-vs-low %), a headline (most expensive category
+nationally), and 3-5 one-line quotable findings in the literal
+"X costs N% more in A than B" format the spec asks for — every number
+traces to `getNationalAverage`/`getModerateMedianCost` (page-index.ts),
+zero independent data entry.
+
+New route `src/app/legal-cost-statistics/page.tsx`: headline stat, ranked
+`StatisticsTable` (new component, one row per category, links to the real
+highest/lowest state pages), key-findings list, Dataset JSON-LD
+(`src/components/seo/dataset-schema.tsx`, new — schema.org/Dataset is still
+fully SERP/AI supported in 2026 unlike FAQPage/HowTo, see CODE-02), download
+links, and the disclaimer top+bottom (product invariant preserved). New
+routes `src/app/legal-cost-statistics/data.json/route.ts` and
+`.../data.csv/route.ts` expose the identical aggregate as machine-readable
+feeds (same `buildStatisticsAggregate()` call — page, Dataset JSON-LD,
+data.json, and data.csv are four consumers of one aggregation, never four
+separately-hand-maintained number sets). Added to `sitemap.ts`.
+
+Tests: `tests/code-04-statistics.test.ts` (new, 9 tests) — asserts every
+category row's figures trace to the real `getNationalAverage()`/
+`INDEXABLE_PAGES` source of truth, 3-5 findings each grounded in a real
+category name, and that `data.json`/`data.csv` return byte-identical
+figures to the page's own aggregate (build-verified: real numbers e.g.
+national median divorce cost $8,798, Hawaii $12,900 vs. Alabama $6,050,
+appear identically in the rendered page, `data.json`, and `data.csv`).
+
+### CODE-05 — dynamic OG images with the real computed number baked in
+`src/app/[state]/[slug]/opengraph-image.tsx` (the one OG image among the
+site's five that did NOT yet bake in a real per-entity number — the other
+four, `/[state]`, `/category/[category]`, `/divorce-cost-by-state`, and
+root, already did this in a prior K09 wave) now renders the entity's REAL
+moderate-complexity cost range (`getModerateCostRange`, new page-index.ts
+export, static-seed-sourced so it works on the edge runtime without a
+Supabase round-trip) as text on the 1200x630 image, alongside the existing
+state/category badges.
+
+Added a real, non-fabricated "As of {date}" freshness marker
+(`src/lib/seo/og-freshness.ts`, new — `getOgAsOfLabel()`, sourced from
+`DEFAULT_FIGURES_LAST_VERIFIED`/`DATA_VERSION_DATE`, the SAME sitewide
+verified-date `UpdatedBadge`/`AuthorByline`/`sitemap.ts` already use; never
+`new Date()`) to **all five** OG image routes (the four pre-existing K09
+images + the new entity-level one) for consistency with the CODE-05
+acceptance criterion ("every calculator/cost/statistics page"). New OG
+image `src/app/legal-cost-statistics/opengraph-image.tsx` bakes in the real
+headline stat from `buildStatisticsAggregate()`.
+
+`twitter:card=summary_large_image` + `og:image` were already emitted
+sitewide via the existing `buildMeta()` helper (T10) for every page routed
+through it, including the two new CODE-04 pages — no change needed there,
+confirmed by test.
+
+Tests: `tests/code-05-og-images.test.ts` (new, 14 tests) — asserts the
+entity OG image pulls the real cost range + renders a real dated freshness
+marker (never `new Date()`), every OG image route (old + new) carries the
+freshness helper, no OG image bakes in a fabricated rating/superlative
+(source-scanned with comments stripped, so a guardrail comment explaining
+what's deliberately NOT done isn't mistaken for a violation), and
+`buildMeta()`'s sitewide `twitter:card`. `tests/k09-discover-hygiene.test.ts`
+(pre-existing, source-grep-based) re-run unchanged and still green — all
+existing `INDEXABLE_PAGES`/`getModerateMedianCost`/`getCostByComplexity`/
+`formatCurrency`/`#0D9488`/1200x630/edge-runtime assertions preserved
+verbatim in every edited file.
+
+### Test delta
+408 tests (P0 wave baseline) -> 473 tests. New files: `tests/code-04-
+statistics.test.ts` (9), `tests/code-05-og-images.test.ts` (14),
+`tests/code-06-info-gain.test.ts` (13). Extended/fixed: `tests/page-
+index.test.ts` (rewritten for the 4-fact gate, net +7), `tests/related-
+matters.test.ts` (1 test's now-false hardcoded assumption replaced with a
+correct invariant check, same test count).
+
+### Gate results (this wave)
+- `npx tsc --noEmit`: 0 errors.
+- `npm run lint`: 0 errors (same 3 pre-existing `react/no-danger` unused-
+  disable warnings as prior waves, now on `article-schema.tsx`,
+  `dataset-schema.tsx` — new, follows the identical established JSON-LD
+  pattern — and `software-application-schema.tsx`; unrelated to this
+  wave's logic).
+- `npm test`: 473/473 passed.
+- `npm run build`: succeeded. Build log confirms both this wave's real
+  data-dependent outputs: `sitemap: 434 indexable URLs (369/408
+  programmatic pages pass hasUniqueData)` (CODE-06's stricter gate is live)
+  and the new routes compiled cleanly — `○ /legal-cost-statistics`,
+  `○ /legal-cost-statistics/data.csv`, `○ /legal-cost-statistics/data.json`
+  (all statically prerendered — the static-seed-sourced aggregation needs
+  no request-time Supabase round-trip), `ƒ /legal-cost-statistics/
+  opengraph-image`. Prerendered `data.json`/`data.csv` bodies spot-checked
+  post-build and contain the real, cross-verified figures (e.g. Hawaii
+  divorce median $12,900 vs. Alabama $6,050, matching a fully independent
+  Node re-computation of the seed dataset).
+- Known, pre-existing, unrelated local-build limitation (see project
+  memory "LegalCostCalc local dev quirks"): Supabase is unreachable in this
+  build environment, so `/[state]/[slug]` pages fall back to their
+  "currently being collected" empty state at build time — this affects the
+  ALREADY-SHIPPED CODE-01 answer block identically (verified: neither the
+  pre-existing answer block nor the new CODE-06 benchmark-synthesis
+  sentence render real numbers in this specific local HTML output for that
+  reason). Not a regression from this wave — `buildBenchmarkSynthesis`,
+  `buildStatisticsAggregate`, and the CODE-06 gate math are independently
+  unit-tested directly against the real seed dataset (bypassing the
+  Supabase-dependent request path entirely), and the `/legal-cost-
+  statistics` page (which reads the static seed directly, no Supabase)
+  confirms real numbers DO render correctly end-to-end in this same build.
+
+### Not touched (guardrails)
+No FAQPage/HowTo schema was re-introduced (CODE-02 stays in force — the
+new Dataset JSON-LD is additive, on a new page). No embed/nofollow-ugc
+logic (CODE-03) touched. No AdSense/monetization logic touched. Breadcrumbs/
+meta/IndexNow/Web Vitals (부속I) were not re-specced — only page-index.ts's
+internal gating math changed, and every downstream consumer (sitemap,
+robots, hub/link modules) already read through `INDEXABLE_PAGES`/
+`hasUniqueData` so needed no changes. Disclaimer top+bottom preserved on
+the new statistics page. No user-input/personalized data in the new OG
+images or statistics feeds — every figure is the page's own canonical
+real/aggregate value (YMYL invariant). No commit/deploy performed
+(orchestrator-owned).
+
+## Traffic-Maximization Wave P0 (CODE-01/02/03) — Build Note (2026-07-04)
+
+Implements 부속P_트래픽극대화_딥리서치.md §4 CODE-01/02/03 (traffic-acquisition
+spec, built strictly on top of the existing 부속I SEO infra and 부속F/H
+monetization/compliance — neither re-specced nor touched).
+
+### CODE-01 — GEO passage-level answer block
+New `src/lib/seo/geo.ts` exports `buildAnswerBlock(entity)` — a pure
+function (no JSX, unit-testable independent of rendering) that builds, from
+a page's own already-computed `LegalCostData[]` rows (real numbers only,
+never fabricated):
+- a query-phrased heading (`How much does a {matter} cost in {state}?`)
+- a 40-60 word answer paragraph containing the real median/range figures,
+  a fee-structure clause (hourly rate, or — for personal-injury's
+  contingency-billed rows — the real contingency percentage, never
+  invented), typical duration, and a common-fees clause; word count is
+  algorithmically fitted into [40,60] by dropping/appending whole sentences
+  only (never mid-sentence, which would risk truncating a real number)
+- a compact cost-breakdown table (one row per complexity tier, real values)
+- a 5-10 item cost-factor list (case complexity, hourly rate, real
+  `commonFees` from the row, fee-arrangement note when contingency data
+  exists, trial/court-fee factors)
+- >=2 inline source-attributed stats, each citing one of the row's own real
+  `sources[]` URLs
+- a dated freshness marker sourced from the row's real `lastVerifiedAt`
+  (never `new Date()`)
+
+New `src/components/seo/answer-block.tsx` (`<AnswerBlock>`) is the pure
+server-component renderer — no client JS, so the full structure is present
+in the initial HTML response. Wired as the first substantive content block
+on `src/app/[state]/[slug]/page.tsx` (rendered immediately after the H1,
+superseding the narrower pre-existing "Quick answer" callout with the same
+real figures but the full GEO-extractable structure — kept H1-before-H2
+heading order intact rather than placing the block literally above the
+H1) and identically on `src/app/embed/[state]/[slug]/page.tsx` (`compact`
+variant) so cited embeds carry the same extractable passage, per the
+spec's explicit "wire the same block into app/embed pages" requirement.
+Degrades gracefully (no table/stats, generic non-fabricated closing
+sentence) when a page has no moderate-complexity data — never invents a
+number.
+
+### CODE-02 — Replace deprecated FAQPage JSON-LD with the 2026-valid schema set
+- Removed `<FaqSchema>` (FAQPage JSON-LD) rendering from the only two call
+  sites that emitted it: `src/app/page.tsx` (home) and
+  `src/app/[state]/[slug]/page.tsx`. The Q&A content itself is UNCHANGED and
+  still renders as visible on-page text (home page's hand-written FAQ `<dl>`,
+  and `CategoryEditorial`'s FAQ section on spoke pages) — this is exactly
+  what GEO research favors (extractable passage text, not schema). The
+  `faq-schema.tsx` component file and the dead, already-unused
+  `buildFaqSchema()` helper in `src/lib/utils/seo.ts` were left in place
+  (no import/render site references either anymore) since removing unused
+  files was outside this wave's scope.
+- New `src/components/seo/article-schema.tsx` (`<ArticleSchema>`) emits
+  `Article` JSON-LD (headline, description, url, `datePublished`/
+  `dateModified` only when a real date is supplied — never fabricated,
+  `author` Person when a real reviewer is env-configured via
+  `src/lib/reviewer.ts` else the honest `Organization` fallback, `publisher`
+  Organization). Wired onto the home page and every `/[state]/[slug]` page
+  alongside the pre-existing `BreadcrumbSchema`/`SoftwareApplicationSchema`
+  (both confirmed unchanged/still wired — `SoftwareApplicationSchema` still
+  never emits `aggregateRating`, since no real rating data exists).
+- `src/components/seo/organization-schema.tsx`'s `WebSite` node now also
+  carries `potentialAction: SearchAction` (Sitelinks Searchbox eligibility).
+  Rather than point this at a non-functional/fabricated target, added a real,
+  minimal `src/app/search/page.tsx` (`noindex,follow` utility page) that
+  matches the query against the real `INDEXABLE_PAGES` set (state names +
+  category display names) and links directly to the matching indexable cost
+  page — so the SearchAction target actually works end-to-end, never a
+  dead-end URL.
+
+### CODE-03 — Harden the embeddable-widget backlink engine
+- Attribution link `rel` changed from `"noopener nofollow sponsored"` to
+  `"noopener nofollow ugc"` in both `src/app/embed/[state]/[slug]/page.tsx`
+  (the live iframe page) and `src/components/embed/embed-snippet.tsx` (the
+  copy-paste snippet) — per Google's official widget-link guidance (`ugc`
+  signals a link inside user/third-party-embedded content; the previous
+  `sponsored` value was the wrong token for this context and the spec's #1
+  penalty-trap anti-pattern). The genuinely paid `SponsorSlot` affiliate
+  link in `src/components/monetization/ResultMonetization.tsx` correctly
+  keeps `nofollow sponsored` — untouched, out of CODE-03's scope, and the
+  correct rel value for an actual paid placement.
+- New `src/components/embed/embed-panel.tsx` (`<EmbedPanel>`) — a thin
+  wrapper around the existing `<EmbedSnippet>` — now renders an "Embed this
+  calculator" copy-to-clipboard panel directly on every main
+  `/[state]/[slug]` calculator page (previously the snippet only lived on
+  the standalone `/embed` index page), placed below
+  `RelatedCalculators`/existing monetization modules (same LCP/ad-exclusion-
+  zone rationale already documented for K01/CategoryEditorial — no ad slot
+  is anywhere nearby, confirmed against `docs/ad-exclusion-zones.md`).
+- New `src/components/embed/embed-resize-reporter.tsx`
+  (`<EmbedResizeReporter>`) posts the iframe's real content height to
+  `window.parent` via `postMessage` (namespaced `legalcostcalc:embed-resize`
+  message type) on mount and on `ResizeObserver`/window-resize changes;
+  rendered inside `src/app/embed/[state]/[slug]/page.tsx`. The generated
+  copy-paste snippet in `embed-snippet.tsx` now also includes a small inline
+  listener script that resizes the host page's `<iframe>` on receiving that
+  message, so partners who paste the snippet verbatim get the auto-resize
+  behavior without any extra step.
+- `EmbedLoadedTracker`/the GA4 `embed_loaded` event (host-domain param via
+  `document.referrer`) and the embed route's `noindex` metadata were both
+  confirmed unchanged/still correct — no changes needed there.
+
+### Files added
+- `src/lib/seo/geo.ts`
+- `src/components/seo/answer-block.tsx`
+- `src/components/seo/article-schema.tsx`
+- `src/components/embed/embed-panel.tsx`
+- `src/components/embed/embed-resize-reporter.tsx`
+- `src/app/search/page.tsx`
+- `tests/geo-answer-block.test.ts`
+- `tests/code-02-schema.test.ts`
+- `tests/code-03-embed-hardening.test.ts`
+
+### Files modified
+- `src/app/page.tsx` — removed `FaqSchema`/`HOME_FAQ_QUESTIONS`, added
+  `ArticleSchema`.
+- `src/app/[state]/[slug]/page.tsx` — removed `FaqSchema`, added
+  `ArticleSchema`, `AnswerBlock` (after H1), `EmbedPanel` (below
+  `RelatedCalculators`).
+- `src/app/embed/[state]/[slug]/page.tsx` — `rel` fix, added
+  `AnswerBlock`/`EmbedResizeReporter`, now fetches costs via
+  `getCostForPage` to build the answer block.
+- `src/components/seo/organization-schema.tsx` — added
+  `potentialAction: SearchAction` to the `WebSite` node.
+- `src/components/seo/category-editorial.tsx` — doc-comment update only
+  (reflects that its FAQ text is no longer mirrored as FAQPage schema).
+- `src/components/embed/embed-snippet.tsx` — `rel` fix + resize-listener
+  script + iframe `id`.
+
+### Verification performed
+- `curl` against a local production build (`next start`) confirmed: H1
+  renders before the AnswerBlock's H2 (correct heading order); FAQPage is
+  absent from every page's JSON-LD; Article/BreadcrumbList/
+  SoftwareApplication/WebSite+SearchAction are present and valid JSON; the
+  embed page's attribution anchor carries `rel="noopener nofollow ugc"`
+  (zero occurrences of `nofollow sponsored` remain on the embed surfaces);
+  the embed route still returns `noindex`; `/search?q=Divorce` returns 50
+  real matching links from `INDEXABLE_PAGES`.
+- The cost-breakdown table/stats portion of the answer block could NOT be
+  curl-verified against real numbers in this sandbox because local
+  `getCostForPage`/Supabase calls 500 in this dev environment (pre-existing,
+  documented, unrelated to this wave — see the project memory note
+  `legalcostcalc-local-dev-quirks.md`: "Supabase 500s locally"). Verified
+  instead, more rigorously, via `tests/geo-answer-block.test.ts`, which
+  exercises `buildAnswerBlock`/`<AnswerBlock>` against the REAL seed dataset
+  (`src/data/seed/costs.json`) across every one of the 408 indexable
+  (state, category) pairs — asserting the query-phrased heading, the
+  40-60-word answer word count, real computed numbers appearing verbatim in
+  the answer text, the table row shape/bounds, the 5-10 item factor list,
+  >=2 stats whose `sourceUrl` traces back to the row's own real `sources[]`,
+  a non-empty freshness label, and the absence of superlative/promotional
+  language — over the full production dataset, not a single sample page.
+
+### Test delta
+437/437 tests passing (408 pre-existing + 29 new: 8 in
+`tests/geo-answer-block.test.ts`, 12 in `tests/code-02-schema.test.ts`, 9 in
+`tests/code-03-embed-hardening.test.ts`).
+
+### Gate results (this wave)
+- `npx tsc --noEmit`: 0 errors
+- `npm run lint`: 0 errors (2 pre-existing "unused eslint-disable directive"
+  warnings on `react/no-danger` in `software-application-schema.tsx` and the
+  new, identically-patterned `article-schema.tsx` — both carried over/
+  consistent with the established JSON-LD-component pattern, not new
+  problems)
+- `npm test`: 437/437 passed (one `tests/indexnow.test.ts` timeout observed
+  once under parallel load — confirmed flaky/unrelated, re-ran green in
+  isolation and in the full suite immediately after)
+- `npm run build`: succeeded, 472 indexable sitemap URLs (unchanged — no
+  new indexable programmatic pages; `/search` is intentionally
+  `noindex,follow` and appears as a new dynamic (ƒ) route, not a static
+  sitemap entry)
+
+### Not touched (guardrails)
+No changes to `lib/seo/schema/faq.ts`-equivalent removal beyond de-wiring
+render sites (the component file itself and the dead `buildFaqSchema()`
+helper were left in place, unreferenced). No FAQPage/HowTo JSON-LD is
+emitted anywhere post-wave. No fabricated numbers, dates, or ratings were
+introduced anywhere (verified: `aggregateRating` still never appears;
+`ArticleSchema` omits `datePublished`/`dateModified` when no real date
+exists). The embed route's `monetizationDisabled`/no-AdSense invariant,
+disclaimer top+bottom, and the 부속I thin-page (`hasUniqueData`)/sitemap
+gate were all left untouched and re-verified green. No owner-distribution
+action (OWN-01–07) was taken — code only. No commit/deploy performed
+(orchestrator-owned).
+
 ## F10 — Legal-Risk Compliance Pass / P0 UPL Mitigations (2026-07-02)
 
 ### Summary

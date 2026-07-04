@@ -2,7 +2,6 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CostCalculator } from "@/components/calculator/cost-calculator";
 import { Disclaimer } from "@/components/shared/disclaimer";
-import { FaqSchema } from "@/components/seo/faq-schema";
 import { STATES, STATE_BY_SLUG } from "@/lib/constants/states";
 import { CATEGORIES, CATEGORY_MAP } from "@/lib/constants/categories";
 import { formatCurrency } from "@/lib/utils/format";
@@ -14,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { AffiliateCTA } from "@/components/shared/affiliate-cta";
 import { BreadcrumbSchema } from "@/components/seo/breadcrumb-schema";
 import { SoftwareApplicationSchema } from "@/components/seo/software-application-schema";
+import { ArticleSchema } from "@/components/seo/article-schema";
 import { CostDetailsSection } from "@/components/seo/cost-details-section";
 import { RelatedLinks } from "@/components/seo/related-links";
 import { RelatedCalculators } from "@/components/seo/related-calculators";
@@ -24,6 +24,9 @@ import { hasUniqueData } from "@/lib/page-index";
 import { Breadcrumbs } from "@/components/seo/breadcrumbs";
 import { HubLinksBar } from "@/components/seo/hub-links-bar";
 import { CategoryEditorial } from "@/components/seo/category-editorial";
+import { AnswerBlock } from "@/components/seo/answer-block";
+import { EmbedPanel } from "@/components/embed/embed-panel";
+import { buildAnswerBlock } from "@/lib/seo/geo";
 
 interface PageProps {
   params: Promise<{ state: string; slug: string }>;
@@ -140,9 +143,32 @@ export default async function StateCategoryPage({ params }: PageProps) {
   const otherCategories = CATEGORIES.filter((c) => c.slug !== categoryInfo.slug);
   const allOtherStates = STATES.filter((s) => s.code !== stateInfo.code);
 
+  // CODE-01: GEO answer block — built from this page's own already-computed
+  // cost rows (real numbers only). Rendered directly below the H1, ahead of
+  // every other content section on the page (calculator, tables, FAQ, etc.).
+  const answerBlockData = buildAnswerBlock({
+    category: categoryInfo,
+    state: stateInfo,
+    costs,
+    dataVerifiedDate: moderateCost?.lastVerifiedAt ?? null,
+  });
+
+  const canonicalUrl = `${CANONICAL_ORIGIN}/${stateInfo.slug}/${categoryInfo.slug}-cost`;
+
   return (
     <div>
-      <FaqSchema questions={faqQuestions} />
+      {/* CODE-02: FAQPage JSON-LD removed (deprecated for SERP display in
+          2026) — the Q&A remains as visible on-page H2/H3 text via
+          CategoryEditorial below (GEO-relevant, just no longer schema).
+          Replaced by the still-supported rich-result set: Article +
+          BreadcrumbList (below) + SoftwareApplication + WebSite/SearchAction
+          (root, via OrganizationSchema). */}
+      <ArticleSchema
+        headline={`How Much Does a ${categoryInfo.displayName} Cost in ${stateInfo.name}?`}
+        description={`${categoryInfo.displayName} cost estimates in ${stateInfo.name}, including attorney fees, court costs, and other expenses.`}
+        url={canonicalUrl}
+        dateModified={moderateCost?.lastVerifiedAt ?? null}
+      />
       <BreadcrumbSchema
         items={[
           { name: "Home", href: "/" },
@@ -153,7 +179,7 @@ export default async function StateCategoryPage({ params }: PageProps) {
       <SoftwareApplicationSchema
         name={`${categoryInfo.displayName} Cost Calculator — ${stateInfo.name}`}
         description={`Free calculator estimating ${categoryInfo.displayName.toLowerCase()} costs in ${stateInfo.name}, including attorney fees, court costs, and common fees.`}
-        url={`${CANONICAL_ORIGIN}/${stateInfo.slug}/${categoryInfo.slug}-cost`}
+        url={canonicalUrl}
         dateModified={moderateCost?.lastVerifiedAt ?? null}
       />
 
@@ -182,27 +208,18 @@ export default async function StateCategoryPage({ params }: PageProps) {
               including attorney fees, court costs, and other expenses.
             </p>
 
-            {/* Quick-answer block — concise typical cost + range for featured
-                snippets / AI Overviews. Uses real moderate-complexity data only;
-                rendered only when that data exists. */}
-            {moderateCost && (
-              <p className="mt-4 max-w-2xl rounded-lg border border-teal-100 bg-teal-50/60 p-4 text-base text-slate-700">
-                <span className="font-semibold text-slate-900">Quick answer:</span>{" "}
-                A {categoryInfo.displayName.toLowerCase()} in {stateInfo.name} typically costs{" "}
-                <span className="font-mono font-semibold text-teal-700">
-                  {formatCurrency(moderateCost.costRange.median)}
-                </span>{" "}
-                for a moderate-complexity case, with most ranging from{" "}
-                <span className="font-mono font-semibold">
-                  {formatCurrency(moderateCost.costRange.low)}
-                </span>{" "}
-                to{" "}
-                <span className="font-mono font-semibold">
-                  {formatCurrency(moderateCost.costRange.high)}
-                </span>
-                .
-              </p>
-            )}
+            {/* CODE-01 — GEO answer block: rendered immediately after the H1
+                (server-rendered HTML, visible via curl with JS disabled),
+                so it is the first substantive content block on the page
+                without breaking H1-before-H2 heading order. Query-phrased
+                H2, 40-60 word answer paragraph with real computed numbers,
+                cost-breakdown table, cost-factor list, sourced stats,
+                freshness marker. Supersedes the old shorter "Quick answer"
+                callout (same real moderate-complexity figures, now with the
+                full GEO-extractable structure). */}
+            <div className="mt-4">
+              <AnswerBlock block={answerBlockData} compact />
+            </div>
 
             <AuthorByline lastUpdated={moderateCost?.lastVerifiedAt ?? null} className="mt-4" />
           </div>
@@ -337,13 +354,25 @@ export default async function StateCategoryPage({ params }: PageProps) {
       {/* Cross-link module — sibling cost-calculator network. */}
       <RelatedCalculators />
 
+      {/* CODE-03 — "Embed this calculator" copy-to-clipboard panel. Placed
+          below the calculator/result area and existing monetization/link
+          modules (same LCP/ad-exclusion-zone rationale as K01 below). */}
+      <section className="py-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <EmbedPanel
+            embedPath={`/embed/${stateInfo.slug}/${categoryInfo.slug}-cost`}
+            canonicalPath={`/${stateInfo.slug}/${categoryInfo.slug}-cost`}
+            label={`${stateInfo.name} ${categoryInfo.displayName} Cost Calculator`}
+          />
+        </div>
+      </section>
+
       {/* K01 — entity-level editorial depth (how-it-works + worked example +
-          visible FAQ text). Placed below the calculator/result area and every
-          existing monetization/link module so LCP and the ad-exclusion zone
-          around the calculator widget are unaffected. Reuses the same
-          faqQuestions array already powering FaqSchema's JSON-LD above, so
-          this is the human-readable rendering of that same content — not a
-          duplicate content source. */}
+          visible FAQ text, GEO-relevant on-page text — no longer mirrored as
+          FAQPage schema, see CODE-02 note above). Placed below the
+          calculator/result area and every existing monetization/link module
+          so LCP and the ad-exclusion zone around the calculator widget are
+          unaffected. Reuses the same faqQuestions array as before. */}
       <CategoryEditorial
         categoryInfo={categoryInfo}
         stateInfo={stateInfo}

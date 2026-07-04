@@ -2,6 +2,7 @@ import { ImageResponse } from "next/og";
 import { CATEGORY_MAP } from "@/lib/constants/categories";
 import { INDEXABLE_PAGES, getModerateMedianCost } from "@/lib/page-index";
 import { formatCurrency } from "@/lib/utils/format";
+import { getOgAsOfLabel } from "@/lib/seo/og-freshness";
 
 export const runtime = "edge";
 export const alt = "Legal Cost by State Comparison";
@@ -29,6 +30,7 @@ export default async function OGImage({
   const stateCount = stateCosts.length;
   const overallMedian =
     stateCount > 0 ? [...stateCosts].sort((a, b) => a - b)[Math.floor(stateCount / 2)] : null;
+  const asOfLabel = getOgAsOfLabel();
 
   return new ImageResponse(
     (
@@ -123,6 +125,9 @@ export default async function OGImage({
         <p style={{ fontSize: "22px", color: "#475569", textAlign: "center" }}>
           {stateCount} states compared &middot; Sourced &amp; dated estimates
         </p>
+        {asOfLabel && (
+          <p style={{ fontSize: "16px", color: "#94A3B8", marginTop: "8px" }}>{asOfLabel}</p>
+        )}
       </div>
     ),
     { ...size },

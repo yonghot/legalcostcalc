@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { formatCurrency } from "@/lib/utils/format";
 import type { CostRange } from "@/lib/types";
 
@@ -94,6 +95,21 @@ export function CostDetailsSection({
             </ul>
           </div>
         </div>
+
+        {/* U-05 (부속U §4/§5) — guide link, server-rendered inside this
+            calculator-result-area section (curl/JS-off visible on every
+            spoke page, unlike the client-only CostResult which only mounts
+            after a user-driven calculation). */}
+        <p className="mt-8 text-sm text-slate-500">
+          New to how attorney fees work?{" "}
+          <Link
+            href="/how-legal-fees-work"
+            className="font-medium text-teal-700 underline hover:text-teal-800"
+          >
+            Read the legal fees guide
+          </Link>{" "}
+          — hourly, flat, and contingency billing explained.
+        </p>
       </div>
     </section>
   );

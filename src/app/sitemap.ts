@@ -4,9 +4,17 @@ import { CATEGORIES } from "@/lib/constants/categories";
 import { DATA_VERSION_DATE } from "@/lib/constants/data-meta";
 import { INDEXABLE_PAGES } from "@/lib/page-index";
 import { CANONICAL_ORIGIN } from "@/lib/seo";
+import { GUIDE_UPDATED } from "@/app/how-legal-fees-work/content";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = DATA_VERSION_DATE;
+  // U-03 (부속U §4): the guide's own real content-verification date, NOT the
+  // cost-dataset's DATA_VERSION_DATE — /how-legal-fees-work is independent
+  // editorial content (verified 2026-07-18, see content.ts), unrelated to
+  // when costs.json was last refreshed. Using the shared dataset date here
+  // would report a stale lastmod for a page that was actually authored/
+  // verified more recently.
+  const guideLastModified = new Date(`${GUIDE_UPDATED}T00:00:00Z`);
 
   const staticPages: MetadataRoute.Sitemap = [
     {
@@ -33,6 +41,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: `${CANONICAL_ORIGIN}/legal-cost-statistics`,
       lastModified,
       changeFrequency: "weekly",
+      priority: 0.8,
+    },
+    {
+      // U-02 (부속U §4/§5) — original editorial guide, AdSense low-value-
+      // content response. lastModified = the guide's own GUIDE_UPDATED (see
+      // U-03 comment on `guideLastModified` above), not the shared dataset
+      // date.
+      url: `${CANONICAL_ORIGIN}/how-legal-fees-work`,
+      lastModified: guideLastModified,
+      changeFrequency: "monthly",
       priority: 0.8,
     },
     {

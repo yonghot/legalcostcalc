@@ -70,6 +70,16 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/how-legal-fees-work" className={`text-sm text-slate-400 hover:text-teal-400 transition-colors ${FOCUS_RING_DARK} rounded-sm`}>
+                  How Legal Fees Work
+                </Link>
+              </li>
+              <li>
+                <Link href="/legal-cost-statistics" className={`text-sm text-slate-400 hover:text-teal-400 transition-colors ${FOCUS_RING_DARK} rounded-sm`}>
+                  Legal Cost Statistics
+                </Link>
+              </li>
+              <li>
                 <Link href="/about" className={`text-sm text-slate-400 hover:text-teal-400 transition-colors ${FOCUS_RING_DARK} rounded-sm`}>
                   About &amp; Methodology
                 </Link>

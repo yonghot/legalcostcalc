@@ -21,6 +21,8 @@ import { trackEvent } from "@/lib/analytics";
 import { shouldFireCalculatorComplete } from "@/lib/utils/calc-funnel";
 import { useCalculatorPersistence } from "@/lib/hooks/use-calculator-persistence";
 import { ContinueBanner } from "@/components/shared/continue-banner";
+import { CALCULATOR_PRESETS, type CalculatorPreset } from "@/lib/constants/presets";
+import { FOCUS_RING } from "@/lib/utils/styles";
 
 interface CostCalculatorProps {
   initialCategory?: string;
@@ -86,38 +88,79 @@ export function CostCalculator({
     trackEvent("calc_input_start", { calc_type: category || "unset" });
   }, [category]);
 
-  const runCalculate = useCallback(async () => {
-    const outcome = await calculate({ category, state: stateCode, complexity });
-    if (outcome.hasResults) {
-      setTimeout(() => {
-        resultRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-      }, 100);
+  // Accepts optional overrides so a preset click (which sets category/
+  // stateCode/complexity via setState just before calling this) can compute
+  // with the EXACT preset values immediately, rather than the stale
+  // pre-render closure values React hasn't committed yet. A manual
+  // Calculate-button click (no overrides) behaves exactly as before, reading
+  // the already-committed state.
+  const runCalculate = useCallback(
+    async (overrides?: { category: string; stateCode: string; complexity: string }) => {
+      const effCategory = overrides?.category ?? category;
+      const effStateCode = overrides?.stateCode ?? stateCode;
+      const effComplexity = overrides?.complexity ?? complexity;
 
-      if (category) {
-        const now = Date.now();
-        if (shouldFireCalculatorComplete(hasUserInteractedRef.current, lastCompleteAtRef.current[category], now)) {
-          lastCompleteAtRef.current[category] = now;
-          // SENSITIVE SITE (legalcostcalc): never include result_bucket or
-          // any input-derived value — event name + calc_type + site only.
-          trackEvent("calculator_complete", { calc_type: category });
+      const outcome = await calculate({ category: effCategory, state: effStateCode, complexity: effComplexity });
+      if (outcome.hasResults) {
+        setTimeout(() => {
+          resultRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }, 100);
+
+        if (effCategory) {
+          const now = Date.now();
+          if (shouldFireCalculatorComplete(hasUserInteractedRef.current, lastCompleteAtRef.current[effCategory], now)) {
+            lastCompleteAtRef.current[effCategory] = now;
+            // SENSITIVE SITE (legalcostcalc): never include result_bucket,
+            // preset id, or any input-derived value — event name + calc_type
+            // + site only. Identical for a preset-driven or manual completion.
+            trackEvent("calculator_complete", { calc_type: effCategory });
+          }
         }
-      }
 
-      // T16 — auto-save the allowlisted selector fields on a successful,
-      // user-driven calculation, and record this calc_type on the homepage
-      // "Recent calculations" list (calc_type + date only, no result values).
-      // Pass the actual selected category as the recorded/reported calc_type
-      // (the hook's own "cost_calculator" is just the storage namespace).
-      persistence.save({ category, stateCode, complexity });
-      persistence.recordRecent(category);
-    }
-  }, [category, stateCode, complexity, calculate, persistence]);
+        // T16 — auto-save the allowlisted selector fields on a successful,
+        // user-driven calculation, and record this calc_type on the homepage
+        // "Recent calculations" list (calc_type + date only, no result values).
+        // Pass the actual selected category as the recorded/reported calc_type
+        // (the hook's own "cost_calculator" is just the storage namespace).
+        persistence.save({ category: effCategory, stateCode: effStateCode, complexity: effComplexity });
+        persistence.recordRecent(effCategory);
+      }
+    },
+    [category, stateCode, complexity, calculate, persistence],
+  );
 
   const handleCalculate = useCallback(async () => {
     // Clickwrap gate: before the FIRST calculation, require active consent.
     if (!termsGate.hasConsented) return;
     await runCalculate();
   }, [termsGate.hasConsented, runCalculate]);
+
+  // U-01 — preset one-click scenario. Injects all three inputs through the
+  // SAME path a real dropdown edit takes: markInteracted() first (so the
+  // existing T03 hasUserInteractedRef/calc_input_start guard fires exactly
+  // as it would for a human-driven change), then the three setState calls.
+  // Compliance: this NEVER touches TermsGate's consent state directly (no
+  // call to termsGate.accept()/localStorage) — it only ever invokes the
+  // already-gated runCalculate(), and only when consent was already
+  // recorded. If consent has not been given yet, the fields fill in and the
+  // existing clickwrap TermsGateInline below still requires an explicit,
+  // separate accept before any calculation runs — presets never bypass it.
+  const handlePresetClick = useCallback(
+    (preset: CalculatorPreset) => {
+      markInteracted();
+      setCategory(preset.category);
+      setStateCode(preset.stateCode);
+      setComplexity(preset.complexity);
+      if (termsGate.hasConsented) {
+        void runCalculate({
+          category: preset.category,
+          stateCode: preset.stateCode,
+          complexity: preset.complexity,
+        });
+      }
+    },
+    [markInteracted, termsGate.hasConsented, runCalculate],
+  );
 
   const handleGateAccept = useCallback(() => {
     const accepted = termsGate.accept();
@@ -157,6 +200,29 @@ export function CostCalculator({
           </CardTitle>
         </CardHeader>
         <CardContent>
+          {/* U-01 — preset one-click scenarios. Above-fold, directly adjacent
+              to the inputs below (same Card, same ad-exclusion zone as K05
+              above — well inside the >=150px ad-proximity buffer since no ad
+              marker renders anywhere in this component before a result
+              exists; see tests/ad-proximity.test.ts and
+              tests/calculator-presets.test.ts). Outline pill styling (teal
+              tokens, no fill, no shadow) so these read as example shortcuts,
+              never as ad units. Values are real dataset rows — see
+              src/lib/constants/presets.ts and its dataset-equality test. */}
+          <div className="mb-5 flex flex-wrap items-center gap-2">
+            <span className="text-xs font-medium text-slate-500">Try an example:</span>
+            {CALCULATOR_PRESETS.map((preset) => (
+              <button
+                key={preset.id}
+                type="button"
+                onClick={() => handlePresetClick(preset)}
+                className={`rounded-full border border-teal-200 bg-white px-3 py-1 text-xs font-medium text-teal-700 transition-colors hover:bg-teal-50 ${FOCUS_RING}`}
+              >
+                {preset.label}
+              </button>
+            ))}
+          </div>
+
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div className="space-y-2">
               <Label htmlFor="category">Legal Category</Label>

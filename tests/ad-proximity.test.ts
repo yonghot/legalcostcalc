@@ -152,6 +152,20 @@ describe("ad-proximity — CostCalculator button has no ad marker nearby", () =>
       expect(html).not.toContain(marker);
     }
   });
+
+  // U-01 extension (부속U §4): the new preset "Try an example" buttons render
+  // in this exact same pre-calculation markup, above-fold and adjacent to
+  // the inputs. Full dataset/copy/wiring assertions live in
+  // tests/calculator-presets.test.ts — this assertion specifically extends
+  // K05's "no ad marker nearby" guarantee to cover the new buttons.
+  it("the U-01 preset buttons render in the same ad-marker-free pre-calculation markup", () => {
+    const html = renderToStaticMarkup(createElement(CostCalculator, {}));
+
+    expect(html).toContain("Try an example:");
+    for (const marker of AD_MARKERS) {
+      expect(html).not.toContain(marker);
+    }
+  });
 });
 
 describe("ad-proximity — SettlementEstimatorForm never renders an ad slot", () => {

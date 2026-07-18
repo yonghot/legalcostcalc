@@ -1546,3 +1546,448 @@ mutually-exclusive option. K01-K05 (editorial depth, page-depth audit,
 crawler accessibility, SPA re-init audit, ad-proximity audit) and K08
 (IndexNow) were not touched this wave. No commit/deploy performed
 (orchestrator-owned).
+
+---
+
+## Wave A — U-01, U-04, U-06 (부속U GA4 근본진단 개선스펙)
+
+Source of truth: `D:\ClaudeCode\AppFarm\보고서\부속U_GA4근본진단_개선스펙.md` §4
+(U-01/U-04/U-06 사양+수용기준), §5 (legalcostcalc parameter row), §7
+(guardrails). GA4 ground truth this wave responds to: 481 page_view -> 6
+calc_input_start (1.2%) -> 1-5 calculator_complete over 28 days — first-input
+friction is the dominant funnel bottleneck.
+
+### U-01 — Preset one-click scenarios
+New `src/lib/constants/presets.ts`: `CALCULATOR_PRESETS`, 3 entries, each a
+REAL `{category, state_code, complexity}` row that exists in
+`src/data/seed/costs.json` (never an invented number) — the exact three
+scenarios from 부속U §5's legalcostcalc row:
+- CA divorce, simple (uncontested)
+- NY estate-planning, simple (will)
+- TX dui, moderate (typical DUI defense)
+
+Wired into `src/components/calculator/cost-calculator.tsx` as three outline
+pill buttons ("Try an example: ...") rendered above-fold, directly above the
+category/state/complexity selects, inside the same `Card` that already
+carries the K05 `data-ad-exclusion-zone="calculator-widget"` marker. Clicking
+a preset:
+1. Calls `markInteracted()` FIRST, then the three `setState` calls — the
+   identical call order the existing category/state/complexity `Select`
+   `onValueChange` handlers already use, so the existing T03
+   `hasUserInteractedRef` guard and `calc_input_start` fire exactly as they
+   would for a real dropdown edit (verified: `tests/calculator-presets.test.ts`
+   source-audits the handler's call order).
+2. If `termsGate.hasConsented` is already `true`, auto-computes via a
+   refactored `runCalculate(overrides?)` (now accepts explicit
+   `{category, stateCode, complexity}` so it uses the preset's exact values
+   immediately rather than the stale pre-render closure state) — `results`
+   render and `calculator_complete` fires with `{ calc_type }` only, no
+   preset id/param, through the existing `trackEvent` pipeline.
+3. If consent has NOT been given yet, the fields fill in but nothing is
+   auto-computed — the existing `TermsGateInline` clickwrap still requires an
+   explicit, separate accept before any calculation runs. Presets never call
+   `termsGate.accept()` or touch `localStorage` consent state directly
+   (source-audited in `tests/calculator-presets.test.ts`) — compliance wins,
+   per 부속U §7.
+
+Manual Calculate-button flow (`handleCalculate` -> `runCalculate()` with no
+overrides) is unchanged — same closure-state behavior as before the
+refactor.
+
+Visual distinction from ads: trivially satisfied structurally, not just
+styled — no ad marker (`adsbygoogle`/`<ins`) renders anywhere in
+`CostCalculator`'s pre-calculation markup at all (ads only mount inside
+`CostResult`/`ResultMonetization` after a result exists), so the preset
+buttons can never be within any distance of an ad container. Extended the
+existing K05 assertion in `tests/ad-proximity.test.ts` with a new `it()`
+confirming the preset row co-exists with zero ad markers in that same
+pre-calc markup.
+
+### U-04 — Revisit-hook audit + season badge
+**Audit finding: both T15 and T16 were already fully wired** — no
+re-implementation needed, only verification:
+- T16 `ContinueBanner` — already rendered in `cost-calculator.tsx`, gated on
+  `persistence.savedState`.
+- T15 `ResultShare` — already rendered in `cost-result.tsx`, gated on
+  `categorySlug` (renders on spoke pages and once a category is selected on
+  the homepage; intentionally does not render for the generic/no-category
+  homepage state, which is documented sensitive-site scoping, not a bug).
+
+New `tests/revisit-hooks-audit.test.ts` locks this in with grep (confirms the
+wiring's conditional-render source) + render (`renderToStaticMarkup`)
+assertions for both, so the wiring can't silently regress.
+
+New `src/components/shared/seasonal-badge.tsx` (`SeasonalBadge`) — a subtle
+teal-token pill (mirrors the existing `UpdatedBadge` pattern) rendered at the
+top of the homepage hero, above the H1: "January is the busiest month for
+divorce-related searches — save your estimate now." Links to the real,
+already-indexed `/divorce-cost-by-state` hub page (the "guide/section" this
+hook points to — U-02's dedicated guide is out of scope for this wave).
+Sourced via WebSearch (2026-07-18) to Google Trends-cited reporting from
+Susan Gray Law and Forbes on January's search-interest peak for
+divorce-related queries — cited by URL in the component's code comment. No
+specific percentage/count is reproduced in the user-facing copy, only the
+qualitative "busiest month" pattern both sources independently report — no
+fabricated statistic.
+
+### U-06 — Measurement interpretation note
+New `docs/ga4-measurement-interpretation.md` — 3-line interpretation rule
+set: (1) sessions/user<1 = consent-denied cookieless pings, not a CMP bug —
+do not touch CMP/Consent Mode; (2) datacenter-city traffic (Council Bluffs,
+Ashburn, Boardman, etc.) = bots, exclude from analysis; (3) funnel KPI =
+`calc_input_start`/`calculator_complete` only, not raw `page_view`. Pure
+documentation — zero code change, as required.
+
+### Test delta
+499 tests (32 files, pre-wave baseline) -> 523 tests (34 files). New files:
+`tests/calculator-presets.test.ts` (+13), `tests/revisit-hooks-audit.test.ts`
+(+10). Extended: `tests/ad-proximity.test.ts` (+1, K05 extension for the new
+preset buttons).
+
+### Gate results (this wave)
+- `npm run lint`: 0 errors (3 pre-existing warnings in
+  `article-schema.tsx`/`dataset-schema.tsx`/`software-application-schema.tsx`,
+  unrelated to this wave, carried over from prior waves)
+- `npm test`: 523/523 passed
+- `npm run build`: succeeded (Next.js 16.2.2/Turbopack) — TypeScript check
+  clean, 897/897 static pages generated, sitemap 434 indexable URLs
+  (unchanged — this wave adds zero new indexable pages, no new routes)
+
+### Not touched (guardrails)
+CMP/Consent Mode implementation untouched (U-06 explicitly forbids this).
+TermsGate's consent-storage functions (`readStoredConsent`/
+`writeStoredConsent`) were not modified or called from the new preset code
+path. T03's `shouldFireCalculatorComplete` guard logic
+(`src/lib/utils/calc-funnel.ts`) was not modified, only reused. No AdSense/ad
+script or `ResultMonetization` changes. No FAQPage/HowTo schema added. No new
+routes/pages (U-02's guide, U-03, U-05 are out of scope for this wave). No
+commit/deploy performed (orchestrator-owned).
+
+---
+
+## Wave B — U-02: original editorial guide (부속U GA4 근본진단 개선스펙)
+
+Source of truth: `D:\ClaudeCode\AppFarm\보고서\부속U_GA4근본진단_개선스펙.md` §4
+(U-02 사양+수용기준), §5 (legalcostcalc parameter row: "How Legal Fees Work
+(2026): hourly vs flat vs contingency" — informational only), §7
+(guardrails). Builds on Wave A (U-01/U-04/U-06, above) — none of it re-specced
+or touched. Responds to 부속U §2 P5 (AdSense "low-value content" judgment —
+editorial-guide count was 1/10 sites, launch only) and P0 (approval gate).
+
+### U-02 — `/how-legal-fees-work` guide
+New route, modeled structurally on LaunchCostCalc's `/how-to-start-an-llc`
+guide (commit 2746a0a) per the spec, adapted to this repo's own component
+signatures (`Disclaimer`/`AuthorByline`/`UpdatedBadge` from
+`components/shared`, `ArticleSchema`/`BreadcrumbSchema`/`Breadcrumbs` from
+`components/seo`, `buildMeta`/`CANONICAL_ORIGIN` from `lib/seo`) — LAYERED:
+the page is presentational only, all copy/facts live in
+`src/app/how-legal-fees-work/content.ts`.
+
+**Research discipline (부속U §7 no-fabrication guardrail):** every load-
+bearing fact was verified via live WebSearch/WebFetch on 2026-07-18 (9
+WebSearch calls + 3 WebFetch calls against official sources) BEFORE writing
+any copy — ABA Model Rules 1.2/1.5/1.15 (americanbar.org), California
+Business & Professions Code §6146/§6148 (leginfo.legislature.ca.gov, fetched
+directly), New York Judiciary Law §474-a (nysenate.gov, fetched directly),
+the California State Bar's Mandatory Fee Arbitration Program
+(calbar.ca.gov), and Clio's 2025 Legal Trends Report
+(clio.com/resources/legal-trends). The direct-fetch verification caught a
+real, materially-wrong secondary-source figure before publication: several
+aggregator sites still describe California's old MICRA sliding-scale
+contingency cap (40%/33%/25%/15% tiers), but the CURRENT law (Bus. & Prof.
+Code §6146, as amended by AB 35 effective January 1, 2023) is a simple two-
+tier 25%-before-filing / 33%-after-filing cap — confirmed by fetching the
+statute text directly at leginfo.legislature.ca.gov. The guide cites the
+correct, current figure and documents the correction path in
+`GUIDE_VERIFY_NOTES`.
+
+Content shape (`content.ts`):
+- `GUIDE_FACTS` — 9 "at a glance" facts, each tied to one of the sources
+  above via a `sourceUrl` link rendered inline (info-gain gate spirit:
+  >=4 real, distinct, sourced differentiating facts — this page carries 9).
+- `GUIDE_SECTIONS` — 13 sections (1 framing intro + 12 body sections,
+  matching the 10-13 사양 bound and the LaunchCostCalc model's own 1+12
+  split): hourly/flat/contingency/retainer-and-trust-account mechanics,
+  Model Rule 1.5 reasonableness factors, written-fee-agreement requirements
+  (Model Rule 1.5(c) + CA §6148), state contingency-fee caps (CA §6146 + NY
+  §474-a), limited-scope/unbundled representation (Model Rule 1.2(c)), 2025
+  Clio hourly-rate data, how fee structure tends to track matter type, fee
+  disputes/arbitration (CA MFAA), and what a fee agreement should make
+  clear. Every section is real prose (4-6+ sentences), never filler.
+- `GUIDE_SOURCES` — 12 distinct, verified https citations (ABA x4, CA
+  Legislature x2, CA State Bar, NY Senate, Clio, Nolo x2, FindLaw) — exceeds
+  the >=8 사양 floor.
+- `GUIDE_VERIFY_NOTES` — documents which figures are volatile (national
+  average hourly rate; state-specific dollar/percentage thresholds) and
+  rendered on-page as a "verify before relying on them" callout (mirrors
+  LaunchCostCalc's BOI-status callout pattern), never stated as permanent
+  facts.
+
+Page structure: `Disclaimer` top, visible `Breadcrumbs` + `BreadcrumbSchema`,
+`UpdatedBadge`/`AuthorByline` (both driven by the real, dated
+`GUIDE_UPDATED = "2026-07-18"` — never `new Date()`; no fabricated reviewer
+credential, same honest "LegalCostCalc Editorial Team" fallback as every
+other page), key-facts block, intro + 12 body sections, the verify-notes
+callout, `Disclaimer` bottom, a Sources list (all 12 links), and a "Related
+tools on this site" internal-link block (calculator home, a divorce spoke
+page, a personal-injury spoke page as the contingency-fee example,
+`/legal-cost-statistics`, `/about`). `ArticleSchema` + `BreadcrumbSchema`
+only — no FAQPage/HowTo JSON-LD anywhere (부속U §7 / CODE-02 pattern).
+
+**Registration** (this repo has no separate `CORE_PATHS` constant — the
+established "indexable static page" gate here is direct registration in
+`sitemap.ts`'s `staticPages` array, the same mechanism CODE-04's
+`/legal-cost-statistics` used): added to `sitemap.ts` (`priority: 0.8`,
+`monthly`), the main nav (`Header`'s `NAV_LINKS`, label "How Fees Work"),
+and `Footer`'s Resources list (also backfilled a pre-existing gap: added
+`/legal-cost-statistics`, which CODE-04 never added to the footer). No
+`CORE_PATHS`/`INDEXABLE_PAGES` re-spec — that gate is specific to the
+programmatic `/[state]/[slug]` matrix and doesn't apply to a hand-authored
+static page.
+
+### Test delta
+New `tests/guide-how-legal-fees-work.test.ts` (19 tests): content-shape
+assertions (10-13 sections, >=3 real sentences per section, >=4 distinct
+sourced facts, >=8 distinct real https sources, no duplicate URLs, real
+fixed `GUIDE_UPDATED`), rendered-page assertions via
+`renderToStaticMarkup` (>=10 `<h2>`, all `GUIDE_SOURCES` URLs present as
+`href` — including correct HTML-entity-escaping of the `&` in the
+leginfo.legislature.ca.gov query-string URLs — disclaimer top+bottom,
+`AuthorByline`/`UpdatedBadge` render the real 2026 date with no fabricated
+credential, `ArticleSchema` present with the real `dateModified`, no
+FAQPage/HowTo anywhere, no UPL advice-verb language, internal links to `/`
+and a real spoke page present), `buildMeta` metadata assertions, a
+sitewide re-verification that no route renders `<FaqSchema>`, and
+sitemap/nav/footer registration checks. 523 tests (Wave A baseline) -> 542
+tests (35 files).
+
+### Verification performed
+Beyond the unit-test render, ran a real `next build` + `next start` and
+`curl`'d the live production HTML for `/how-legal-fees-work` (JS off,
+matching the spec's literal acceptance methodology): HTTP 200; 17 `<h2>`
+tags; 13 distinct `https://` source links; "not legal advice" present 21
+times (site-chrome + page disclaimers); `Article`/`BreadcrumbList` JSON-LD
+present, `FAQPage`/`HowTo` absent; `<meta name="robots" content="index,
+follow, max-image-preview:large">` (indexable, not noindex); the nav link
+("How Fees Work") and footer link ("How Legal Fees Work") both render with
+the correct `href`; `<title>How Legal Fees Work (2026): Hourly vs. Flat vs.
+Contingency — LegalCostCalc</title>`; and `sitemap.xml` includes
+`https://legalcostcalc.co/how-legal-fees-work`. Build log confirms
+`sitemap: 435 indexable URLs` (434 Wave-A baseline + 1, exactly this new
+static page — the programmatic `369/408 hasUniqueData` count is unchanged,
+confirming zero effect on the existing information-gain gate).
+
+### Gate results (this wave)
+- `npx tsc --noEmit`: 0 errors
+- `npm run lint`: 0 errors (same 3 pre-existing `react/no-danger`
+  unused-eslint-disable-directive warnings on `article-schema.tsx`,
+  `dataset-schema.tsx`, `software-application-schema.tsx` as every prior
+  wave — unrelated to this wave)
+- `npm test`: 542/542 passed (35 files)
+- `npm run build`: succeeded, 898/898 static pages generated (Wave A's 897 +
+  1 new route), `sitemap: 435 indexable URLs (369/408 programmatic pages
+  pass hasUniqueData)`
+
+### Not touched (guardrails)
+No CMP/Consent Mode change. No calculator/results/TermsGate code touched —
+this wave adds a pure content route, no interaction with `calc_input_start`/
+`calculator_complete` measurement at all. No FAQPage/HowTo JSON-LD anywhere
+(verified sitewide, not just on the new page). No raw calculator inputs
+enter the new page (it has no inputs/form — informational content only). No
+fabricated figures: every number/date/citation traces to a source in
+`GUIDE_SOURCES`, verified live on 2026-07-18; volatile figures are framed
+"verify at {official source}" rather than stated as permanent (see
+`GUIDE_VERIFY_NOTES`). No advice verbs — audited by both the existing
+site-wide tone conventions and this wave's own `ADVICE_VERB_PATTERNS` test.
+U-03 (Bing/IndexNow confirmation — the new URL is automatically covered
+since `scripts/indexnow.mjs` derives its submission list directly from the
+built `sitemap.xml`, no separate wiring needed) and U-05 (guide<->calculator
+<->statistics link-density acceptance criteria) are out of scope for this
+wave — only a light, natural set of internal links was added (calculator
+home, one divorce spoke page, one personal-injury spoke page,
+`/legal-cost-statistics`, `/about`), not the full U-05 circulation
+requirement. No commit/deploy performed (orchestrator-owned).
+
+---
+
+## Wave C — U-03 (Bing/IndexNow confirmation) + U-05 (internal circulation)
+
+Source of truth: `D:\ClaudeCode\AppFarm\보고서\부속U_GA4근본진단_개선스펙.md` §4
+(U-03/U-05 사양+수용기준), §5 (parameter row), §7 (guardrails). Builds on
+Wave A (U-01 presets) and Wave B (U-02 `/how-legal-fees-work` guide) —
+neither re-specced.
+
+### U-03 — Bing/IndexNow confirmation (audit + one minimal fix)
+
+Audited `scripts/indexnow.mjs` (T14): `prebuild` writes `public/{key}.txt`
+only when `INDEXNOW_KEY` is set (no-op otherwise); `postbuild` submits only
+when `VERCEL_ENV==='production'` AND `INDEXNOW_KEY` is set, reading the URL
+list directly from the just-built `sitemap.xml` (never a separately
+maintained list, so it can't drift from what `sitemap.ts` actually emits),
+chunked at 10k URLs/request, and every failure path is caught/logged —
+never a non-zero exit. This wave did not change the script; it was already
+correct (confirmed by `tests/indexnow.test.ts`, unchanged) and per the task
+brief `INDEXNOW_KEY` is set in Vercel, so production builds will submit.
+Confirmed via a real `next build` here: `postbuild` correctly logged
+`indexnow: skipping submission (VERCEL_ENV=unset, not production)` — the
+expected local/preview behavior.
+
+Confirmed the guide URL is in the sitemap source: `src/app/sitemap.ts`
+already registers `/how-legal-fees-work` (added in Wave B, priority 0.8,
+monthly) — since IndexNow's submission list is derived directly from the
+built `sitemap.xml`, no separate wiring is needed for the guide to be
+submitted on the next production deploy.
+
+**Found and fixed one real "sitemap lastmod does not reflect the real data-
+verified date" issue** (부속U §4 U-03 사양 item 2): every entry in
+`sitemap.ts`'s `staticPages` array — including `/how-legal-fees-work` —
+shared the single `DATA_VERSION_DATE` constant (`src/lib/constants/
+data-meta.ts`, "bumped manually when **cost data** is verified/refreshed",
+currently 2026-06-29). That's correct for cost-data-driven pages
+(`/legal-cost-statistics` derives its own `DATA_VERIFIED_ISO` from the same
+constant, appropriately — it IS a view over `costs.json`). But
+`/how-legal-fees-work` is independent, hand-authored editorial content with
+its own real verification date, `GUIDE_UPDATED = "2026-07-18"`
+(`src/app/how-legal-fees-work/content.ts`) — a date confirmed more recent
+than `DATA_VERSION_DATE` and already used for the page's own `AuthorByline`/
+`UpdatedBadge`/`ArticleSchema.dateModified`. Reporting `2026-06-29` in the
+sitemap for a page last verified `2026-07-18` was a real (if minor)
+inaccuracy — a stale lastmod signal to crawlers for content that's actually
+newer. **Minimal fix**: `sitemap.ts` now imports `GUIDE_UPDATED` and uses
+`new Date(\`${GUIDE_UPDATED}T00:00:00Z\`)` as that one entry's
+`lastModified`, leaving every other entry (all genuinely tied to the cost
+dataset) on the shared `DATA_VERSION_DATE` unchanged.
+
+### U-05 — guide<->calculator<->statistics internal circulation
+
+**Guide -> calculator (>=3 in-context deep links) + guide -> statistics
+(>=1 in-context link).** Wave B's guide already had one contextual `/`
+(calculator home) link in the intro and an end-of-page "Related tools"
+list, but per the task brief's "in-context" requirement (matching
+LaunchCostCalc's `IN_CONTEXT_LINKS` pattern in its own
+`/how-to-start-an-llc/page.tsx`, confirmed by reading that file directly)
+those don't count — links need to sit inside the relevant body section's
+own prose, not only in a footer-style dump. Added an `IN_CONTEXT_LINKS`
+record (keyed by exact `GUIDE_SECTIONS` heading, same pattern as
+LaunchCostCalc) to `src/app/how-legal-fees-work/page.tsx`, rendered
+directly below the relevant section:
+- "Hourly billing" section -> `/texas/dui-cost` (a real hourly-billed,
+  contested-defense example).
+- "Flat fees" section -> `/new-york/estate-planning-cost` (the section's own
+  prose names "drafting a will" as the classic flat-fee task).
+- "Contingency fees" section -> `/california/personal-injury-cost` (the
+  section's own contingency-fee example).
+- "What a lawyer's hour actually costs, state by state" section ->
+  `/legal-cost-statistics` (the section is literally about state-by-state
+  hourly-rate data, which is exactly what that page shows).
+
+No-fabrication guardrail: every target is a REAL row in `costs.json` that
+passes the `hasUniqueData` information-gain gate (verified directly —
+`hasUniqueData("TX","dui")`, `hasUniqueData("NY","estate-planning")`, and
+`hasUniqueData("CA","personal-injury")` all `true`, via a throwaway vitest
+check before wiring the links, then re-asserted permanently in the new test
+file below) — never a thin/noindexed page, and never an invented route.
+
+**Calculator -> guide (>=1 link in the result area).** Added the link in
+TWO places, both real "calculator result area" surfaces per the task's
+either/or wording:
+1. `src/components/calculator/cost-result.tsx` (`CostResult`) — the
+   client-rendered result card shown after a user computes a result on any
+   surface (homepage generic calculator, spoke pages, and the embed
+   widget — consistent with the existing `RelatedMatters`/`ResultShare`
+   modules, which already render unconditionally there, ads-only being the
+   thing embeds suppress).
+2. `src/components/seo/cost-details-section.tsx` (`CostDetailsSection`) —
+   the SERVER-rendered "Common Fees / What Affects Cost" block that appears
+   on every `/[state]/[slug]` spoke page whenever real cost data exists,
+   independent of any client interaction. Added this second location
+   specifically so the calculator->guide link is verifiable via a plain
+   curl/JS-off request (matching the task's "curl-verify both directions"
+   instruction) rather than only ever existing behind a client-side
+   `results` state.
+
+Both are plain text links, in the site's existing teal/underline style —
+no border/card styling, so they read as content cross-links, never as ad
+units (no ad markers are added; `tests/ad-proximity.test.ts` and
+`tests/embed-monetization.test.ts` re-run green unchanged).
+
+### Verification performed
+
+**Mutual curl (부속U §4 U-05 수용: "상호 curl 확인").** Ran a real
+`next build` + `next start` and curl'd the live production server:
+- `/how-legal-fees-work` -> HTTP 200; contains exactly the 4 new in-context
+  `href`s (`/texas/dui-cost`, `/new-york/estate-planning-cost`,
+  `/california/personal-injury-cost`, `/legal-cost-statistics`), each of
+  which also independently resolves HTTP 200.
+- Every in-context link's position in the rendered HTML falls BEFORE the
+  end-of-page "Related tools on this site" block — i.e. genuinely inside
+  the body-section flow, not merely duplicating the existing footer-style
+  list (asserted in the new test file, not just eyeballed in the curl
+  output).
+- Guide -> calculator/statistics direction: fully curl-confirmed, real
+  HTTP 200s, no gaps.
+
+**Calculator -> guide direction — partially curl-blocked by a pre-existing,
+documented local-environment limitation, not a regression.** Curling a real
+spoke page (`/california/divorce-cost`) locally returns HTTP 200 but the
+page's entire cost-data-dependent content (Quick Stats card, "Common
+Divorce Fees", `CostDetailsSection`, and therefore its new guide link) is
+absent from BOTH the running server's response AND the raw prebuilt
+`.next/server/app/california/divorce-cost.html` file itself — i.e. this is
+a build-time data-fetch failure, not a serving-time or hydration issue.
+Root-caused (not assumed) via a throwaway vitest call to
+`getCostForPage("divorce","CA")`, which surfaced the underlying Supabase
+client-construction/query failure — `src/lib/repositories/
+cost-repository.ts`'s `findCostsByFilters` always queries Supabase live
+(`legal_costs` table) with no seed-JSON fallback, and that query does not
+succeed in this local/sandboxed environment. This exactly matches this
+project's own recorded memory note ("Supabase 500s locally... spoke pages
+do not hydrate in headless preview") — a known, pre-existing local-dev-only
+gap unrelated to this wave's changes (out of scope to fix here: it's a data-
+layer/env concern, not U-03/U-05, and Wave B's own verification silently
+avoided the same trap by only ever curling the fully-static guide page,
+never a live spoke page's computed content). Compensating verification used
+instead: `tests/u05-internal-circulation.test.ts` renders `CostResult` and
+`CostDetailsSection` directly (bypassing the Supabase-dependent page
+component) with real mock cost data and asserts both output the
+`/how-legal-fees-work` href — deterministic, passes, and exercises the
+exact JSX these components would produce once real data is present (as it
+will be on Vercel, where Supabase is reachable).
+
+### Test delta
+
+New `tests/u05-internal-circulation.test.ts` (8 tests): guide-side
+in-context-link presence + positional (before the end-of-page list)
+assertions, `hasUniqueData` no-fabrication checks on all 3 in-context
+calculator targets, a `GUIDE_SECTIONS` heading-drift guard (keeps the
+`IN_CONTEXT_LINKS` keys from silently going dark if `content.ts` headings
+are ever edited), `CostResult` and `CostDetailsSection` calculator->guide
+link assertions, and a sitemap lastmod assertion (the guide's entry now
+equals `GUIDE_UPDATED`, not the shared dataset date). 542 tests (Wave B
+baseline) -> 550 tests (36 files).
+
+### Gate results (this wave)
+
+- `npx tsc --noEmit`: 0 errors
+- `npm run lint`: 0 errors (same 3 pre-existing `react/no-danger`
+  unused-eslint-disable-directive warnings as every prior wave, unrelated)
+- `npm test`: 550/550 passed (36 files)
+- `npm run build`: succeeded (run twice, once per source revision this
+  wave), 898/898 static pages generated, `sitemap: 435 indexable URLs
+  (369/408 programmatic pages pass hasUniqueData)` — unchanged from Wave B
+  (this wave touches no page-index/gate logic)
+
+### Not touched (guardrails)
+
+No CMP/Consent Mode change. No CORE_PATHS/INDEXABLE_PAGES gate logic
+touched (`369/408` unchanged). No new JSON-LD types added (still Article +
+BreadcrumbList only, sitewide — re-verified by the unchanged Wave B test).
+No ad markers added near any new link (ad-proximity/embed-monetization
+suites re-run green, unchanged assertions). No raw calculator inputs enter
+any new link/page. No fabricated dates/figures/routes: the sitemap fix uses
+the guide's own already-real `GUIDE_UPDATED`; every in-context link target
+is a real, gate-passing dataset combination, verified programmatically, not
+assumed. No Supabase/data-layer code touched (the local-only 500 issue
+documented above was diagnosed, not "fixed" — out of scope for U-03/U-05
+and orchestrator guardrails). No commit/deploy performed (orchestrator-
+owned).

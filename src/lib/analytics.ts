@@ -38,7 +38,8 @@ export type EventName =
   | "state_restored"
   | "web_vitals"
   | "email_signup"
-  | "ai_referral";
+  | "ai_referral"
+  | "human_session";
 
 const MAX_PARAMS = 25;
 const TRAFFIC_MARKER_KEY = "cc_traffic_type";
@@ -319,4 +320,81 @@ export function trackReferralSource(): void {
     // Non-fatal — worst case the classifier re-evaluates (and no-ops, since
     // referrer/URL are unchanged) on the next mount within this session.
   }
+}
+
+const HUMAN_SESSION_KEY = "cc_human_session";
+
+/**
+ * CODE-06/07 (부속W §5) — `human_session`: an engagement-qualified signal that
+ * separates people from noise IN REPORTING.
+ *
+ * The problem it solves: GA4 for this portfolio counts large waves of
+ * data-center traffic (Council Bluffs / Ashburn / Boardman) whose sessions
+ * bounce in a few seconds. Those sessions inflate every ratio and make the
+ * organic trend unreadable, so "did a human read this page?" needs its own
+ * event rather than a filter applied after the fact.
+ *
+ * Definition (deliberately cheap and honest): fires ONCE per browser session,
+ * on the first of either
+ *   - a scroll reaching 25% of the scrollable page, or
+ *   - a real input interaction (keydown / pointerdown on the document).
+ * A load-and-leave session never fires it. No timers: a time-on-page threshold
+ * would fire for an idle bot holding the page open.
+ *
+ * ══ NEVER USE THIS TO CHANGE WHAT IS SERVED ══
+ * This is a MEASUREMENT signal only. Branching ad rendering, ad type, or page
+ * content on user agent, IP, or any bot heuristic is CLOAKING — serving
+ * different content to crawlers than to people — and all ten domains in this
+ * portfolio share ONE publisher id (ca-pub-1378312299412437), so a single
+ * violation can end every site at once. Bots get byte-identical pages to
+ * humans. Bot handling belongs in GA4 reporting filters and WAF rules (owner
+ * scope), never in the render path. `tests/ad-density.test.ts` pins this by
+ * asserting no ad module reads `navigator.userAgent`.
+ */
+export function initHumanSessionSignal(): void {
+  if (typeof window === "undefined" || typeof document === "undefined") return;
+
+  try {
+    if (window.sessionStorage.getItem(HUMAN_SESSION_KEY) === "1") return;
+  } catch {
+    // sessionStorage unavailable — continue without the once-per-session guard
+    // rather than skip the signal entirely.
+  }
+
+  let fired = false;
+
+  const cleanup = () => {
+    window.removeEventListener("scroll", onScroll);
+    document.removeEventListener("keydown", onInteract, true);
+    document.removeEventListener("pointerdown", onInteract, true);
+  };
+
+  const fire = (trigger: "scroll_depth" | "interaction") => {
+    if (fired) return;
+    fired = true;
+    cleanup();
+    try {
+      window.sessionStorage.setItem(HUMAN_SESSION_KEY, "1");
+    } catch {
+      // Non-fatal: worst case the event can fire again in a later mount.
+    }
+    trackEvent("human_session", { engagement_trigger: trigger });
+  };
+
+  function onScroll() {
+    const doc = document.documentElement;
+    const scrollable = doc.scrollHeight - window.innerHeight;
+    // A page shorter than the viewport cannot be scrolled 25% — such pages
+    // qualify through interaction only, which is the honest reading.
+    if (scrollable <= 0) return;
+    if (window.scrollY / scrollable >= 0.25) fire("scroll_depth");
+  }
+
+  function onInteract() {
+    fire("interaction");
+  }
+
+  window.addEventListener("scroll", onScroll, { passive: true });
+  document.addEventListener("keydown", onInteract, true);
+  document.addEventListener("pointerdown", onInteract, true);
 }

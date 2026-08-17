@@ -224,6 +224,94 @@ export default function PrivacyPage() {
               </ul>
             </section>
 
+            {/* ── CODE-08: named third-party vendor list ──────────────────── */}
+            {/*
+              AdSense's program policies require the privacy policy to name the
+              third-party vendors and ad networks that serve on the site, not
+              just to say that some exist. This list is specific to
+              legalcostcalc.co — it names the hosts this site actually contacts
+              (verified against the served HTML and the layout's script tags),
+              so it is deliberately NOT the same list as the sibling sites'.
+            */}
+            <section>
+              <h2 className="text-xl font-semibold text-slate-900">
+                Third-party vendors and ad networks used on this site
+              </h2>
+              <p className="mt-2 leading-relaxed">
+                Third-party vendors, including Google, use cookies to serve ads
+                based on your prior visits to this website or other websites.
+                Google&apos;s use of advertising cookies enables it and its
+                partners to serve ads to you based on your visit to this site
+                and/or other sites on the internet. The vendors below are the
+                ones this site actually loads:
+              </p>
+              <ul className="mt-3 list-disc space-y-2 pl-5 leading-relaxed">
+                <li>
+                  <strong>Google AdSense</strong> (
+                  <code className="text-sm">pagead2.googlesyndication.com</code>,{" "}
+                  <code className="text-sm">googleads.g.doubleclick.net</code>) —
+                  serves the display advertising on cost pages. See{" "}
+                  <a
+                    href="https://policies.google.com/technologies/ads"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-teal-700 underline"
+                  >
+                    How Google uses cookies in advertising
+                  </a>
+                  .
+                </li>
+                <li>
+                  <strong>Google Analytics 4</strong> (
+                  <code className="text-sm">googletagmanager.com</code>) —
+                  aggregate traffic measurement, loaded only after consent in the
+                  EEA, UK and Switzerland.
+                </li>
+                <li>
+                  <strong>Plausible Analytics</strong> (
+                  <code className="text-sm">plausible.io</code>) — cookieless
+                  page-view counts; sets no cookies and stores no identifiers.
+                </li>
+                <li>
+                  <strong>Vercel</strong> — hosting and CDN; processes request
+                  metadata (IP address, user agent) in server logs to deliver the
+                  site.
+                </li>
+                <li>
+                  <strong>Supabase</strong> — the database behind the cost
+                  figures. Read-only, public data; no user submissions are
+                  stored.
+                </li>
+                <li>
+                  <strong>Clio</strong> — an affiliate partner linked from some
+                  pages. Following such a link takes you to Clio&apos;s own site,
+                  governed by its privacy policy, and may set its own cookies.
+                </li>
+              </ul>
+              <p className="mt-3 leading-relaxed">
+                You may opt out of personalized advertising from Google at{" "}
+                <a
+                  href="https://www.google.com/settings/ads"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-teal-700 underline"
+                >
+                  Google Ad Settings
+                </a>
+                , and from many other vendors at{" "}
+                <a
+                  href="https://optout.aboutads.info"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-teal-700 underline"
+                >
+                  optout.aboutads.info
+                </a>
+                . Opting out does not remove advertising; it makes the ads you
+                see non-personalized.
+              </p>
+            </section>
+
             {/* ── GDPR / EEA & UK Rights ─────────────────────────────────── */}
             <section>
               <h2 className="text-xl font-semibold text-slate-900">

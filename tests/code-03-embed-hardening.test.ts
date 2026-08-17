@@ -35,9 +35,12 @@ describe("CODE-03 — embed attribution link is rel=nofollow ugc, never dofollow
     // ATTRIBUTION anchor specifically rather than the document's first rel=:
     // the embed body also renders source-attribution links (rel="noopener
     // noreferrer"), and which one comes first is a layout detail, not a policy.
-    const attributionAnchor = html.match(/<a\b[^>]*>(?:(?!<\/a>).)*Powered by LegalCostCalc/s);
-    expect(attributionAnchor).not.toBeNull();
-    const relMatch = attributionAnchor![0].match(/rel="([^"]*)"/);
+    const labelAt = html.indexOf("Powered by LegalCostCalc");
+    expect(labelAt).toBeGreaterThan(-1);
+    const anchorAt = html.lastIndexOf("<a", labelAt);
+    expect(anchorAt).toBeGreaterThan(-1);
+    const attributionAnchor = html.slice(anchorAt, labelAt);
+    const relMatch = attributionAnchor.match(/rel="([^"]*)"/);
     expect(relMatch).not.toBeNull();
     expect(relMatch![1]).toContain("nofollow");
     expect(relMatch![1]).toContain("ugc");

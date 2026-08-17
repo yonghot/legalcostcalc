@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
+import { isValidSlotId } from "@/lib/ad-slots";
 
 interface AdUnitProps {
   /** data-ad-slot value from your AdSense dashboard (per ad unit). */
@@ -168,20 +169,14 @@ export function AdUnit({
     };
   }, [client, active, pathname]);
 
-  if (!client) {
-    // Inert placeholder — visible only in development/preview when the env var
-    // is unset. Does not cause layout shift because it has a fixed min-height.
-    return (
-      <div
-        className={`flex min-h-[100px] items-center justify-center rounded-md border border-dashed border-slate-200 bg-slate-50 sm:min-h-[280px] ${className ?? ""}`}
-        aria-hidden="true"
-        role="presentation"
-      >
-        <p className="text-[10px] font-medium uppercase tracking-wide text-slate-300">
-          Ad placeholder — set NEXT_PUBLIC_ADSENSE_CLIENT_ID to enable
-        </p>
-      </div>
-    );
+  // CODE-01 (부속W): a manual unit needs BOTH a client id and a REAL numeric
+  // slot id. Previously only `client` was checked, so with the client set and
+  // the slot unset this emitted <ins data-ad-slot={undefined}> — an invalid
+  // unit that can never fill. Render nothing instead: an empty ad-shaped frame
+  // is itself a low-quality signal to an AdSense reviewer (more ad furniture
+  // than publisher content), and Auto ads are unaffected by this branch.
+  if (!client || !isValidSlotId(slot)) {
+    return null;
   }
 
   return (

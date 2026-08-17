@@ -23,6 +23,7 @@
 import { useEffect, useRef, useState } from "react";
 import { AdUnit } from "@/components/ads/ad-unit";
 import { parseAdProvider, type AdProvider as AdProviderType } from "@/lib/monetization";
+import { resolveAdSlot } from "@/lib/ad-slots";
 
 interface AdProviderProps {
   /** data-ad-slot for AdSense (ignored by other providers). */
@@ -223,5 +224,11 @@ export function AdProvider({ slot, className, lazy = true }: AdProviderProps) {
   // Default: adsense — delegate entirely to the existing AdUnit component.
   // This means the AdSense script loaded by ConsentedAnalytics is the ONLY
   // programmatic tag ever injected — no second tag is added here.
-  return <AdUnit slot={slot} className={className} lazy={lazy} />;
+  // CODE-01 (부속W): call sites (e.g. ResultMonetization) render
+  // <AdProvider/> WITHOUT a slot prop, so `slot` was always undefined and the
+  // manual unit could never carry a data-ad-slot. Resolve it here from the
+  // canonical NEXT_PUBLIC_ADSENSE_SLOT_ID (validated numeric) so setting that
+  // one env var makes this repo's units renderable, exactly as in the sibling
+  // repos. An explicit prop still wins.
+  return <AdUnit slot={resolveAdSlot("result", slot)} className={className} lazy={lazy} />;
 }

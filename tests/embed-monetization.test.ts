@@ -113,7 +113,12 @@ describe("embed monetization gate (monetizationDisabled)", () => {
   beforeEach(() => {
     // Simulate a fully monetized production configuration.
     cleanups.push(
+      // CODE-01 (부속W): a manual AdSense unit requires BOTH a client id and a
+      // REAL numeric slot id — with the slot unset the component now renders
+      // nothing instead of an invalid <ins data-ad-slot={undefined}>. Set a
+      // numeric slot so this test exercises the ad-present path it is asserting.
       withEnv("NEXT_PUBLIC_ADSENSE_CLIENT_ID", "ca-pub-0000000000000000"),
+      withEnv("NEXT_PUBLIC_ADSENSE_SLOT_ID", "1234567890"),
       withEnv("NEXT_PUBLIC_AD_PROVIDER", undefined), // default: adsense
       withEnv("NEXT_PUBLIC_PPC_NUMBER", "+18005551234"), // default CTA: call
       withEnv(

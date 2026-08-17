@@ -96,7 +96,12 @@ describe("ad-proximity — CostResult source order", () => {
   const cleanups: Array<() => void> = [];
 
   beforeEach(() => {
+    // CODE-01 (부속W): a manual AdSense unit requires BOTH a client id and a
+    // REAL numeric slot id — with the slot unset the component now renders
+    // nothing instead of an invalid <ins data-ad-slot={undefined}>. Set a
+    // numeric slot so this test exercises the ad-present path it is asserting.
     cleanups.push(withEnv("NEXT_PUBLIC_ADSENSE_CLIENT_ID", "ca-pub-0000000000000000"));
+    cleanups.push(withEnv("NEXT_PUBLIC_ADSENSE_SLOT_ID", "1234567890"));
   });
 
   afterEach(() => {

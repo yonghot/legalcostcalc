@@ -91,17 +91,11 @@ function loadScripts() {
     });
   }
 
-  const rawAdSenseClient = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
-  if (rawAdSenseClient) {
-    // The AdSense script URL requires the "ca-pub-…" form.
-    const adSenseClient = rawAdSenseClient.startsWith("ca-")
-      ? rawAdSenseClient
-      : `ca-${rawAdSenseClient}`;
-    injectScript(
-      `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adSenseClient}`,
-      { crossorigin: "anonymous" },
-    );
-  }
+  // The AdSense loader is NOT injected here. It is rendered as a real
+  // <Script id="adsense-loader"> in app/layout.tsx so the snippet exists in the
+  // server-rendered HTML (CODE-02): an effect-injected script is invisible to
+  // AdSense's site review and to Auto ads. Consent Mode v2 defaults still run
+  // ahead of it and still start denied — see the comment at that call site.
 
   // GA measurement id: support both NEXT_PUBLIC_GA_ID and the newer
   // NEXT_PUBLIC_GA_MEASUREMENT_ID name.

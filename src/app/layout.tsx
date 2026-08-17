@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { SiteChrome } from "@/components/layout/site-chrome";
 import { ConsentedAnalytics } from "@/components/consent/consented-analytics";
@@ -126,9 +127,9 @@ export default function RootLayout({
         )}
 
         {/*
-          Analytics/advertising scripts load unconditionally (env-guarded) via
-          <ConsentedAnalytics>; whether personalized ads serve is governed by
-          Consent Mode v2 above, not by whether the banner was accepted.
+          Analytics scripts (Plausible, GA) load via <ConsentedAnalytics>;
+          whether personalized ads serve is governed by Consent Mode v2 above,
+          not by whether the banner was accepted.
 
           EEA/UK AdSense consent: also configure Google's certified CMP in the
           AdSense dashboard → Privacy & messaging using your publisher ID
@@ -144,6 +145,36 @@ export default function RootLayout({
         </a>
         <div className="flex min-h-screen flex-col">
           <SiteChrome>{children}</SiteChrome>
+          {/*
+            CODE-02/CODE-10 (부속W): the AdSense loader must exist in the
+            SERVER-RENDERED HTML.
+
+            It previously lived in ConsentedAnalytics' useEffect, injected with
+            createElement — which meant the served HTML contained no loader at
+            all. The ad-health audit caught it: gofirepath, launchcostcalc,
+            dentalcostfinder and the five folder-2 sites all served the snippet,
+            legalcostcalc.co served none on any page. Two consequences, both
+            revenue-blocking: Auto ads can never serve (they need the script on
+            the page), and AdSense's site review cannot verify that the ad code
+            is present — one of the reasons Google itself lists for leaving a
+            site "not ready".
+
+            This is NOT a consent change. Consent Mode v2 defaults are emitted
+            further up this same <head> and still run first, still start
+            DENIED for ad_storage / ad_user_data / ad_personalization; the
+            banner still governs the update. Rendering the script tag only
+            stops withholding the library — exactly the pattern the four
+            sibling repos already use.
+          */}
+          {normalizedCaPub && (
+            <Script
+              id="adsense-loader"
+              async
+              strategy="afterInteractive"
+              crossOrigin="anonymous"
+              src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${normalizedCaPub}`}
+            />
+          )}
           <ConsentedAnalytics />
           <AnalyticsInit />
           <WebVitalsReporter />

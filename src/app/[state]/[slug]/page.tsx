@@ -23,6 +23,7 @@ import { buildMeta, CANONICAL_ORIGIN } from "@/lib/seo";
 import { hasUniqueData } from "@/lib/page-index";
 import { Breadcrumbs } from "@/components/seo/breadcrumbs";
 import { HubLinksBar } from "@/components/seo/hub-links-bar";
+import { StateCostAnalysis } from "@/components/seo/state-cost-analysis";
 import { CategoryEditorial } from "@/components/seo/category-editorial";
 import { AnswerBlock } from "@/components/seo/answer-block";
 import { EmbedPanel } from "@/components/embed/embed-panel";
@@ -378,6 +379,26 @@ export default async function StateCategoryPage({ params }: PageProps) {
         stateInfo={stateInfo}
         costs={costs}
         faqQuestions={faqQuestions}
+      />
+
+      {/* CODE-05 (부속W) — per-entity publisher content. Sibling pages here
+          measured 85.2% identical by 5-gram overlap at ~830 body words, which
+          is what AdSense's "low value content" verdict describes. This section
+          adds methodology, a data-derived read of THIS state's position,
+          two worked examples from its real simple/complex rows, the
+          assumptions that break the estimate, and the row's sources — with
+          sentence shapes chosen conditionally from this state's own numbers so
+          two siblings differ structurally, not just numerically. Placed after
+          the calculator/monetization modules so LCP and the ad-exclusion zone
+          are unaffected. */}
+      <StateCostAnalysis
+        stateCode={stateInfo.code}
+        stateName={stateInfo.name}
+        categorySlug={categoryInfo.slug}
+        matterLabel={categoryInfo.displayName.toLowerCase()}
+        moderate={moderateCost}
+        simple={costs.find((c) => c.complexity === "simple")}
+        complex={costs.find((c) => c.complexity === "complex")}
       />
 
       {/* T13: the standalone in-content <AdProvider> that previously rendered

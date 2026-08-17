@@ -31,8 +31,13 @@ describe("CODE-03 — embed attribution link is rel=nofollow ugc, never dofollow
     expect(html).toContain("Powered by LegalCostCalc");
     expect(html).toMatch(/rel="noopener nofollow ugc"/);
     expect(html).not.toContain("nofollow sponsored");
-    // rel must include both tokens Google requires for widget links.
-    const relMatch = html.match(/rel="([^"]*)"/);
+    // rel must include both tokens Google requires for widget links. Match the
+    // ATTRIBUTION anchor specifically rather than the document's first rel=:
+    // the embed body also renders source-attribution links (rel="noopener
+    // noreferrer"), and which one comes first is a layout detail, not a policy.
+    const attributionAnchor = html.match(/<a\b[^>]*>(?:(?!<\/a>).)*Powered by LegalCostCalc/s);
+    expect(attributionAnchor).not.toBeNull();
+    const relMatch = attributionAnchor![0].match(/rel="([^"]*)"/);
     expect(relMatch).not.toBeNull();
     expect(relMatch![1]).toContain("nofollow");
     expect(relMatch![1]).toContain("ugc");

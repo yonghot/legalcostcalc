@@ -307,3 +307,67 @@ export function getModerateCostRange(
   if (!row) return null;
   return { low: row.cost_low, median: row.cost_median, high: row.cost_high };
 }
+
+/**
+ * CODE-05 (deepening pass) — the full seed row for one (state, category,
+ * complexity) triple, in a shape components can read without importing the
+ * seed JSON themselves (CLAUDE.md layer order: page -> service -> repository;
+ * `lib/page-index` is the existing sanctioned reader of the bundled seed for
+ * build-time analysis that must not make a database round-trip).
+ *
+ * Exposed because the per-entity analysis needs fields the earlier helpers
+ * dropped — the hourly band at EACH tier, and the source count — to compute
+ * implied hours per tier and to describe how many citations back a row.
+ */
+export interface SeedTierFigures {
+  stateCode: string;
+  low: number;
+  median: number;
+  high: number;
+  hourlyLow: number | null;
+  hourlyMedian: number | null;
+  hourlyHigh: number | null;
+  duration: string | null;
+  sourceCount: number;
+}
+
+function toTierFigures(row: SeedRow): SeedTierFigures {
+  return {
+    stateCode: row.state_code,
+    low: row.cost_low,
+    median: row.cost_median,
+    high: row.cost_high,
+    hourlyLow: row.hourly_rate_low ?? null,
+    hourlyMedian: row.hourly_rate_median ?? null,
+    hourlyHigh: row.hourly_rate_high ?? null,
+    duration: row.typical_duration ?? null,
+    sourceCount: row.sources?.length ?? 0,
+  };
+}
+
+/** One tier's figures for a (state, category) pair, or null when absent. */
+export function getTierFigures(
+  stateCode: string,
+  categorySlug: string,
+  complexity: "simple" | "moderate" | "complex",
+): SeedTierFigures | null {
+  const row = SEED_ROWS.find(
+    (r) => r.state_code === stateCode && r.category === categorySlug && r.complexity === complexity,
+  );
+  return row ? toTierFigures(row) : null;
+}
+
+/**
+ * Every state's figures for one (category, complexity) pair — the peer set the
+ * per-entity analysis ranks against. Unfiltered by the information-gain gate on
+ * purpose: callers apply `hasUniqueData` themselves so a ranking never cites a
+ * page we treat as too thin to index.
+ */
+export function getCategoryTierFigures(
+  categorySlug: string,
+  complexity: "simple" | "moderate" | "complex",
+): SeedTierFigures[] {
+  return SEED_ROWS.filter((r) => r.category === categorySlug && r.complexity === complexity).map(
+    toTierFigures,
+  );
+}

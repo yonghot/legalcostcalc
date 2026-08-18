@@ -28,6 +28,8 @@ import { CategoryEditorial } from "@/components/seo/category-editorial";
 import { AnswerBlock } from "@/components/seo/answer-block";
 import { EmbedPanel } from "@/components/embed/embed-panel";
 import { buildAnswerBlock } from "@/lib/seo/geo";
+import { buildStateCostContext } from "@/lib/seo/state-context";
+import { buildStateFaq } from "@/lib/seo/state-faq";
 
 interface PageProps {
   params: Promise<{ state: string; slug: string }>;
@@ -101,38 +103,39 @@ export default async function StateCategoryPage({ params }: PageProps) {
   const moderateCost = costs.find((c) => c.complexity === "moderate");
   const year = new Date().getFullYear();
 
-  // Build FAQ
+  // CODE-05 — per-entity FAQ answers. The five programmatic answers used to
+  // restate the cost band, hourly band, duration and fee list that the answer
+  // block, the tier cards and the cost-details section had already shown, which
+  // made them the largest identical blocks shared between two sibling pages.
+  // `buildStateFaq` keeps the same searched questions but answers each with
+  // information found nowhere else on the page (rank, tier-by-tier standing,
+  // implied hours, the fee total as a share of this state's median) and picks
+  // each answer's shape from where this state's own figures fall. The
+  // "currently being collected" fallbacks stay for pairs with no real row —
+  // never a fabricated answer.
+  const faqContext = buildStateCostContext(stateInfo.code, categoryInfo.slug);
+  const dataDrivenFaq =
+    faqContext && moderateCost
+      ? buildStateFaq(faqContext, categoryInfo.displayName.toLowerCase())
+      : [];
+
   const faqQuestions = [
-    {
-      question: `How much does a ${categoryInfo.displayName.toLowerCase()} cost in ${stateInfo.name}?`,
-      answer: moderateCost
-        ? `The average cost of a ${categoryInfo.displayName.toLowerCase()} in ${stateInfo.name} ranges from ${formatCurrency(moderateCost.costRange.low)} to ${formatCurrency(moderateCost.costRange.high)}, with a median cost of ${formatCurrency(moderateCost.costRange.median)}.`
-        : `Cost data for ${categoryInfo.displayName.toLowerCase()} in ${stateInfo.name} is currently being collected.`,
-    },
-    {
-      question: `How much does a ${categoryInfo.displayName.toLowerCase()} lawyer charge per hour in ${stateInfo.name}?`,
-      answer: moderateCost
-        ? `${categoryInfo.displayName} attorneys in ${stateInfo.name} typically charge between ${formatCurrency(moderateCost.hourlyRate.low)} and ${formatCurrency(moderateCost.hourlyRate.high)} per hour.`
-        : `Hourly rate data for ${stateInfo.name} is currently being collected.`,
-    },
-    {
-      question: `How long does a ${categoryInfo.displayName.toLowerCase()} take in ${stateInfo.name}?`,
-      answer: moderateCost
-        ? `A typical ${categoryInfo.displayName.toLowerCase()} case of moderate complexity in ${stateInfo.name} takes approximately ${moderateCost.typicalDuration}. Simple cases may resolve faster, while complex cases can take significantly longer.`
-        : `Duration data for ${categoryInfo.displayName.toLowerCase()} in ${stateInfo.name} is currently being collected.`,
-    },
-    {
-      question: `What are common ${categoryInfo.displayName.toLowerCase()} fees in ${stateInfo.name}?`,
-      answer: moderateCost && moderateCost.commonFees.length > 0
-        ? `Common fees for a ${categoryInfo.displayName.toLowerCase()} in ${stateInfo.name} include: ${moderateCost.commonFees.slice(0, 4).join(", ")}. Actual fees vary based on your specific situation.`
-        : `Fee breakdown data for ${stateInfo.name} is currently being collected.`,
-    },
-    {
-      question: `Does ${categoryInfo.displayName.toLowerCase()} cost vary by complexity in ${stateInfo.name}?`,
-      answer: costs.length > 1
-        ? `Yes. A simple ${categoryInfo.displayName.toLowerCase()} in ${stateInfo.name} costs around ${formatCurrency(costs.find(c => c.complexity === "simple")?.costRange.median ?? 0)}, while a complex case can cost ${formatCurrency(costs.find(c => c.complexity === "complex")?.costRange.median ?? 0)} or more.`
-        : `Yes, legal costs vary significantly based on case complexity. Simple cases cost less than moderate or complex ones.`,
-    },
+    ...(dataDrivenFaq.length > 0
+      ? dataDrivenFaq
+      : [
+          {
+            question: `How much does a ${categoryInfo.displayName.toLowerCase()} cost in ${stateInfo.name}?`,
+            answer: `Cost data for ${categoryInfo.displayName.toLowerCase()} in ${stateInfo.name} is currently being collected.`,
+          },
+          {
+            question: `How much does a ${categoryInfo.displayName.toLowerCase()} lawyer charge per hour in ${stateInfo.name}?`,
+            answer: `Hourly rate data for ${stateInfo.name} is currently being collected.`,
+          },
+          {
+            question: `How long does a ${categoryInfo.displayName.toLowerCase()} take in ${stateInfo.name}?`,
+            answer: `Duration data for ${categoryInfo.displayName.toLowerCase()} in ${stateInfo.name} is currently being collected.`,
+          },
+        ]),
     // Category-specific unique FAQ questions
     ...(categoryInfo.faqTemplates ?? []).map((t) => ({
       question: t.questionTemplate.replace(/\{state\}/g, stateInfo.name),
@@ -305,6 +308,7 @@ export default async function StateCategoryPage({ params }: PageProps) {
           commonFees={moderateCost.commonFees}
           hourlyRate={moderateCost.hourlyRate}
           typicalDuration={moderateCost.typicalDuration}
+          costs={costs}
         />
       )}
 

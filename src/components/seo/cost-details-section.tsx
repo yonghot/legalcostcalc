@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { formatCurrency } from "@/lib/utils/format";
-import type { CostRange } from "@/lib/types";
+import type { CostRange, LegalCostData } from "@/lib/types";
 
 interface CostDetailsSectionProps {
   categoryName: string;
@@ -8,6 +8,8 @@ interface CostDetailsSectionProps {
   commonFees: string[];
   hourlyRate?: CostRange;
   typicalDuration?: string;
+  /** All complexity rows for this pair — real data only, used for the levers list. */
+  costs?: LegalCostData[];
 }
 
 export function CostDetailsSection({
@@ -16,7 +18,45 @@ export function CostDetailsSection({
   commonFees,
   hourlyRate,
   typicalDuration,
+  costs = [],
 }: CostDetailsSectionProps) {
+  // CODE-05 — "what affects cost" used to be a hardcoded five-item list,
+  // byte-identical on all 408 pages and already covered by the answer block's
+  // cost-factor list higher up. It is now the same five levers QUANTIFIED from
+  // this state's own rows, so the section carries information instead of
+  // repeating a generic checklist.
+  const simple = costs.find((c) => c.complexity === "simple");
+  const moderate = costs.find((c) => c.complexity === "moderate");
+  const complex = costs.find((c) => c.complexity === "complex");
+  const impliedHours = (row?: LegalCostData) =>
+    row && row.hourlyRate.median > 0 ? Math.round(row.costRange.median / row.hourlyRate.median) : null;
+
+  const levers: string[] = [];
+  if (simple && complex && simple.costRange.median > 0) {
+    levers.push(
+      `Complexity tier: ${formatCurrency(simple.costRange.median)} simple to ${formatCurrency(
+        complex.costRange.median,
+      )} contested, a ${(complex.costRange.median / simple.costRange.median).toFixed(1)}x span.`,
+    );
+  }
+  if (simple && complex && moderate) {
+    levers.push(
+      `Attorney rate: ${formatCurrency(simple.hourlyRate.low)}–${formatCurrency(
+        complex.hourlyRate.high,
+      )} an hour across the three tiers, median ${formatCurrency(
+        moderate.hourlyRate.median,
+      )} at moderate complexity.`,
+    );
+  }
+  const hoursSimple = impliedHours(simple);
+  const hoursModerate = impliedHours(moderate);
+  const hoursComplex = impliedHours(complex);
+  if (hoursSimple && hoursModerate && hoursComplex) {
+    levers.push(
+      `Billed hours: about ${hoursSimple} implied at the simple tier, ${hoursModerate} at moderate and ${hoursComplex} once contested.`,
+    );
+  }
+
   return (
     <section className="border-t border-slate-100 bg-slate-50 py-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -69,30 +109,22 @@ export function CostDetailsSection({
           </div>
           <div>
             <h2 className="mb-4 text-xl font-bold text-slate-900">
-              What Affects {categoryName} Cost?
+              What Affects {categoryName} Cost in {stateName}?
             </h2>
-            <ul className="space-y-2 text-sm text-slate-700">
-              <li className="flex items-start gap-2">
-                <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-teal-500" />
-                Case complexity (simple, moderate, or complex)
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-teal-500" />
-                Attorney experience and reputation
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-teal-500" />
-                Local market rates in {stateName}
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-teal-500" />
-                Whether the case goes to trial or is settled
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-teal-500" />
-                Court filing fees and administrative costs
-              </li>
-            </ul>
+            {levers.length > 0 ? (
+              <ul className="space-y-2 text-sm text-slate-700">
+                {levers.map((lever) => (
+                  <li key={lever} className="flex items-start gap-2">
+                    <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-teal-500" />
+                    {lever}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-slate-600">
+                Tier-by-tier figures for {stateName} are still being collected.
+              </p>
+            )}
           </div>
         </div>
 

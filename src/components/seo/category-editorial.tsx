@@ -1,5 +1,6 @@
 import { formatCurrency } from "@/lib/utils/format";
 import { buildBenchmarkSynthesis } from "@/lib/seo/geo";
+import { sumFeeRanges } from "@/lib/seo/state-faq";
 import { getNationalAverage } from "@/lib/page-index";
 import type { CategoryInfo } from "@/lib/types/category";
 import type { StateInfo } from "@/lib/types/state";
@@ -39,9 +40,31 @@ export function CategoryEditorial({
   faqQuestions,
 }: CategoryEditorialProps) {
   const moderate = costs.find((c) => c.complexity === "moderate");
-  const simple = costs.find((c) => c.complexity === "simple");
-  const complex = costs.find((c) => c.complexity === "complex");
   const notes = categoryInfo.costFormationNotes ?? [];
+
+  // CODE-05 — the worked example used to restate the hourly band, the implied
+  // hours, the duration and the fee list that three other sections of the page
+  // had already shown, which made it one of the largest identical blocks two
+  // sibling pages shared. It now does arithmetic those sections do not: each
+  // statutory line sized against THIS state's median, so the percentages differ
+  // per state even though the fee schedule does not.
+  const feeTotals = moderate ? sumFeeRanges(moderate.commonFees) : null;
+  const feeShares = (() => {
+    if (!moderate || moderate.costRange.median <= 0) return [];
+    return moderate.commonFees.slice(0, 4).flatMap((fee) => {
+      const parsed = sumFeeRanges([fee]);
+      if (!parsed) return [];
+      const label = fee.replace(/\s*\([^)]*\)\s*$/, "").trim();
+      const lowPct = (parsed.low / moderate.costRange.median) * 100;
+      const highPct = (parsed.high / moderate.costRange.median) * 100;
+      const fmt = (value: number) => (value < 1 ? value.toFixed(1) : String(Math.round(value)));
+      return [
+        `${label} runs ${formatCurrency(parsed.low)}–${formatCurrency(parsed.high)}, or ${fmt(
+          lowPct,
+        )}%–${fmt(highPct)}% of the ${stateInfo.name} median.`,
+      ];
+    });
+  })();
 
   // CODE-06 — data-derived synthesis sentence comparing this page's own
   // median against the category's real national average (conditional
@@ -83,53 +106,38 @@ export function CategoryEditorial({
             <div className="rounded-lg border border-slate-200 bg-slate-50 p-6 text-sm leading-relaxed text-slate-700 sm:text-base">
               <p>
                 Take a moderate-complexity {categoryInfo.displayName.toLowerCase()} matter in{" "}
-                {stateInfo.name}. Based on this page&apos;s sourced data, the median total cost is{" "}
+                {stateInfo.name}. The recorded median total is{" "}
                 <span className="font-mono font-semibold text-teal-700">
                   {formatCurrency(moderate.costRange.median)}
                 </span>
-                , with most cases falling between{" "}
+                , with reported quotes clustering between{" "}
                 <span className="font-mono font-semibold">{formatCurrency(moderate.costRange.low)}</span>{" "}
                 and{" "}
                 <span className="font-mono font-semibold">{formatCurrency(moderate.costRange.high)}</span>
-                .
-                {moderate.hourlyRate.median > 0 && (
-                  <>
-                    {" "}
-                    At a typical local attorney rate of{" "}
-                    <span className="font-mono font-semibold">
-                      {formatCurrency(moderate.hourlyRate.median)}/hr
-                    </span>{" "}
-                    (range {formatCurrency(moderate.hourlyRate.low)}–
-                    {formatCurrency(moderate.hourlyRate.high)}/hr), that median cost corresponds to
-                    roughly{" "}
-                    <span className="font-mono font-semibold">
-                      {Math.max(1, Math.round(moderate.costRange.median / moderate.hourlyRate.median))}
-                    </span>{" "}
-                    billable hours of attorney work.
-                  </>
-                )}
-                {moderate.typicalDuration && (
-                  <> A case at this complexity level typically takes {moderate.typicalDuration} to resolve.</>
-                )}
+                . Each statutory line below is sized against that median.
               </p>
-              {moderate.commonFees.length > 0 && (
-                <p className="mt-3">
-                  On top of the attorney fee itself, this case would typically also involve:{" "}
-                  {moderate.commonFees.slice(0, 3).join("; ")}.
-                </p>
+              {feeShares.length > 0 && (
+                <ul className="mt-3 list-disc space-y-1.5 pl-5">
+                  {feeShares.map((share) => (
+                    <li key={share}>{share}</li>
+                  ))}
+                </ul>
               )}
-              {simple && complex && (
+              {feeTotals && (
                 <p className="mt-3">
-                  Complexity changes the number meaningfully: a simple case in {stateInfo.name} runs
-                  closer to{" "}
+                  Added together the itemised lines come to{" "}
+                  <span className="font-mono font-semibold">{formatCurrency(feeTotals.low)}</span>–
+                  <span className="font-mono font-semibold">{formatCurrency(feeTotals.high)}</span>,
+                  which leaves roughly{" "}
                   <span className="font-mono font-semibold">
-                    {formatCurrency(simple.costRange.median)}
+                    {formatCurrency(Math.max(0, moderate.costRange.median - feeTotals.high))}
                   </span>
-                  , while a complex case can reach{" "}
+                  –
                   <span className="font-mono font-semibold">
-                    {formatCurrency(complex.costRange.median)}
+                    {formatCurrency(Math.max(0, moderate.costRange.median - feeTotals.low))}
                   </span>{" "}
-                  or more — the calculator above lets you compare all three complexity levels directly.
+                  of the {stateInfo.name} median as professional time — the part that
+                  differs between quotes.
                 </p>
               )}
               {benchmarkSynthesis && (

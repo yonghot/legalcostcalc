@@ -796,7 +796,7 @@ export function hoursSentence(ctx: StateCostContext, matterLabel: string): strin
           ? ` The peer median is ${peerMedianHours} hours: ${stateName} reaches its total in ${
               peerMedianHours - hours
             } fewer implied hours, because the rate rather than the workload carries more of it.`
-          : ` That is exactly the ${peerMedianHours}-hour peer median, so on workload ${stateName} is indistinguishable from the middle of the table.`;
+          : ` That rounds to the same ${peerMedianHours} hours as the peer median, so on workload ${stateName} is indistinguishable from the middle of the table at this precision.`;
 
   if (hours >= 45) {
     return `Divide the ${usd(moderate.median)} median by the ${usd(
@@ -1681,10 +1681,14 @@ export function stateShapeSentences(ctx: StateCostContext, matterLabel: string):
     );
   }
 
+  // A percentile is not a rank, and printing it against the rank denominator
+  // produced impossible strings ("54th of 51"). State it as a percentile of the
+  // tracked set, with the rank kept separate — the two answer different
+  // questions and reading one as the other is what made the line nonsense.
   out.push(
     percentile >= 90
-      ? `As a percentile the ${matterLabel} figure is ${percentile}th of ${ctx.rankedOutOf}.`
-      : `As a percentile: ${percentile}th of ${ctx.rankedOutOf}.`,
+      ? `That places the ${matterLabel} figure in the ${percentile}th percentile of the ${ctx.rankedOutOf} states tracked here.`
+      : `In percentile terms it sits at the ${percentile}th percentile of the ${ctx.rankedOutOf} tracked states.`,
   );
 
   return out;
@@ -1822,7 +1826,6 @@ export function tierClusterSentence(
   tierKey: "simple" | "complex",
 ): string | null {
   const tier = ctx.tiers[tierKey];
-  const moderate = ctx.tiers.moderate!;
   if (!tier) return null;
   const label = tierKey === "simple" ? "simple" : "complex";
   const moderateCluster = ctx.clusterPeers.length;

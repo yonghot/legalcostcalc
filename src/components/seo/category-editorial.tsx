@@ -1,6 +1,9 @@
 import { formatCurrency } from "@/lib/utils/format";
 import { buildBenchmarkSynthesis } from "@/lib/seo/geo";
 import { sumFeeRanges } from "@/lib/seo/state-faq";
+
+/** How many statutory lines the itemised list shows — the total must match it. */
+const MAX_ITEMISED_FEES = 4;
 import { getNationalAverage } from "@/lib/page-index";
 import type { CategoryInfo } from "@/lib/types/category";
 import type { StateInfo } from "@/lib/types/state";
@@ -48,10 +51,16 @@ export function CategoryEditorial({
   // sibling pages shared. It now does arithmetic those sections do not: each
   // statutory line sized against THIS state's median, so the percentages differ
   // per state even though the fee schedule does not.
-  const feeTotals = moderate ? sumFeeRanges(moderate.commonFees) : null;
+  // The itemised list below renders at most four fees, so the total has to be
+  // the total OF THOSE FOUR. Summing every recorded fee while showing a subset
+  // produced a figure the visible lines could not add up to on all 408 pages —
+  // a reader checking the arithmetic would find it wrong.
+  const itemisedFees = moderate ? moderate.commonFees.slice(0, MAX_ITEMISED_FEES) : [];
+  const feeTotals = moderate ? sumFeeRanges(itemisedFees) : null;
+  const omittedFeeCount = moderate ? moderate.commonFees.length - itemisedFees.length : 0;
   const feeShares = (() => {
     if (!moderate || moderate.costRange.median <= 0) return [];
-    return moderate.commonFees.slice(0, 4).flatMap((fee) => {
+    return itemisedFees.flatMap((fee) => {
       const parsed = sumFeeRanges([fee]);
       if (!parsed) return [];
       const label = fee.replace(/\s*\([^)]*\)\s*$/, "").trim();
@@ -138,6 +147,14 @@ export function CategoryEditorial({
                   </span>{" "}
                   of the {stateInfo.name} median as professional time — the part that
                   differs between quotes.
+                  {omittedFeeCount > 0 && (
+                    <>
+                      {" "}
+                      {omittedFeeCount === 1
+                        ? "One further recorded fee is not itemised above and is not in that total."
+                        : `${omittedFeeCount} further recorded fees are not itemised above and are not in that total.`}
+                    </>
+                  )}
                 </p>
               )}
               {benchmarkSynthesis && (

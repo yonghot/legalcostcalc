@@ -17,7 +17,7 @@ const adFrame = adsenseEnabled
   ? "https://*.googlesyndication.com https://*.doubleclick.net https://*.google.com https://*.adtrafficquality.google"
   : "";
 const adImg = adsenseEnabled
-  ? " https://*.googlesyndication.com https://*.doubleclick.net https://*.google.com https://*.gstatic.com"
+  ? " https://*.googlesyndication.com https://*.doubleclick.net https://*.google.com https://*.gstatic.com https://*.adtrafficquality.google"
   : "";
 const adConnect = adsenseEnabled
   ? " https://pagead2.googlesyndication.com https://*.googlesyndication.com https://*.google.com https://*.doubleclick.net https://*.adtrafficquality.google"

@@ -16,4 +16,11 @@ describe("AdSense CSP", () => {
 
     expect(adFrame).toContain("https://*.adtrafficquality.google");
   });
+
+  it("allows AdSense traffic-quality images in img-src", () => {
+    const source = readFileSync(resolve(process.cwd(), "next.config.ts"), "utf8");
+    const adImg = source.match(/const adImg[\s\S]*?\n  : \"\";/)?.[0] ?? "";
+
+    expect(adImg).toContain("https://*.adtrafficquality.google");
+  });
 });

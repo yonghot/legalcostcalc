@@ -20,7 +20,7 @@ const adImg = adsenseEnabled
   ? " https://*.googlesyndication.com https://*.doubleclick.net https://*.google.com https://*.gstatic.com"
   : "";
 const adConnect = adsenseEnabled
-  ? " https://pagead2.googlesyndication.com https://*.googlesyndication.com https://*.google.com https://*.doubleclick.net"
+  ? " https://pagead2.googlesyndication.com https://*.googlesyndication.com https://*.google.com https://*.doubleclick.net https://*.adtrafficquality.google"
   : "";
 
 // GA4 / gtag.js CSP additions (only when NEXT_PUBLIC_GA_ID is set).

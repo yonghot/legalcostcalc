@@ -125,6 +125,15 @@ export default function RootLayout({
           </>
         )}
 
+        {normalizedCaPub && (
+          <script
+            id="adsense-loader"
+            async
+            crossOrigin="anonymous"
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${normalizedCaPub}`}
+          />
+        )}
+
         {/*
           Analytics scripts (Plausible, GA) load via <ConsentedAnalytics>;
           whether personalized ads serve is governed by Consent Mode v2 above,
@@ -165,14 +174,6 @@ export default function RootLayout({
             stops withholding the library — exactly the pattern the four
             sibling repos already use.
           */}
-          {normalizedCaPub && (
-            <script
-              id="adsense-loader"
-              async
-              crossOrigin="anonymous"
-              src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${normalizedCaPub}`}
-            />
-          )}
           <ConsentedAnalytics />
           <AnalyticsInit />
           <WebVitalsReporter />

@@ -10,4 +10,11 @@ describe("native AdSense loader", () => {
     expect(source).toContain("adsbygoogle.js?client=${normalizedCaPub}");
     expect(source).not.toMatch(/<Script\b/);
   });
+
+  it("keeps the third-party loader in the document head", () => {
+    const source = readFileSync(resolve(process.cwd(), "src/app/layout.tsx"), "utf8");
+    const head = source.match(/<head>[\s\S]*?<\/head>/)?.[0] ?? "";
+
+    expect(head).toContain('id="adsense-loader"');
+  });
 });

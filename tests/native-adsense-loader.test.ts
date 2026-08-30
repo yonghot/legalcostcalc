@@ -17,4 +17,10 @@ describe("native AdSense loader", () => {
 
     expect(head).toContain('id="adsense-loader"');
   });
+
+  it("tolerates third-party Auto ads nodes appended to the document body", () => {
+    const source = readFileSync(resolve(process.cwd(), "src/app/layout.tsx"), "utf8");
+
+    expect(source).toMatch(/<body\s+[^>]*suppressHydrationWarning/);
+  });
 });

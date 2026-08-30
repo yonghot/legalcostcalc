@@ -144,7 +144,10 @@ export default function RootLayout({
           (NEXT_PUBLIC_ADSENSE_CLIENT_ID) for TCF v2.2 compliance.
         */}
       </head>
-      <body className="min-h-screen bg-white font-sans text-slate-900 antialiased">
+      <body
+        className="min-h-screen bg-white font-sans text-slate-900 antialiased"
+        suppressHydrationWarning
+      >
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-teal-600 focus:px-4 focus:py-2 focus:text-white focus:outline-none"

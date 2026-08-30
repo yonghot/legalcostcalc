@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { SiteChrome } from "@/components/layout/site-chrome";
 import { ConsentedAnalytics } from "@/components/consent/consented-analytics";
@@ -167,10 +166,9 @@ export default function RootLayout({
             sibling repos already use.
           */}
           {normalizedCaPub && (
-            <Script
+            <script
               id="adsense-loader"
               async
-              strategy="afterInteractive"
               crossOrigin="anonymous"
               src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${normalizedCaPub}`}
             />

@@ -8,7 +8,7 @@
  * served HTML.
  *
  * This suite pins the fix at the source level (the layout renders a real
- * <Script>) and pins the ordering property that makes it safe: Consent Mode v2
+ * <script>) and pins the ordering property that makes it safe: Consent Mode v2
  * defaults are emitted earlier in the document and still start DENIED, so
  * shipping the library does not ship personalized ads.
  *
@@ -30,15 +30,17 @@ const CONSENTED = readFileSync(
 );
 
 describe("CODE-02 — AdSense loader is server-rendered", () => {
-  it("the layout renders the loader through next/script", () => {
-    expect(LAYOUT).toMatch(/from "next\/script"/);
+  it("the layout renders a native parser-visible loader", () => {
+    expect(LAYOUT).not.toMatch(/from "next\/script"/);
+    expect(LAYOUT).toMatch(/<script\s+[\s\S]*id="adsense-loader"/);
     expect(LAYOUT).toMatch(/id="adsense-loader"/);
     expect(LAYOUT).toMatch(/pagead2\.googlesyndication\.com\/pagead\/js\/adsbygoogle\.js\?client=/);
   });
 
-  it("uses afterInteractive (not lazyOnload, which delays the ad request)", () => {
+  it("uses an async native script rather than Next loading strategies", () => {
     const scriptTag = LAYOUT.slice(LAYOUT.indexOf('id="adsense-loader"'));
-    expect(scriptTag).toMatch(/strategy="afterInteractive"/);
+    expect(scriptTag).toMatch(/async/);
+    expect(scriptTag).not.toMatch(/strategy=/);
     expect(scriptTag).toMatch(/crossOrigin="anonymous"/);
   });
 

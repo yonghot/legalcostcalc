@@ -9,4 +9,11 @@ describe("AdSense CSP", () => {
 
     expect(adScript).toContain("https://*.adtrafficquality.google");
   });
+
+  it("allows AdSense traffic-quality frames in frame-src", () => {
+    const source = readFileSync(resolve(process.cwd(), "next.config.ts"), "utf8");
+    const adFrame = source.match(/const adFrame[\s\S]*?\n  : \"\";/)?.[0] ?? "";
+
+    expect(adFrame).toContain("https://*.adtrafficquality.google");
+  });
 });

@@ -33,6 +33,7 @@ import { DEFAULT_FIGURES_LAST_VERIFIED } from "@/lib/constants/figures";
 import { RecentCalculations } from "@/components/shared/recent-calculations";
 import { SeasonalBadge } from "@/components/shared/seasonal-badge";
 import { HomePublisherContent } from "@/components/seo/home-publisher-content";
+import { AdsenseLoader } from "@/components/ads/adsense-loader";
 
 export const metadata: Metadata = {
   alternates: {
@@ -58,6 +59,7 @@ export default function HomePage() {
 
   return (
     <div>
+      <AdsenseLoader />
       <OrganizationSchema />
       <SoftwareApplicationSchema
         name="LegalCostCalc — Legal Cost Calculator"

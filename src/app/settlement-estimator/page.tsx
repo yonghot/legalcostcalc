@@ -6,6 +6,7 @@ import { BreadcrumbSchema } from "@/components/seo/breadcrumb-schema";
 import { Breadcrumbs } from "@/components/seo/breadcrumbs";
 import { FOCUS_RING } from "@/lib/utils/styles";
 import { buildMeta } from "@/lib/seo";
+import { AdsenseLoader } from "@/components/ads/adsense-loader";
 
 export const metadata: Metadata = buildMeta({
   title: "Settlement Net Estimator — How Much Will I Actually Receive?",
@@ -19,6 +20,7 @@ export const metadata: Metadata = buildMeta({
 export default function SettlementEstimatorPage() {
   return (
     <div className="bg-gradient-to-b from-teal-50 to-white py-16 sm:py-20">
+      <AdsenseLoader />
       <BreadcrumbSchema
         items={[
           { name: "Home", href: "/" },

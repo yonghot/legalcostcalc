@@ -10,6 +10,7 @@ import { INDEXABLE_PAGES, getModerateMedianCost } from "@/lib/page-index";
 import { buildMeta } from "@/lib/seo";
 import { FOCUS_RING } from "@/lib/utils/styles";
 import Link from "next/link";
+import { AdsenseLoader } from "@/components/ads/adsense-loader";
 
 interface PageProps {
   params: Promise<{ state: string }>;
@@ -52,6 +53,7 @@ export default async function StateHubPage({ params }: PageProps) {
 
   return (
     <div>
+      <AdsenseLoader />
       <BreadcrumbSchema
         items={[
           { name: "Home", href: "/" },

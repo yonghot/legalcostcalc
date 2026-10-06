@@ -12,36 +12,43 @@
  * defaults are emitted earlier in the document and still start DENIED, so
  * shipping the library does not ship personalized ads.
  *
- * Source-level rather than render-level because the layout is a server component
- * whose <head> content Next.js hoists at build time; asserting on the source is
- * what actually distinguishes "rendered" from "injected later", which is the
- * whole point of the fix.
+ * K7: the loader no longer lives in the root layout. It is the server component
+ * AdsenseLoader, rendered by the content pages, so these assertions read that
+ * component's source and the rendered layout + page output (the order of the
+ * Consent Mode defaults and the loader is pinned on rendered HTML).
  */
 
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import path from "node:path";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import "./regressions/helpers/render";
+import RootLayout from "@/app/layout";
+import { AdsenseLoader } from "@/components/ads/adsense-loader";
 
 const ROOT = path.resolve(__dirname, "..");
 const LAYOUT = readFileSync(path.join(ROOT, "src", "app", "layout.tsx"), "utf8");
+const LOADER = readFileSync(path.join(ROOT, "src", "components", "ads", "adsense-loader.tsx"), "utf8");
+const RENDERED = renderToStaticMarkup(createElement(RootLayout, null, createElement(AdsenseLoader)));
 const CONSENTED = readFileSync(
   path.join(ROOT, "src", "components", "consent", "consented-analytics.tsx"),
   "utf8",
 );
 
 describe("CODE-02 — AdSense loader is server-rendered", () => {
-  it("the layout renders a native parser-visible loader", () => {
-    expect(LAYOUT).not.toMatch(/from "next\/script"/);
-    expect(LAYOUT).toMatch(/<script\s+[\s\S]*id="adsense-loader"/);
-    expect(LAYOUT).toMatch(/id="adsense-loader"/);
-    expect(LAYOUT).toMatch(/pagead2\.googlesyndication\.com\/pagead\/js\/adsbygoogle\.js\?client=/);
+  it("the loader component renders a native parser-visible script", () => {
+    expect(LOADER).not.toMatch(/from "next\/script"/);
+    expect(LOADER).toMatch(/<script id="adsense-loader"/);
+    expect(LOADER).toMatch(/pagead2\.googlesyndication\.com|LOADER_ORIGIN/);
+    expect(LOADER).toMatch(/\/pagead\/js\/adsbygoogle\.js\?client=/);
+    expect(RENDERED).toMatch(/<script id="adsense-loader"[^>]*src="https:\/\/pagead2\.googlesyndication\.com\/pagead\/js\/adsbygoogle\.js\?client=ca-pub-/);
   });
 
   it("uses an async native script rather than Next loading strategies", () => {
-    const scriptTag = LAYOUT.slice(LAYOUT.indexOf('id="adsense-loader"'));
-    expect(scriptTag).toMatch(/async/);
-    expect(scriptTag).not.toMatch(/strategy=/);
-    expect(scriptTag).toMatch(/crossOrigin="anonymous"/);
+    expect(LOADER).toMatch(/\basync\b/);
+    expect(LOADER).not.toMatch(/strategy=/);
+    expect(LOADER).toMatch(/crossorigin="anonymous"/);
   });
 
   it("no longer injects the loader from an effect", () => {
@@ -51,13 +58,14 @@ describe("CODE-02 — AdSense loader is server-rendered", () => {
     expect(CONSENTED).toMatch(/googletagmanager\.com/);
   });
 
-  it("keeps the loader env-guarded (no client id, no script tag)", () => {
-    expect(LAYOUT).toMatch(/\{normalizedCaPub && \(/);
+  it("never drops the loader on an empty env value (client id resolved with a fallback)", () => {
+    expect(LOADER).toMatch(/resolveAdsenseClient\(\)/);
+    expect(LOADER).not.toMatch(/process\.env/);
   });
 
-  it("emits Consent Mode denied defaults BEFORE the loader", () => {
-    const defaultsAt = LAYOUT.indexOf("consent-mode-defaults");
-    const loaderAt = LAYOUT.indexOf('id="adsense-loader"');
+  it("emits Consent Mode denied defaults BEFORE the loader in the rendered document", () => {
+    const defaultsAt = RENDERED.indexOf('id="consent-mode-defaults"');
+    const loaderAt = RENDERED.indexOf('id="adsense-loader"');
     expect(defaultsAt).toBeGreaterThan(-1);
     expect(loaderAt).toBeGreaterThan(-1);
     expect(defaultsAt).toBeLessThan(loaderAt);
@@ -67,8 +75,6 @@ describe("CODE-02 — AdSense loader is server-rendered", () => {
   });
 
   it("does not gate the loader on a consent decision (Consent Mode governs that)", () => {
-    const tagStart = LAYOUT.indexOf('id="adsense-loader"');
-    const window = LAYOUT.slice(Math.max(0, tagStart - 400), tagStart);
-    expect(window).not.toMatch(/hasConsent|consentGranted|accepted\s*&&/);
+    expect(LOADER).not.toMatch(/hasConsent|consentGranted|accepted\s*&&/);
   });
 });

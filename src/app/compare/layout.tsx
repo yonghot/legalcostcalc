@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { safeJsonLd } from "@/lib/utils/json-ld";
 import { buildMeta } from "@/lib/seo";
+import { AdsenseLoader } from "@/components/ads/adsense-loader";
 
 export const metadata: Metadata = buildMeta({
   title: "Compare Legal Costs: State vs. State, Category vs. Category",
@@ -31,6 +32,7 @@ export default function CompareLayout({
 
   return (
     <>
+      <AdsenseLoader />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: safeJsonLd(schema) }}

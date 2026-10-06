@@ -16,6 +16,7 @@ import {
   GUIDE_SOURCES,
   GUIDE_VERIFY_NOTES,
 } from "./content";
+import { AdsenseLoader } from "@/components/ads/adsense-loader";
 
 const PAGE_PATH = "/how-legal-fees-work";
 const TITLE = "How Legal Fees Work (2026): Hourly vs. Flat vs. Contingency";
@@ -100,6 +101,7 @@ export default function HowLegalFeesWorkPage() {
 
   return (
     <div>
+      <AdsenseLoader />
       <BreadcrumbSchema
         items={[
           { name: "Home", href: "/" },

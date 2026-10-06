@@ -64,22 +64,13 @@ describe("CODE-08 — privacy policy required elements", () => {
     expect(PRIVACY_SOURCE).toMatch(/Opting out does not remove advertising/);
   });
 
-  it("keeps Consent Mode defaults ahead of the ad loader in the layout", () => {
-    // Ordering matters: defaults must be in the document before anything that
-    // could read consent state. Compare source positions in the layout.
-    const defaultsAt = LAYOUT_SOURCE.search(/consent[\s\S]{0,80}default|ad_storage/i);
-    const loaderAt = LAYOUT_SOURCE.search(/adsbygoogle\.js|googlesyndication/i);
-    if (defaultsAt !== -1 && loaderAt !== -1) {
-      expect(
-        defaultsAt,
-        "Consent Mode defaults must appear before the AdSense loader in layout.tsx",
-      ).toBeLessThan(loaderAt);
-    } else {
-      // This repo gates the loader behind the consent component rather than
-      // rendering it inline in the layout; record that explicitly instead of
-      // asserting an ordering that does not exist here.
-      expect(LAYOUT_SOURCE).toMatch(/[Cc]onsent/);
-    }
+  it("keeps Consent Mode defaults in the layout head and the ad loader out of it", () => {
+    // The loader is rendered by the content pages in the body (K7), so it always
+    // follows the head's defaults; the rendered order is pinned in
+    // tests/regressions/k7-loader-routes.test.ts.
+    const code = LAYOUT_SOURCE.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+    expect(code).toMatch(/id="consent-mode-defaults"/);
+    expect(code).not.toMatch(/adsbygoogle\.js|googlesyndication/i);
   });
 
   it("declares denied-by-default ad storage somewhere in the consent path", () => {

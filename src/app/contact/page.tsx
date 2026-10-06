@@ -9,6 +9,7 @@ import { FOCUS_RING } from "@/lib/utils/styles";
 import { buildMeta } from "@/lib/seo";
 import { PublishedBy } from "@/components/shared/published-by";
 import { PUBLISHER } from "@/lib/constants/publisher";
+import { AdsenseLoader } from "@/components/ads/adsense-loader";
 
 export const metadata: Metadata = buildMeta({
   title: "Contact Us — Questions, Corrections & Feedback",
@@ -35,6 +36,7 @@ export default function ContactPage() {
 
   return (
     <div>
+      <AdsenseLoader />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: safeJsonLd(schema) }}

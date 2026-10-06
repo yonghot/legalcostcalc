@@ -8,6 +8,7 @@ import { Disclaimer } from "@/components/shared/disclaimer";
 import { DATA_VERSION_DATE } from "@/lib/constants/data-meta";
 import { PublishedBy } from "@/components/shared/published-by";
 import { PUBLISHER } from "@/lib/constants/publisher";
+import { AdsenseLoader } from "@/components/ads/adsense-loader";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
@@ -32,6 +33,7 @@ const UPDATED = DATA_VERSION_DATE.toLocaleDateString("en-US", {
 export default function PrivacyPage() {
   return (
     <div>
+      <AdsenseLoader />
       <section className="bg-gradient-to-b from-teal-50 to-white py-16 sm:py-20">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <Disclaimer />

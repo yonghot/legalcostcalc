@@ -10,6 +10,7 @@ import { buildStatisticsAggregate } from "@/lib/seo/statistics";
 import { buildMeta, CANONICAL_ORIGIN } from "@/lib/seo";
 import { DATA_VERSION_DATE } from "@/lib/constants/data-meta";
 import { formatCurrency } from "@/lib/utils/format";
+import { AdsenseLoader } from "@/components/ads/adsense-loader";
 
 export const revalidate = 604800; // 7 days
 
@@ -34,6 +35,7 @@ export default function LegalCostStatisticsPage() {
 
   return (
     <div>
+      <AdsenseLoader />
       <BreadcrumbSchema
         items={[
           { name: "Home", href: "/" },

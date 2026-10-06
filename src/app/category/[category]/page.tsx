@@ -9,6 +9,7 @@ import { CATEGORIES, CATEGORY_MAP } from "@/lib/constants/categories";
 import { INDEXABLE_PAGES, getModerateMedianCost } from "@/lib/page-index";
 import { buildMeta } from "@/lib/seo";
 import { FOCUS_RING } from "@/lib/utils/styles";
+import { AdsenseLoader } from "@/components/ads/adsense-loader";
 
 interface PageProps {
   params: Promise<{ category: string }>;
@@ -49,6 +50,7 @@ export default async function CategoryHubPage({ params }: PageProps) {
 
   return (
     <div>
+      <AdsenseLoader />
       <BreadcrumbSchema
         items={[
           { name: "Home", href: "/" },

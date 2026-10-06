@@ -91,11 +91,10 @@ function loadScripts() {
     });
   }
 
-  // The AdSense loader is NOT injected here. It is rendered as a real
-  // <Script id="adsense-loader"> in app/layout.tsx so the snippet exists in the
-  // server-rendered HTML (CODE-02): an effect-injected script is invisible to
-  // AdSense's site review and to Auto ads. Consent Mode v2 defaults still run
-  // ahead of it and still start denied — see the comment at that call site.
+  // The AdSense loader is NOT injected here. The AdsenseLoader component
+  // renders it into the server HTML of content pages (CODE-02): an
+  // effect-injected script is invisible to AdSense's site review and to Auto
+  // ads. Consent Mode v2 defaults in the layout head still run first.
 
   // GA measurement id: support both NEXT_PUBLIC_GA_ID and the newer
   // NEXT_PUBLIC_GA_MEASUREMENT_ID name.

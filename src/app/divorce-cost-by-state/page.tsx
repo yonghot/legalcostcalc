@@ -9,6 +9,7 @@ import { DivorceHubFaqLink } from "@/components/seo/divorce-hub-faq-link";
 import { INDEXABLE_PAGES, getCostByComplexity } from "@/lib/page-index";
 import { buildMeta } from "@/lib/seo";
 import { DEFAULT_FIGURES_LAST_VERIFIED } from "@/lib/constants/figures";
+import { AdsenseLoader } from "@/components/ads/adsense-loader";
 
 export const revalidate = 604800; // 7 days
 
@@ -41,6 +42,7 @@ export default function DivorceCostByStatePage() {
 
   return (
     <div>
+      <AdsenseLoader />
       <BreadcrumbSchema
         items={[
           { name: "Home", href: "/" },

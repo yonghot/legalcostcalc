@@ -6,6 +6,7 @@ import { CATEGORIES } from "@/lib/constants/categories";
 import { DEFAULT_STATE_SLUG } from "@/lib/constants/costs";
 import { STATE_BY_SLUG } from "@/lib/constants/states";
 import { FOCUS_RING } from "@/lib/utils/styles";
+import { AdsenseLoader } from "@/components/ads/adsense-loader";
 
 export const metadata: Metadata = {
   title: "Embed the Legal Cost Calculator",
@@ -22,6 +23,7 @@ export default function EmbedIndexPage() {
 
   return (
     <div>
+      <AdsenseLoader />
       <section className="bg-gradient-to-b from-teal-50 to-white py-16 sm:py-20">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <Disclaimer />

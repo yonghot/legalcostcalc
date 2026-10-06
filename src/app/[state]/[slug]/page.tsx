@@ -30,6 +30,7 @@ import { EmbedPanel } from "@/components/embed/embed-panel";
 import { buildAnswerBlock } from "@/lib/seo/geo";
 import { buildStateCostContext } from "@/lib/seo/state-context";
 import { buildStateFaq } from "@/lib/seo/state-faq";
+import { AdsenseLoader } from "@/components/ads/adsense-loader";
 
 interface PageProps {
   params: Promise<{ state: string; slug: string }>;
@@ -92,6 +93,8 @@ export default async function StateCategoryPage({ params }: PageProps) {
   if (!stateInfo || !categoryInfo) {
     notFound();
   }
+
+  const indexable = isIndexable(stateInfo.code, categoryInfo.slug);
 
   let costs: Awaited<ReturnType<typeof getCostForPage>> = [];
   try {
@@ -161,6 +164,7 @@ export default async function StateCategoryPage({ params }: PageProps) {
 
   return (
     <div>
+      {indexable && <AdsenseLoader />}
       {/* CODE-02: FAQPage JSON-LD removed (deprecated for SERP display in
           2026) — the Q&A remains as visible on-page H2/H3 text via
           CategoryEditorial below (GEO-relevant, just no longer schema).

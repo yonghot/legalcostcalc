@@ -31,15 +31,25 @@ export function CostDetailsSection({
   const impliedHours = (row?: LegalCostData) =>
     row && row.hourlyRate.median > 0 ? Math.round(row.costRange.median / row.hourlyRate.median) : null;
 
+  const hasHourly = (hourlyRate?.median ?? 0) > 0;
+  const contingency = !hasHourly ? (moderate?.contingencyFee ?? null) : null;
+
   const levers: string[] = [];
   if (simple && complex && simple.costRange.median > 0) {
     levers.push(
-      `Complexity tier: ${formatCurrency(simple.costRange.median)} simple to ${formatCurrency(
-        complex.costRange.median,
-      )} contested, a ${(complex.costRange.median / simple.costRange.median).toFixed(1)}x span.`,
+      `${contingency ? "Case expenses by tier" : "Complexity tier"}: ${formatCurrency(
+        simple.costRange.median,
+      )} simple to ${formatCurrency(complex.costRange.median)} contested, a ${(
+        complex.costRange.median / simple.costRange.median
+      ).toFixed(1)}x span.`,
     );
   }
-  if (simple && complex && moderate) {
+  if (contingency) {
+    levers.push(
+      `Fee arrangement: contingency, ${contingency.low}%–${contingency.high}% of any recovery at moderate complexity (a typical nationwide range, not specific to ${stateName}).`,
+    );
+  }
+  if (simple && complex && moderate && [simple, moderate, complex].every((row) => row.hourlyRate.median > 0)) {
     levers.push(
       `Attorney rate: ${formatCurrency(simple.hourlyRate.low)}–${formatCurrency(
         complex.hourlyRate.high,
@@ -60,23 +70,42 @@ export function CostDetailsSection({
   return (
     <section className="border-t border-slate-100 bg-slate-50 py-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Hourly rate + duration summary */}
-        {(hourlyRate?.median ?? 0) > 0 && (
+        {/* Fee arrangement (hourly or contingency) + duration summary */}
+        {(hasHourly || contingency) && (
           <div className="mb-8 grid gap-4 sm:grid-cols-2">
-            <div className="rounded-lg border border-slate-200 bg-white p-4">
-              <h3 className="text-sm font-medium text-slate-500">
-                Attorney Hourly Rate in {stateName}
-              </h3>
-              <p className="mt-1 font-mono text-lg font-bold text-slate-900">
-                {formatCurrency(hourlyRate!.low)} – {formatCurrency(hourlyRate!.high)}
-                <span className="ml-2 text-sm font-normal text-slate-500">
-                  / hour
-                </span>
-              </p>
-              <p className="mt-0.5 font-mono text-sm text-teal-600">
-                Median: {formatCurrency(hourlyRate!.median)}/hr
-              </p>
-            </div>
+            {hasHourly && (
+              <div className="rounded-lg border border-slate-200 bg-white p-4">
+                <h3 className="text-sm font-medium text-slate-500">
+                  Attorney Hourly Rate in {stateName}
+                </h3>
+                <p className="mt-1 font-mono text-lg font-bold text-slate-900">
+                  {formatCurrency(hourlyRate!.low)} – {formatCurrency(hourlyRate!.high)}
+                  <span className="ml-2 text-sm font-normal text-slate-500">
+                    / hour
+                  </span>
+                </p>
+                <p className="mt-0.5 font-mono text-sm text-teal-600">
+                  Median: {formatCurrency(hourlyRate!.median)}/hr
+                </p>
+              </div>
+            )}
+            {contingency && (
+              <div className="rounded-lg border border-slate-200 bg-white p-4">
+                <h3 className="text-sm font-medium text-slate-500">
+                  Attorney Contingency Fee
+                </h3>
+                <p className="mt-1 font-mono text-lg font-bold text-slate-900">
+                  {contingency.low}% – {contingency.high}%
+                  <span className="ml-2 text-sm font-normal text-slate-500">
+                    of any recovery
+                  </span>
+                </p>
+                <p className="mt-0.5 text-sm text-slate-600">
+                  Typical nationwide range, not specific to {stateName}. The dollar figures on this
+                  page are estimated case expenses, not the attorney&apos;s fee.
+                </p>
+              </div>
+            )}
             {typicalDuration && (
               <div className="rounded-lg border border-slate-200 bg-white p-4">
                 <h3 className="text-sm font-medium text-slate-500">

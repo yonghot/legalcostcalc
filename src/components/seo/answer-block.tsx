@@ -18,7 +18,7 @@ interface AnswerBlockProps {
  * initial HTML response (verifiable via curl with JS disabled).
  */
 export function AnswerBlock({ block, compact = false }: AnswerBlockProps) {
-  const { heading, answer, tableRows, factors, stats, freshnessLabel } = block;
+  const { heading, answer, tableRows, factors, stats, freshnessLabel, costBasisNote } = block;
 
   return (
     <section className={compact ? "mb-6" : "border-b border-slate-100 bg-white py-10 sm:py-12"}>
@@ -76,6 +76,8 @@ export function AnswerBlock({ block, compact = false }: AnswerBlockProps) {
             </table>
           </div>
         )}
+
+        {costBasisNote && <p className="mt-2 text-xs text-slate-500">{costBasisNote}</p>}
 
         {factors.length > 0 && (
           <div className="mt-6">

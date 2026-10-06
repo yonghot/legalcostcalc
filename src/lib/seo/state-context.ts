@@ -1240,30 +1240,32 @@ export function datasetSentences(ctx: StateCostContext): string[] {
   const complex = ctx.tiers.complex;
   const out: string[] = [];
 
+  const rate = (tier: TierFacts) =>
+    tier.hourlyMedian && tier.hourlyMedian > 0
+      ? ` at ${usd(tier.hourlyLow ?? 0)}–${usd(tier.hourlyHigh ?? 0)}/hr`
+      : "";
+  const hourlyMatter = Boolean(moderate.hourlyMedian && moderate.hourlyMedian > 0);
+
   const tierParts: string[] = [];
   if (simple) {
     tierParts.push(
-      `simple, ${usd(simple.low)}–${usd(simple.high)} at ${usd(simple.hourlyLow ?? 0)}–${usd(
-        simple.hourlyHigh ?? 0,
-      )}/hr${simple.duration ? ` over ${simple.duration}` : ""}`,
+      `simple, ${usd(simple.low)}–${usd(simple.high)}${rate(simple)}${simple.duration ? ` over ${simple.duration}` : ""}`,
     );
   }
   tierParts.push(
-    `moderate, ${usd(moderate.low)}–${usd(moderate.high)} at ${usd(moderate.hourlyLow ?? 0)}–${usd(
-      moderate.hourlyHigh ?? 0,
-    )}/hr${moderate.duration ? ` over ${moderate.duration}` : ""}`,
+    `moderate, ${usd(moderate.low)}–${usd(moderate.high)}${rate(moderate)}${moderate.duration ? ` over ${moderate.duration}` : ""}`,
   );
   if (complex) {
     tierParts.push(
-      `complex, ${usd(complex.low)}–${usd(complex.high)} at ${usd(complex.hourlyLow ?? 0)}–${usd(
-        complex.hourlyHigh ?? 0,
-      )}/hr${complex.duration ? ` over ${complex.duration}` : ""}`,
+      `complex, ${usd(complex.low)}–${usd(complex.high)}${rate(complex)}${complex.duration ? ` over ${complex.duration}` : ""}`,
     );
   }
 
-  const rows = `${ctx.stateName} carries ${tierParts.length} rows — ${tierParts.join("; ")} — on ${
-    ctx.sourceCount
-  } shared ${ctx.sourceCount === 1 ? "citation" : "citations"}.`;
+  const rows = `${ctx.stateName} carries ${tierParts.length} rows${
+    hourlyMatter ? "" : " of estimated case expenses"
+  } — ${tierParts.join("; ")} — on ${ctx.sourceCount} shared ${
+    ctx.sourceCount === 1 ? "citation" : "citations"
+  }.`;
 
   switch (ctx.quartile) {
     case 1:

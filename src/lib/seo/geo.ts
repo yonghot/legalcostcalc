@@ -18,7 +18,7 @@
 import { formatCurrency } from "@/lib/utils/format";
 import type { CategoryInfo } from "@/lib/types/category";
 import type { StateInfo } from "@/lib/types/state";
-import type { LegalCostData } from "@/lib/types";
+import type { CostRange, LegalCostData } from "@/lib/types";
 
 const MIN_ANSWER_WORDS = 40;
 const MAX_ANSWER_WORDS = 60;
@@ -63,6 +63,8 @@ export interface AnswerBlock {
   stats: AnswerBlockStat[];
   /** Human-readable "As of {date}" freshness label, or null if no verified date exists. */
   freshnessLabel: string | null;
+  /** What the dollar figures in the table measure, when it is not the attorney's own fee. */
+  costBasisNote: string | null;
 }
 
 function humanDate(iso: string | null): string | null {
@@ -79,6 +81,12 @@ function sourceHostLabel(url: string): string {
   } catch {
     return "cited source";
   }
+}
+
+function isContingencyMatter(
+  moderate: LegalCostData | undefined,
+): moderate is LegalCostData & { contingencyFee: CostRange } {
+  return Boolean(moderate && moderate.hourlyRate.median <= 0 && moderate.contingencyFee);
 }
 
 function countWords(text: string): number {
@@ -108,6 +116,18 @@ function buildAnswerParagraph(
   }
 
   const asOf = freshnessLabel ? `As of ${freshnessLabel}, ` : "";
+
+  if (isContingencyMatter(moderate)) {
+    const { low, high } = moderate.contingencyFee;
+    const lead = `${catLower} attorneys typically work on contingency, commonly ${low}-${high}% of any recovery (a typical nationwide range, not specific to ${state.name}).`;
+    return (
+      `${asOf}${asOf ? lead : lead.charAt(0).toUpperCase() + lead.slice(1)} ` +
+      `Estimated case expenses for a moderate-complexity case in ${state.name} run ` +
+      `${formatCurrency(moderate.costRange.low)}-${formatCurrency(moderate.costRange.high)}, ` +
+      `median ${formatCurrency(moderate.costRange.median)}, covering filing fees, records and experts ` +
+      "that the attorney may advance."
+    );
+  }
 
   // Fee-structure clause: hourly rate when it exists (most categories),
   // otherwise the real contingency-fee percentage (personal-injury rows,
@@ -180,7 +200,11 @@ function buildFactors(category: CategoryInfo, costs: LegalCostData[]): string[] 
   const factors: string[] = [];
 
   factors.push("Case complexity (simple, moderate, or complex)");
-  factors.push("Attorney hourly rate, which varies by state and experience level");
+  factors.push(
+    isContingencyMatter(moderate)
+      ? "Contingency fee percentage, which can rise if the case goes to trial"
+      : "Attorney hourly rate, which varies by state and experience level",
+  );
 
   if (moderate?.commonFees?.length) {
     for (const fee of moderate.commonFees.slice(0, 6)) {
@@ -208,12 +232,15 @@ function buildStats(
   const simple = costs.find((c) => c.complexity === "simple");
   const complex = costs.find((c) => c.complexity === "complex");
   const stats: AnswerBlockStat[] = [];
+  const contingency = isContingencyMatter(moderate);
 
   if (moderate && moderate.sources[0]) {
     stats.push({
-      text:
-        `The median ${category.displayName.toLowerCase()} cost in ${state.name} is ` +
-        `${formatCurrency(moderate.costRange.median)} for a moderate-complexity case.`,
+      text: contingency
+        ? `The median estimated case expense for a moderate-complexity ${category.displayName.toLowerCase()} case in ${state.name} is ` +
+          `${formatCurrency(moderate.costRange.median)}.`
+        : `The median ${category.displayName.toLowerCase()} cost in ${state.name} is ` +
+          `${formatCurrency(moderate.costRange.median)} for a moderate-complexity case.`,
       sourceLabel: sourceHostLabel(moderate.sources[0]),
       sourceUrl: moderate.sources[0],
     });
@@ -235,10 +262,13 @@ function buildStats(
 
   if (simple && complex && simple.sources[0]) {
     stats.push({
-      text:
-        `A simple case runs ${formatCurrency(simple.costRange.median)} versus ` +
-        `${formatCurrency(complex.costRange.median)} for a complex case — a difference driven ` +
-        "mainly by attorney hours and whether the matter is contested.",
+      text: contingency
+        ? `Estimated case expenses run ${formatCurrency(simple.costRange.median)} for a simple case versus ` +
+          `${formatCurrency(complex.costRange.median)} for a complex case — a difference tied mainly ` +
+          "to the experts and depositions a contested matter requires."
+        : `A simple case runs ${formatCurrency(simple.costRange.median)} versus ` +
+          `${formatCurrency(complex.costRange.median)} for a complex case — a difference driven ` +
+          "mainly by attorney hours and whether the matter is contested.",
       sourceLabel: sourceHostLabel(simple.sources[0]),
       sourceUrl: simple.sources[0],
     });
@@ -282,6 +312,9 @@ export function buildAnswerBlock(entity: AnswerBlockEntity): AnswerBlock {
     factors: buildFactors(category, costs),
     stats: buildStats(category, state, costs),
     freshnessLabel,
+    costBasisNote: isContingencyMatter(moderate)
+      ? "Dollar figures in this table are estimated case expenses (filing fees, records, experts), not attorney fees; the attorney's fee is a contingency percentage of any recovery."
+      : null,
   };
 }
 

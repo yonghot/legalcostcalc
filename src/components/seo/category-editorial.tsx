@@ -44,6 +44,8 @@ export function CategoryEditorial({
 }: CategoryEditorialProps) {
   const moderate = costs.find((c) => c.complexity === "moderate");
   const notes = categoryInfo.costFormationNotes ?? [];
+  const hourlyBilled = Boolean(moderate && moderate.hourlyRate.median > 0);
+  const contingencyBilled = Boolean(moderate && !hourlyBilled && moderate.contingencyFee);
 
   // CODE-05 — the worked example used to restate the hourly band, the implied
   // hours, the duration and the fee list that three other sections of the page
@@ -115,7 +117,7 @@ export function CategoryEditorial({
             <div className="rounded-lg border border-slate-200 bg-slate-50 p-6 text-sm leading-relaxed text-slate-700 sm:text-base">
               <p>
                 Take a moderate-complexity {categoryInfo.displayName.toLowerCase()} matter in{" "}
-                {stateInfo.name}. The recorded median total is{" "}
+                {stateInfo.name}. The recorded median {contingencyBilled ? "of estimated case expenses" : "total"} is{" "}
                 <span className="font-mono font-semibold text-teal-700">
                   {formatCurrency(moderate.costRange.median)}
                 </span>
@@ -136,17 +138,28 @@ export function CategoryEditorial({
                 <p className="mt-3">
                   Added together the itemised lines come to{" "}
                   <span className="font-mono font-semibold">{formatCurrency(feeTotals.low)}</span>–
-                  <span className="font-mono font-semibold">{formatCurrency(feeTotals.high)}</span>,
-                  which leaves roughly{" "}
-                  <span className="font-mono font-semibold">
-                    {formatCurrency(Math.max(0, moderate.costRange.median - feeTotals.high))}
-                  </span>
-                  –
-                  <span className="font-mono font-semibold">
-                    {formatCurrency(Math.max(0, moderate.costRange.median - feeTotals.low))}
-                  </span>{" "}
-                  of the {stateInfo.name} median as professional time — the part that
-                  differs between quotes.
+                  <span className="font-mono font-semibold">{formatCurrency(feeTotals.high)}</span>
+                  {hourlyBilled ? (
+                    <>
+                      , which leaves roughly{" "}
+                      <span className="font-mono font-semibold">
+                        {formatCurrency(Math.max(0, moderate.costRange.median - feeTotals.high))}
+                      </span>
+                      –
+                      <span className="font-mono font-semibold">
+                        {formatCurrency(Math.max(0, moderate.costRange.median - feeTotals.low))}
+                      </span>{" "}
+                      of the {stateInfo.name} median as professional time — the part that
+                      differs between quotes.
+                    </>
+                  ) : contingencyBilled ? (
+                    <>
+                      . The attorney&apos;s own fee on a contingency matter is a percentage of any
+                      recovery and is not part of these dollar figures.
+                    </>
+                  ) : (
+                    "."
+                  )}
                   {omittedFeeCount > 0 && (
                     <>
                       {" "}

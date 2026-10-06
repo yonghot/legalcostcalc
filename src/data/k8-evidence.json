@@ -1,0 +1,246 @@
+{
+  "generatedFrom": "ga4-pages-host-90d.csv",
+  "source": "GA4 property 543449434 page views, rows with host legalcostcalc.co and k8_traffic_eligible_pathlevel = 1, state and category paths only",
+  "host": "legalcostcalc.co",
+  "window": {
+    "start": "2026-07-08",
+    "end": "2026-10-05"
+  },
+  "note": "Sessions without analytics consent are not counted, so every figure is a lower bound. Evidence only: nothing reads this file to decide indexing.",
+  "paths": [
+    {
+      "path": "/massachusetts/bankruptcy-cost",
+      "organicViews": 11,
+      "aiViews": 0,
+      "referralViews": 0
+    },
+    {
+      "path": "/florida/bankruptcy-cost",
+      "organicViews": 10,
+      "aiViews": 0,
+      "referralViews": 0
+    },
+    {
+      "path": "/california/bankruptcy-cost",
+      "organicViews": 9,
+      "aiViews": 0,
+      "referralViews": 0
+    },
+    {
+      "path": "/missouri/dui-cost",
+      "organicViews": 4,
+      "aiViews": 0,
+      "referralViews": 0
+    },
+    {
+      "path": "/pennsylvania/dui-cost",
+      "organicViews": 4,
+      "aiViews": 0,
+      "referralViews": 0
+    },
+    {
+      "path": "/colorado/bankruptcy-cost",
+      "organicViews": 3,
+      "aiViews": 0,
+      "referralViews": 0
+    },
+    {
+      "path": "/arkansas/bankruptcy-cost",
+      "organicViews": 2,
+      "aiViews": 0,
+      "referralViews": 0
+    },
+    {
+      "path": "/arkansas/criminal-defense-cost",
+      "organicViews": 2,
+      "aiViews": 0,
+      "referralViews": 0
+    },
+    {
+      "path": "/georgia/dui-cost",
+      "organicViews": 2,
+      "aiViews": 0,
+      "referralViews": 0
+    },
+    {
+      "path": "/hawaii/bankruptcy-cost",
+      "organicViews": 2,
+      "aiViews": 0,
+      "referralViews": 0
+    },
+    {
+      "path": "/indiana/criminal-defense-cost",
+      "organicViews": 2,
+      "aiViews": 0,
+      "referralViews": 0
+    },
+    {
+      "path": "/missouri/bankruptcy-cost",
+      "organicViews": 2,
+      "aiViews": 0,
+      "referralViews": 0
+    },
+    {
+      "path": "/missouri/criminal-defense-cost",
+      "organicViews": 2,
+      "aiViews": 0,
+      "referralViews": 0
+    },
+    {
+      "path": "/new-jersey/dui-cost",
+      "organicViews": 2,
+      "aiViews": 0,
+      "referralViews": 0
+    },
+    {
+      "path": "/north-carolina/dui-cost",
+      "organicViews": 2,
+      "aiViews": 0,
+      "referralViews": 0
+    },
+    {
+      "path": "/oklahoma/criminal-defense-cost",
+      "organicViews": 2,
+      "aiViews": 0,
+      "referralViews": 0
+    },
+    {
+      "path": "/oklahoma/dui-cost",
+      "organicViews": 2,
+      "aiViews": 0,
+      "referralViews": 0
+    },
+    {
+      "path": "/oregon/criminal-defense-cost",
+      "organicViews": 2,
+      "aiViews": 0,
+      "referralViews": 0
+    },
+    {
+      "path": "/vermont/real-estate-cost",
+      "organicViews": 2,
+      "aiViews": 0,
+      "referralViews": 0
+    },
+    {
+      "path": "/alabama/criminal-defense-cost",
+      "organicViews": 1,
+      "aiViews": 0,
+      "referralViews": 0
+    },
+    {
+      "path": "/alaska/real-estate-cost",
+      "organicViews": 1,
+      "aiViews": 0,
+      "referralViews": 0
+    },
+    {
+      "path": "/arizona/bankruptcy-cost",
+      "organicViews": 1,
+      "aiViews": 0,
+      "referralViews": 0
+    },
+    {
+      "path": "/colorado/criminal-defense-cost",
+      "organicViews": 1,
+      "aiViews": 0,
+      "referralViews": 0
+    },
+    {
+      "path": "/connecticut/bankruptcy-cost",
+      "organicViews": 1,
+      "aiViews": 0,
+      "referralViews": 0
+    },
+    {
+      "path": "/delaware/dui-cost",
+      "organicViews": 1,
+      "aiViews": 0,
+      "referralViews": 0
+    },
+    {
+      "path": "/hawaii/dui-cost",
+      "organicViews": 1,
+      "aiViews": 0,
+      "referralViews": 0
+    },
+    {
+      "path": "/illinois/criminal-defense-cost",
+      "organicViews": 1,
+      "aiViews": 0,
+      "referralViews": 0
+    },
+    {
+      "path": "/massachusetts/real-estate-cost",
+      "organicViews": 1,
+      "aiViews": 0,
+      "referralViews": 0
+    },
+    {
+      "path": "/michigan/estate-planning-cost",
+      "organicViews": 1,
+      "aiViews": 0,
+      "referralViews": 0
+    },
+    {
+      "path": "/montana/dui-cost",
+      "organicViews": 1,
+      "aiViews": 0,
+      "referralViews": 0
+    },
+    {
+      "path": "/new-jersey/immigration-cost",
+      "organicViews": 1,
+      "aiViews": 0,
+      "referralViews": 0
+    },
+    {
+      "path": "/new-jersey/real-estate-cost",
+      "organicViews": 1,
+      "aiViews": 0,
+      "referralViews": 0
+    },
+    {
+      "path": "/north-carolina/real-estate-cost",
+      "organicViews": 1,
+      "aiViews": 0,
+      "referralViews": 0
+    },
+    {
+      "path": "/oregon/dui-cost",
+      "organicViews": 1,
+      "aiViews": 0,
+      "referralViews": 0
+    },
+    {
+      "path": "/rhode-island/bankruptcy-cost",
+      "organicViews": 1,
+      "aiViews": 0,
+      "referralViews": 0
+    },
+    {
+      "path": "/rhode-island/criminal-defense-cost",
+      "organicViews": 1,
+      "aiViews": 0,
+      "referralViews": 0
+    },
+    {
+      "path": "/tennessee/dui-cost",
+      "organicViews": 1,
+      "aiViews": 0,
+      "referralViews": 0
+    },
+    {
+      "path": "/virginia/bankruptcy-cost",
+      "organicViews": 1,
+      "aiViews": 0,
+      "referralViews": 0
+    },
+    {
+      "path": "/wyoming/bankruptcy-cost",
+      "organicViews": 1,
+      "aiViews": 0,
+      "referralViews": 0
+    }
+  ]
+}

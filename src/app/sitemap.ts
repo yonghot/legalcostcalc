@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { STATES } from "@/lib/constants/states";
 import { CATEGORIES } from "@/lib/constants/categories";
 import { DATA_VERSION_DATE } from "@/lib/constants/data-meta";
-import { INDEXABLE_PAGES } from "@/lib/page-index";
+import { INDEXED_PAGES } from "@/lib/index-policy";
 import { CANONICAL_ORIGIN } from "@/lib/seo";
 import { GUIDE_UPDATED } from "@/app/how-legal-fees-work/content";
 
@@ -84,10 +84,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
     })),
   ];
 
-  // T09: only pages that pass the hasUniqueData gate are emitted — see
-  // src/lib/page-index.ts. generateMetadata's robots directive and the
-  // T06/T07 link modules read from the same INDEXABLE_PAGES set.
-  const seoPages: MetadataRoute.Sitemap = INDEXABLE_PAGES.map((entry) => ({
+  // T09/K8: only pages that pass the hasUniqueData gate and the index policy
+  // are emitted — see src/lib/index-policy.ts. generateMetadata's robots
+  // directive reads the same policy; hubs keep linking every hasUniqueData page.
+  const seoPages: MetadataRoute.Sitemap = INDEXED_PAGES.map((entry) => ({
     url: `${CANONICAL_ORIGIN}${entry.path}`,
     lastModified,
     changeFrequency: "weekly",
@@ -96,7 +96,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   console.log(
     `sitemap: ${staticPages.length + hubPages.length + seoPages.length} indexable URLs ` +
-      `(${seoPages.length}/${STATES.length * CATEGORIES.length} programmatic pages pass hasUniqueData)`,
+      `(${seoPages.length}/${STATES.length * CATEGORIES.length} programmatic pages are indexable)`,
   );
 
   return [...staticPages, ...hubPages, ...seoPages];

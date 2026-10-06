@@ -20,7 +20,7 @@ import { RelatedCalculators } from "@/components/seo/related-calculators";
 import { AuthorByline } from "@/components/shared/author-byline";
 import { UpdatedBadge } from "@/components/shared/updated-badge";
 import { buildMeta, CANONICAL_ORIGIN } from "@/lib/seo";
-import { hasUniqueData } from "@/lib/page-index";
+import { isIndexable } from "@/lib/index-policy";
 import { Breadcrumbs } from "@/components/seo/breadcrumbs";
 import { HubLinksBar } from "@/components/seo/hub-links-bar";
 import { StateCostAnalysis } from "@/components/seo/state-cost-analysis";
@@ -71,9 +71,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     .replace("{state}", stateInfo.name)
     .replace("{year}", String(new Date().getFullYear()));
 
-  // T09 thin-page gate: pages without a real per-page data point are
-  // noindex,follow — never removed, never linked from T06/T07 modules.
-  const indexable = hasUniqueData(stateInfo.code, categoryInfo.slug);
+  // T09 thin-page gate + K8 index policy: pages without a real per-page data
+  // point (or outside the keep list) are noindex,follow — never removed.
+  const indexable = isIndexable(stateInfo.code, categoryInfo.slug);
 
   return buildMeta({
     title: `${categoryInfo.displayName} Cost in ${stateInfo.name}`,

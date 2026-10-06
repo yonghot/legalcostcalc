@@ -5,6 +5,8 @@ import { Breadcrumbs } from "@/components/seo/breadcrumbs";
 import { safeJsonLd } from "@/lib/utils/json-ld";
 import { Shield, Database, Scale, RefreshCw } from "lucide-react";
 import { buildMeta } from "@/lib/seo";
+import { PublishedBy } from "@/components/shared/published-by";
+import { PUBLISHER } from "@/lib/constants/publisher";
 
 export const metadata: Metadata = buildMeta({
   title: "About LegalCostCalc: Our Data Sources & Methodology",
@@ -217,7 +219,13 @@ export default function AboutPage() {
             </div>
           </div>
 
-          <div className="mt-12 rounded-lg border border-amber-200 bg-amber-50 p-6">
+          <div className="mt-12 rounded-lg border border-slate-200 bg-white p-6">
+            <h2 className="text-lg font-semibold text-slate-900">Publisher</h2>
+            <PublishedBy className="mt-2 text-sm text-slate-600" linkClassName="underline hover:text-teal-600" />
+            <p className="mt-2 text-sm text-slate-600">{PUBLISHER.correctionText}</p>
+          </div>
+
+          <div className="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-6">
             <h2 className="text-lg font-semibold text-amber-700">Important Notice</h2>
             <p className="mt-2 text-sm text-amber-700">
               LegalCostCalc is an informational tool only. Our cost estimates are for general

@@ -7,6 +7,8 @@ import { safeJsonLd } from "@/lib/utils/json-ld";
 import { MessageSquare } from "lucide-react";
 import { FOCUS_RING } from "@/lib/utils/styles";
 import { buildMeta } from "@/lib/seo";
+import { PublishedBy } from "@/components/shared/published-by";
+import { PUBLISHER } from "@/lib/constants/publisher";
 
 export const metadata: Metadata = buildMeta({
   title: "Contact Us — Questions, Corrections & Feedback",
@@ -30,9 +32,6 @@ export default function ContactPage() {
       url: "https://legalcostcalc.co",
     },
   };
-
-  // Shown only when the owner sets this env var — never fabricated.
-  const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
 
   return (
     <div>
@@ -112,21 +111,24 @@ export default function ContactPage() {
                   </p>
                 </div>
 
-                {contactEmail && (
-                  <div>
-                    <h2 className="text-base font-semibold text-slate-900">Email</h2>
-                    <p className="mt-2 text-sm text-slate-600">
-                      You can also reach us directly at{" "}
-                      <a
-                        href={`mailto:${contactEmail}`}
-                        className={`text-teal-600 underline hover:text-teal-700 ${FOCUS_RING} rounded-sm`}
-                      >
-                        {contactEmail}
-                      </a>
-                      .
-                    </p>
-                  </div>
-                )}
+                <div>
+                  <h2 className="text-base font-semibold text-slate-900">Email</h2>
+                  <p className="mt-2 text-sm text-slate-600">
+                    You can also reach us directly at{" "}
+                    <a
+                      href={`mailto:${PUBLISHER.email}`}
+                      className={`text-teal-600 underline hover:text-teal-700 ${FOCUS_RING} rounded-sm`}
+                    >
+                      {PUBLISHER.email}
+                    </a>
+                    .
+                  </p>
+                  <p className="mt-2 text-sm text-slate-600">{PUBLISHER.correctionText}</p>
+                  <PublishedBy
+                    className="mt-2 text-sm text-slate-600"
+                    linkClassName={`underline hover:text-teal-700 ${FOCUS_RING} rounded-sm`}
+                  />
+                </div>
               </aside>
 
               <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm lg:col-span-2">

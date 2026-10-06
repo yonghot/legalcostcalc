@@ -7,6 +7,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Disclaimer } from "@/components/shared/disclaimer";
 import { FOCUS_RING } from "@/lib/utils/styles";
+import { PublishedBy } from "@/components/shared/published-by";
+import { PUBLISHER } from "@/lib/constants/publisher";
 
 export const metadata: Metadata = {
   title: "Terms of Service",
@@ -14,9 +16,6 @@ export const metadata: Metadata = {
     "Terms of Service for LegalCostCalc — informational cost estimates only, not legal advice.",
   alternates: { canonical: "/terms" },
 };
-
-// NOTE TO OPERATOR: swap "LegalCostCalc" below for your registered legal business
-// name wherever the comment "LEGAL ENTITY" appears.
 
 const EFFECTIVE_DATE = "October 7, 2026";
 
@@ -49,7 +48,6 @@ export default function TermsPage() {
                 &quot;Site&quot;), you agree to be bound by these Terms of
                 Service (&quot;Terms&quot;). If you do not agree, do not use the
                 Site.{" "}
-                {/* LEGAL ENTITY: LegalCostCalc */}
                 These Terms constitute an agreement between you and
                 LegalCostCalc (&quot;we&quot;, &quot;us&quot;, &quot;our&quot;).
               </p>
@@ -229,13 +227,14 @@ export default function TermsPage() {
               <h2 className="text-xl font-semibold text-slate-900">
                 10. Contact
               </h2>
+              <PublishedBy className="mt-2 leading-relaxed" linkClassName={linkCls} />
               <p className="mt-2 leading-relaxed">
                 Questions about these Terms may be directed to:{" "}
                 <a
-                  href="mailto:contact@legalcostcalc.co"
+                  href={`mailto:${PUBLISHER.email}`}
                   className={linkCls}
                 >
-                  contact@legalcostcalc.co
+                  {PUBLISHER.email}
                 </a>
               </p>
             </section>

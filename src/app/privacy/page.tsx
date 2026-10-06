@@ -6,6 +6,8 @@
 import type { Metadata } from "next";
 import { Disclaimer } from "@/components/shared/disclaimer";
 import { DATA_VERSION_DATE } from "@/lib/constants/data-meta";
+import { PublishedBy } from "@/components/shared/published-by";
+import { PUBLISHER } from "@/lib/constants/publisher";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
@@ -13,9 +15,6 @@ export const metadata: Metadata = {
     "How LegalCostCalc handles data, cookies, analytics (Plausible), advertising (Google AdSense), GDPR/CCPA rights, and affiliate links.",
   alternates: { canonical: "/privacy" },
 };
-
-// NOTE TO OPERATOR: Replace "LegalCostCalc" with your registered legal business
-// name wherever the comment "LEGAL ENTITY" appears in this file.
 
 /**
  * POLICY_EFFECTIVE_DATE — the legal effective date of this privacy policy.
@@ -382,10 +381,10 @@ export default function PrivacyPage() {
               <p className="mt-2 leading-relaxed">
                 To exercise any of the above rights, please contact us at{" "}
                 <a
-                  href="mailto:contact@legalcostcalc.co"
+                  href={`mailto:${PUBLISHER.email}`}
                   className="text-teal-700 underline"
                 >
-                  contact@legalcostcalc.co
+                  {PUBLISHER.email}
                 </a>
                 .
               </p>
@@ -450,10 +449,10 @@ export default function PrivacyPage() {
               <p className="mt-3 leading-relaxed">
                 To submit a verifiable consumer request, contact us at{" "}
                 <a
-                  href="mailto:contact@legalcostcalc.co"
+                  href={`mailto:${PUBLISHER.email}`}
                   className="text-teal-700 underline"
                 >
-                  contact@legalcostcalc.co
+                  {PUBLISHER.email}
                 </a>
                 .
               </p>
@@ -468,16 +467,14 @@ export default function PrivacyPage() {
                 continued use of the site after any changes constitutes
                 acceptance of the updated policy.
               </p>
+              <PublishedBy className="mt-2 leading-relaxed" linkClassName="text-teal-700 underline" />
               <p className="mt-2 leading-relaxed">
-                {/* LEGAL ENTITY: LegalCostCalc */}
-                Questions about this policy may be directed to{" "}
-                {/* LEGAL ENTITY */}
-                LegalCostCalc at:{" "}
+                Questions about this policy may be directed to:{" "}
                 <a
-                  href="mailto:contact@legalcostcalc.co"
+                  href={`mailto:${PUBLISHER.email}`}
                   className="text-teal-700 underline"
                 >
-                  contact@legalcostcalc.co
+                  {PUBLISHER.email}
                 </a>
               </p>
             </section>

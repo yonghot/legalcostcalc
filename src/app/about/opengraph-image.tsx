@@ -70,7 +70,7 @@ export default function OGImage() {
             maxWidth: "700px",
           }}
         >
-          Transparent, source-verified legal cost estimates across all 50 US states
+          Transparent legal cost estimates across all 50 US states
         </p>
 
         <div

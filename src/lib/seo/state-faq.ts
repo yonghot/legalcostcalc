@@ -74,7 +74,7 @@ export function buildStateFaq(ctx: StateCostContext, matterLabel: string): FaqEn
     question: `How much does a ${matterLabel} cost in ${stateName}?`,
     answer:
       ctx.direction === "at"
-        ? `The recorded median is ${usd(moderate.median)} for a moderate-complexity matter, inside ${usd(
+        ? `The median estimate is ${usd(moderate.median)} for a moderate-complexity matter, inside ${usd(
             moderate.low,
           )}–${usd(moderate.high)}. That is within a percent of the ${usd(
             ctx.peerMedian,
@@ -82,7 +82,7 @@ export function buildStateFaq(ctx: StateCostContext, matterLabel: string): FaqEn
             ctx.rank,
           )} — a position in the middle of the table rather than at either end of it.`
         : ctx.direction === "above"
-          ? `The recorded median is ${usd(moderate.median)} for a moderate-complexity matter, inside ${usd(
+          ? `The median estimate is ${usd(moderate.median)} for a moderate-complexity matter, inside ${usd(
               moderate.low,
             )}–${usd(moderate.high)}. That is ${usd(
               Math.abs(ctx.dollarsFromPeerMedian),
@@ -91,7 +91,7 @@ export function buildStateFaq(ctx: StateCostContext, matterLabel: string): FaqEn
             } tracked states, and ranks ${stateName} ${ordinal(ctx.rank)}, with ${
               ctx.rank - 1
             } ${ctx.rank === 2 ? "state" : "states"} recording more.`
-          : `The recorded median is ${usd(moderate.median)} for a moderate-complexity matter, inside ${usd(
+          : `The median estimate is ${usd(moderate.median)} for a moderate-complexity matter, inside ${usd(
               moderate.low,
             )}–${usd(moderate.high)}. That is ${usd(
               Math.abs(ctx.dollarsFromPeerMedian),
@@ -141,7 +141,7 @@ export function buildStateFaq(ctx: StateCostContext, matterLabel: string): FaqEn
         : null;
     const complexClause =
       complex?.duration && complex.durationMonths
-        ? ` A complex matter is recorded at ${complex.duration}, and at ${usd(
+        ? ` A complex matter is estimated at ${complex.duration}, and at ${usd(
             complex.median,
           )} that works out to about ${usd(
             complex.median / complex.durationMonths,

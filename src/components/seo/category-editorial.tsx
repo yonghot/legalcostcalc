@@ -106,11 +106,11 @@ export function CategoryEditorial({
             <div className="rounded-lg border border-slate-200 bg-slate-50 p-6 text-sm leading-relaxed text-slate-700 sm:text-base">
               <p>
                 Take a moderate-complexity {categoryInfo.displayName.toLowerCase()} matter in{" "}
-                {stateInfo.name}. The recorded median {contingencyBilled ? "of estimated case expenses" : "total"} is{" "}
+                {stateInfo.name}. The estimated median {contingencyBilled ? "of estimated case expenses" : "total"} is{" "}
                 <span className="font-mono font-semibold text-teal-700">
                   {formatCurrency(moderate.costRange.median)}
                 </span>
-                , with reported quotes clustering between{" "}
+                , with the estimated range running from{" "}
                 <span className="font-mono font-semibold">{formatCurrency(moderate.costRange.low)}</span>{" "}
                 and{" "}
                 <span className="font-mono font-semibold">{formatCurrency(moderate.costRange.high)}</span>

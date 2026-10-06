@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { Disclaimer } from "@/components/shared/disclaimer";
 import { BreadcrumbSchema } from "@/components/seo/breadcrumb-schema";
 import { Breadcrumbs } from "@/components/seo/breadcrumbs";
+import { MethodNote } from "@/components/seo/method-note";
 import { safeJsonLd } from "@/lib/utils/json-ld";
 import { Shield, Database, Scale, RefreshCw } from "lucide-react";
 import { buildMeta } from "@/lib/seo";
@@ -182,24 +183,21 @@ export default function AboutPage() {
                 <p className="mt-3 text-slate-600">
                   We present cost estimates as ranges (low, median, high) because legal costs
                   vary significantly based on case complexity, attorney experience, and local
-                  market conditions. Our methodology:
+                  market conditions.
                 </p>
+                <MethodNote scope="each state" className="mt-3 text-slate-600" />
                 <ol className="mt-3 space-y-2 text-sm text-slate-600">
                   <li className="flex items-start gap-2">
                     <span className="flex-shrink-0 font-semibold text-teal-600">1.</span>
-                    Collect data from multiple independent sources
+                    Start from published national fee guides and rate surveys
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="flex-shrink-0 font-semibold text-teal-600">2.</span>
-                    Adjust for state-level cost of living and market conditions
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="flex-shrink-0 font-semibold text-teal-600">3.</span>
                     Segment by case complexity (simple, moderate, complex)
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="flex-shrink-0 font-semibold text-teal-600">4.</span>
-                    Publish ranges with reference to authoritative public sources
+                    <span className="flex-shrink-0 font-semibold text-teal-600">3.</span>
+                    Publish each estimate as a range, with the public sources it draws on
                   </li>
                 </ol>
               </div>
@@ -212,10 +210,9 @@ export default function AboutPage() {
                   <h2 className="text-xl font-semibold text-slate-900">Data Freshness</h2>
                 </div>
                 <p className="mt-3 text-slate-600">
-                  We review and update our data quarterly. Every cost estimate shows its last
-                  verification date. Data older than one year is flagged as potentially
-                  outdated. We believe transparency about data freshness is essential for
-                  building trust.
+                  Each cost page shows the date its content was last updated. Legal fees change
+                  over time, so treat every figure as a starting point and confirm current fees
+                  with attorneys in your area.
                 </p>
               </div>
             </div>

@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     template: "%s — LegalCostCalc",
   },
   description:
-    "Free legal cost calculator for all 50 US states. Get estimated costs for divorce, DUI, bankruptcy, personal injury, and more. Based on real data from multiple sources.",
+    "Free legal cost calculator for all 50 US states. Get estimated costs for divorce, DUI, bankruptcy, personal injury, and more. Estimates modeled from published national fee guides and rate surveys.",
   keywords: [
     "legal cost calculator",
     "lawyer cost",

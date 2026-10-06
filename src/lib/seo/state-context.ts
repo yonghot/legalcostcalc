@@ -742,7 +742,7 @@ export function hourlyPositionSentence(ctx: StateCostContext, matterLabel: strin
       hourlyRank,
     )} of ${rankedOutOf} on hourly rate at ${rateText}, but the state is only ${ordinal(
       rank,
-    )} on total ${matterLabel} cost — the recorded matters resolve in fewer billed hours than the rate alone would produce.`;
+    )} on total ${matterLabel} cost — the estimates imply fewer billed hours than the rate alone would produce.`;
   }
   if (rankGap >= 3) {
     return `${stateName} ranks ${ordinal(hourlyRank)} of ${rankedOutOf} on hourly rate at ${rateText} and ${ordinal(
@@ -759,7 +759,7 @@ export function hourlyPositionSentence(ctx: StateCostContext, matterLabel: strin
       hourlyRank,
     )} of ${rankedOutOf} on rate at ${rateText} but ${ordinal(
       rank,
-    )} on total ${matterLabel} cost, ${Math.abs(rankGap)} places higher — a signal that recorded matters here run long rather than dear.`;
+    )} on total ${matterLabel} cost, ${Math.abs(rankGap)} places higher — a sign that the estimates assume longer matters rather than higher prices.`;
   }
   if (rankGap <= -6) {
     return `Hourly rate does not explain this state's position. At ${rateText} ${stateName} is only ${ordinal(
@@ -860,7 +860,7 @@ export function trajectorySentence(ctx: StateCostContext, matterLabel: string): 
   )} at complex`;
 
   if (tierRankShift >= 10) {
-    return `Rank is not stable across the tiers, and the direction matters. ${stateName} runs ${path} of ${rankedOutOf} — it climbs ${tierRankShift} places as the matter gets harder. Straightforward ${matterLabel} work is recorded at ordinary prices here; contested work is not.`;
+    return `Rank is not stable across the tiers, and the direction matters. ${stateName} runs ${path} of ${rankedOutOf} — it climbs ${tierRankShift} places as the matter gets harder. Straightforward ${matterLabel} work is estimated at ordinary prices here; contested work is not.`;
   }
   if (tierRankShift >= 4) {
     return `${stateName} moves up the table as complexity rises: ${path}, a ${tierRankShift}-place climb. The state's position on the headline moderate figure understates where it sits once a matter is contested.`;
@@ -919,7 +919,7 @@ export function overlapSentence(ctx: StateCostContext, matterLabel: string): str
   }
   return `Neither pair of adjacent bands touches: ${usd(moderate.low - simple.high)} of clear space between the simple and moderate tiers, and ${usd(
     complex.low - moderate.high,
-  )} between the moderate and complex tiers. Every recorded ${matterLabel} figure in ${stateName} maps to exactly one tier, which makes the tier label unusually informative here.`;
+  )} between the moderate and complex tiers. Every ${matterLabel} estimate for ${stateName} maps to exactly one tier, which makes the tier label unusually informative here.`;
 }
 
 /** The absolute width of the quoted band, and what it buys in hours. */
@@ -985,9 +985,9 @@ export function tempoSentence(ctx: StateCostContext, matterLabel: string): strin
     }
     return `Per month of elapsed time the two tiers are close: about ${usd(
       perMonth,
-    )} a month across the ${moderate.duration} recorded for a moderate matter, and ${usd(
+    )} a month across the ${moderate.duration} estimated for a moderate matter, and ${usd(
       complexPerMonth,
-    )} a month across the ${complex.duration} recorded for a complex one.`;
+    )} a month across the ${complex.duration} estimated for a complex one.`;
   }
 
   return `Across the ${moderate.duration} the sources record for a moderate matter, the ${usd(
@@ -1165,7 +1165,7 @@ export function assumptionItems(ctx: StateCostContext, matterLabel: string): str
     conditional.push(
       `A quote between ${usd(simple.high)} and ${usd(
         moderate.low,
-      )} falls in the gap between two recorded bands, and this page does not describe it.`,
+      )} falls in the gap between two estimated bands, and this page does not describe it.`,
     );
   }
 
@@ -1216,12 +1216,12 @@ export function assumptionItems(ctx: StateCostContext, matterLabel: string): str
           moderate.high,
         )} band, so a quote outside it is not by itself evidence of anything.`,
     ctx.rank <= Math.round(ctx.rankedOutOf / 2)
-      ? `Read on the date below, not streamed; ${usd(
+      ? `A move of ${usd(
           Math.max(1, ctx.rankSensitivity.toPassAbove ?? 1),
         )} anywhere in the table re-ranks ${ctx.stateName}.`
-      : `The ${ctx.sourceCount} citations were read on the date below rather than streamed, so any change since then is absent from ${usd(
+      : `Legal fees change over time, and any change since these estimates were modeled is absent from the ${usd(
           moderate.median,
-        )}.`,
+        )} median.`,
   ];
 
   return [...conditional, ...universal];
@@ -1421,7 +1421,7 @@ export function rateGroupSentences(ctx: StateCostContext, matterLabel: string): 
     out.push(
       `${ctx.stateName}'s ${usd(
         moderate.hourlyMedian,
-      )} median rate is the highest recorded; the next row down is ${below.name} at ${usd(below.rate)}.`,
+      )} median rate is the highest of the tracked states; the next one down is ${below.name} at ${usd(below.rate)}.`,
     );
   }
 
@@ -1567,7 +1567,7 @@ export function calculationBlocks(ctx: StateCostContext, matterLabel: string): C
         ctx.peerMedian,
       )} midpoint of all ${ctx.rankedOutOf} tracked states is out by ${usd(
         nationalError,
-      )} against the ${usd(moderate.median)} recorded here.`,
+      )} against the ${usd(moderate.median)} estimate here.`,
     });
   }
 
@@ -1715,13 +1715,13 @@ export function movementSentences(ctx: StateCostContext, matterLabel: string): s
         .map((state) => state.name)
         .join(", ")} and adding ${usd(
         target.median - moderate.median,
-      )} to the ${usd(moderate.median)} recorded here.`,
+      )} to the ${usd(moderate.median)} estimate here.`,
     );
   } else {
     out.push(
       `There is nothing above ${ctx.stateName} to climb past: ${usd(
         moderate.median,
-      )} is the highest ${matterLabel} median recorded in this dataset.`,
+      )} is the highest ${matterLabel} median estimate among the tracked states.`,
     );
   }
 
@@ -1734,7 +1734,7 @@ export function movementSentences(ctx: StateCostContext, matterLabel: string): s
     );
   } else {
     out.push(
-      `There is nothing below: ${usd(moderate.median)} is the lowest ${matterLabel} median recorded here.`,
+      `There is nothing below: ${usd(moderate.median)} is the lowest ${matterLabel} median estimate among the tracked states.`,
     );
   }
 
@@ -1767,12 +1767,12 @@ export function calibrationSentence(ctx: StateCostContext, matterLabel: string):
   if (position < 0) {
     return `The ${usd(ctx.peerMedian)} table midpoint falls below the ${usd(
       moderate.low,
-    )} floor of the ${ctx.stateName} band entirely — a matter priced at the national middle would be outside anything recorded for this state.`;
+    )} floor of the ${ctx.stateName} band entirely — a matter priced at the national middle would be outside anything estimated for this state.`;
   }
   if (position > 100) {
     return `The ${usd(ctx.peerMedian)} table midpoint sits above the ${usd(
       moderate.high,
-    )} ceiling recorded for ${ctx.stateName}, so the typical tracked state's figure is higher than anything in this state's moderate band.`;
+    )} ceiling estimated for ${ctx.stateName}, so the typical tracked state's figure is higher than anything in this state's moderate band.`;
   }
   return `${position}% up the ${usd(
     moderate.low,
@@ -1815,7 +1815,7 @@ export function hoursRankSentence(ctx: StateCostContext, matterLabel: string): s
     ctx.rankedOutOf
   } at ${moderate.hours} hours, ${vsCost} places below its ${ordinal(
     ctx.rank,
-  )} on cost — the ${matterLabel} total arriving on less recorded work.`;
+  )} on cost — the ${matterLabel} total arriving on fewer implied hours.`;
 }
 
 /**
@@ -1867,7 +1867,7 @@ export function extraCalculations(ctx: StateCostContext, matterLabel: string): C
         moderate.hourlyMedian,
       )}; ${usd(moderate.high)} is ${highHours}. Over the ${
         moderate.duration
-      } recorded for a moderate ${matterLabel}, that is ${Math.round(
+      } estimated for a moderate ${matterLabel}, that is ${Math.round(
         lowHours / moderate.durationMonths,
       )} to ${Math.round(highHours / moderate.durationMonths)} hours a month — the difference between an occasional file review and continuous work.`,
     });
@@ -1877,7 +1877,7 @@ export function extraCalculations(ctx: StateCostContext, matterLabel: string): C
     const count = Math.round((complex.median / simple.median) * 10) / 10;
     out.push({
       lead: "Contested against simple.",
-      body: `At ${ctx.stateName}'s own recorded figures, ${usd(
+      body: `At ${ctx.stateName}'s own estimates, ${usd(
         complex.median,
       )} buys ${count} matters at the ${usd(simple.median)} simple median — or, counted in time, ${
         complex.hours

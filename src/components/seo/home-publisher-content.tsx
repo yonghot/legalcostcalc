@@ -31,16 +31,16 @@ export function HomePublisherContent() {
           </h2>
           <p className="mt-3 leading-7 text-slate-600">
             LegalCostCalc is a reference model, not a quote generator. The calculator selects a
-            recorded row for the chosen state, legal category, and complexity tier rather than
-            inventing a number from a visitor profile. Each row contains a low, median, and high
-            total-cost estimate, an hourly-rate band where the source data supports one, a typical
-            duration, common fee categories, source links, and a verification date. Showing a range
+            modeled estimate for the chosen state, legal category, and complexity tier rather than
+            inventing a number from a visitor profile. Each estimate contains a low, median, and high
+            total cost, an hourly-rate band where the source data supports one, a typical
+            duration, common fee categories, and source links. Showing a range
             is deliberate: two matters with the same label can require very different amounts of
             attorney time, filing work, discovery, expert evidence, negotiation, or court activity.
           </p>
           <p className="mt-3 leading-7 text-slate-600">
             The three complexity choices are descriptive buckets. “Simple” represents the lower
-            part of the recorded workload, “moderate” is the central comparison case, and “complex”
+            part of the typical workload, “moderate” is the central comparison case, and “complex”
             represents a matter with more procedural steps or professional time. They do not decide
             whether a real matter is legally simple or complex. The calculator also keeps attorney
             fees and common additional charges conceptually separate: filing fees, service costs,

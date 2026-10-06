@@ -78,7 +78,7 @@ export default function OGImage() {
             maxWidth: "800px",
           }}
         >
-          Free cost estimates for 50 states &middot; 8 legal categories &middot; Real data
+          Free cost estimates for 50 states &middot; 8 legal categories
         </p>
         <div
           style={{

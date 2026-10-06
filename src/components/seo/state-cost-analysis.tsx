@@ -29,6 +29,7 @@ import {
   tierClusterSentence,
   trajectorySentence,
 } from "@/lib/seo/state-context";
+import { MethodNote } from "@/components/seo/method-note";
 import { formatCurrency } from "@/lib/utils/format";
 import { costFamilyKey, dateLabel, getFamilyDate } from "@/lib/content-dates";
 import type { LegalCostData } from "@/lib/types/cost";
@@ -136,10 +137,11 @@ export function StateCostAnalysis({
           Reading the {stateName} {matterLabel} figures
         </h2>
 
-        {/* 1. What is recorded — this state's composition, not generic method. */}
+        {/* 1. What the estimates contain — this state's composition, not generic method. */}
         <h3 className="mt-6 text-lg font-semibold text-slate-900">
-          {stateName}: what is recorded
+          {stateName}: how these figures are built
         </h3>
+        <MethodNote scope={stateName} className="mt-3 text-base leading-relaxed text-slate-700" />
         <Paragraphs sentences={datasetSentences(ctx)} />
 
         {/* 2. Position among tracked states. */}
@@ -562,8 +564,8 @@ export function StateCostAnalysis({
           </ul>
         ) : (
           <p className="mt-3 text-sm text-slate-600">
-            No source list is recorded for this row; treat the figures as an
-            unverified estimate until one is added.
+            No sources are listed for this estimate; treat the figures as an
+            unverified estimate until some are added.
           </p>
         )}
         <p className="mt-3 text-xs text-slate-500">

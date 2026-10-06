@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Disclaimer } from "@/components/shared/disclaimer";
+import { MethodNote } from "@/components/seo/method-note";
 import { BreadcrumbSchema } from "@/components/seo/breadcrumb-schema";
 import { Breadcrumbs } from "@/components/seo/breadcrumbs";
 import { HubLinks, type HubLinkRow } from "@/components/seo/hub-links";
@@ -78,6 +79,7 @@ export default async function CategoryHubPage({ params }: PageProps) {
             Compare estimated {categoryInfo.displayName.toLowerCase()} costs across all 50 states
             and the District of Columbia.
           </p>
+          <MethodNote scope="each state" />
         </div>
       </section>
 

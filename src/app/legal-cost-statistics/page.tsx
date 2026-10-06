@@ -86,7 +86,7 @@ export default function LegalCostStatisticsPage() {
               </span>{" "}
               — the national median cost of a {headline.categoryDisplayName.toLowerCase()}, the most
               expensive of the {categoryRows.length} legal matter types tracked, based on{" "}
-              {totalDataPoints} real state-level data points.
+              {totalDataPoints} state-level estimates.
             </p>
           )}
 
@@ -115,10 +115,10 @@ export default function LegalCostStatisticsPage() {
           <h2 className="mb-4 text-xl font-semibold text-slate-900">Median Cost by Matter Type</h2>
           <StatisticsTable rows={categoryRows} />
           <p className="mt-3 text-xs text-slate-400">
-            National averages and state comparisons are computed from LegalCostCalc&apos;s sourced
-            moderate-complexity cost dataset (see each matter type&apos;s individual state pages for full
-            source citations). Only states with verified, non-duplicate data are included in each
-            average.
+            National averages and state comparisons are computed from LegalCostCalc&apos;s
+            moderate-complexity cost estimates (see each matter type&apos;s individual state pages for
+            the sources behind them). Figures are estimates modeled from published national fee guides
+            and rate surveys, shown as ranges, not quotes from firms in each state.
           </p>
         </div>
       </section>
@@ -128,7 +128,7 @@ export default function LegalCostStatisticsPage() {
           <h2 className="mb-4 text-xl font-semibold text-slate-900">Download the Data</h2>
           <p className="text-sm leading-relaxed text-slate-600">
             The figures above are available as machine-readable feeds for research, journalism, and
-            data-storytelling use — the same real numbers shown on this page, no additional
+            data-storytelling use — the same numbers shown on this page, with no additional
             processing.
           </p>
           <div className="mt-4 flex flex-wrap gap-3">

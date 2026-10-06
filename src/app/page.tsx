@@ -131,7 +131,7 @@ export default function HomePage() {
               <div>
                 <h3 className="font-semibold text-slate-900">Authoritative References</h3>
                 <p className="mt-1 text-sm text-slate-600">
-                  Estimates compiled from publicly available legal-cost research and official fee schedules.
+                  Estimates modeled from publicly available legal-cost research, such as national fee guides and rate surveys.
                 </p>
               </div>
             </div>
@@ -140,9 +140,9 @@ export default function HomePage() {
                 <TrendingUp className="h-5 w-5 text-teal-600" aria-hidden="true" />
               </div>
               <div>
-                <h3 className="font-semibold text-slate-900">Regularly Updated</h3>
+                <h3 className="font-semibold text-slate-900">Dated Pages</h3>
                 <p className="mt-1 text-sm text-slate-600">
-                  Data refreshed quarterly with dates shown so you know how current the estimates are.
+                  Each cost page shows when its content was last updated, so you can judge how current the estimates are.
                 </p>
               </div>
             </div>

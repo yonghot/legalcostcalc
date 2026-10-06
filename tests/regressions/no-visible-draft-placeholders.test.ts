@@ -17,6 +17,7 @@ const FORBIDDEN: Record<string, RegExp> = {
   "to be specified": /to be specified by (counsel|the operator)/i,
   "to be determined": /TO BE DETERMINED/i,
   "note to operator": /note to operator/i,
+  "reviewer pending": /(legal |clinical )?reviewer pending/i,
   "future release": /planned for a future release/i,
   "not yet engaged": /has not yet been engaged/i,
   "we plan to add": /we plan to add/i,
@@ -77,6 +78,10 @@ describe("K1: rendered pages carry no draft or placeholder copy", () => {
     [
       "/california/divorce-cost",
       () => renderPage(StateCategoryPage, { state: "california", slug: "divorce-cost" }),
+    ],
+    [
+      "/florida/divorce-cost",
+      () => renderPage(StateCategoryPage, { state: "florida", slug: "divorce-cost" }),
     ],
     [
       "/new-york/personal-injury-cost",

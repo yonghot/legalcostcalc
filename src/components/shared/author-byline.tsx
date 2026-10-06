@@ -1,5 +1,6 @@
-import { Users, ShieldCheck, CalendarClock } from "lucide-react";
+import { Users, ShieldCheck, Info, CalendarClock } from "lucide-react";
 import { getReviewerConfig } from "@/lib/reviewer";
+import { PUBLISHER } from "@/lib/constants/publisher";
 
 interface AuthorBylineProps {
   /**
@@ -17,17 +18,14 @@ interface AuthorBylineProps {
 }
 
 /**
- * E-E-A-T byline shown on tool/result pages: a generic editorial-team author,
- * a reviewer line, and a "Last updated" date sourced ONLY from real
- * verified-data fields (never `new Date()`).
+ * Byline shown on tool/result pages: the publisher, a factual review status,
+ * and a "Last updated" date sourced ONLY from real verified-data fields
+ * (never `new Date()`).
  *
- * K06 — reviewer identity is env/config-driven (see src/lib/reviewer.ts):
- * when NEXT_PUBLIC_REVIEWER_NAME (+ optionally _CREDENTIALS) is set, the byline
- * shows the real named/licensed reviewer. When unset, it falls back to the
- * existing honest "(legal reviewer pending)" placeholder copy — we NEVER
- * fabricate a name or credential. Actual reviewer sourcing/contracting is an
- * owner action (P04 in the ad-revenue spec); this component only renders
- * whatever the owner has configured.
+ * Review status is env-driven (see src/lib/reviewer.ts): with
+ * NEXT_PUBLIC_REVIEWER_NAME set it shows the real named reviewer; otherwise it
+ * states that no licensed attorney has reviewed the page. Never claim a review,
+ * a reviewer or a team that does not exist.
  */
 export function AuthorByline({ lastUpdated, className }: AuthorBylineProps) {
   const updatedLabel = formatUpdated(lastUpdated);
@@ -39,27 +37,30 @@ export function AuthorByline({ lastUpdated, className }: AuthorBylineProps) {
     >
       <span className="inline-flex items-center gap-1.5">
         <Users className="h-4 w-4 text-slate-400" aria-hidden="true" />
-        By the <span className="font-medium text-slate-600">LegalCostCalc Editorial Team</span>
+        Published by{" "}
+        <a
+          href={PUBLISHER.url}
+          rel="noopener"
+          className="font-medium text-slate-600 underline"
+        >
+          {PUBLISHER.name}
+        </a>
       </span>
-      <span className="inline-flex items-center gap-1.5">
-        <ShieldCheck className="h-4 w-4 text-slate-400" aria-hidden="true" />
-        {reviewer ? (
-          <>
-            Reviewed by{" "}
-            <span className="font-medium text-slate-600">
-              {reviewer.name}
-              {reviewer.credentials ? `, ${reviewer.credentials}` : ""}
-            </span>
-          </>
-        ) : (
-          <>
-            {/* Placeholder — replace by setting NEXT_PUBLIC_REVIEWER_NAME once a
-                real licensed attorney reviewer is contracted (ownerNeeded). */}
-            Reviewed for accuracy{" "}
-            <span className="italic text-slate-400">(legal reviewer pending)</span>
-          </>
-        )}
-      </span>
+      {reviewer ? (
+        <span className="inline-flex items-center gap-1.5">
+          <ShieldCheck className="h-4 w-4 text-slate-400" aria-hidden="true" />
+          Reviewed by{" "}
+          <span className="font-medium text-slate-600">
+            {reviewer.name}
+            {reviewer.credentials ? `, ${reviewer.credentials}` : ""}
+          </span>
+        </span>
+      ) : (
+        <span className="inline-flex items-center gap-1.5">
+          <Info className="h-4 w-4 text-slate-400" aria-hidden="true" />
+          Not reviewed by a licensed attorney.
+        </span>
+      )}
       {updatedLabel && (
         <span className="inline-flex items-center gap-1.5">
           <CalendarClock className="h-4 w-4 text-slate-400" aria-hidden="true" />

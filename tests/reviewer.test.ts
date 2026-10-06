@@ -4,8 +4,8 @@
  * K06 — Unit tests for src/lib/reviewer.ts (env/config-driven YMYL reviewer
  * byline). Invariants under test:
  *   - Unset NEXT_PUBLIC_REVIEWER_NAME => getReviewerConfig() returns null
- *     (AuthorByline/OrganizationSchema fall back to the honest placeholder
- *     copy — no fabricated name is ever rendered).
+ *     (AuthorByline states "Not reviewed by a licensed attorney" — no
+ *     fabricated name is ever rendered).
  *   - Set NEXT_PUBLIC_REVIEWER_NAME (+ optional _CREDENTIALS) => the exact
  *     configured values are returned, never altered/invented.
  *   - Blank/whitespace-only values are treated as unset.
@@ -101,12 +101,14 @@ describe("AuthorByline — component-level render gate (K06)", () => {
     for (const fn of cleanups.splice(0)) fn();
   });
 
-  it("shows the honest placeholder copy when no reviewer is configured", () => {
+  it("states that no licensed attorney reviewed the page when no reviewer is configured", () => {
     cleanups.push(withEnv("NEXT_PUBLIC_REVIEWER_NAME", undefined));
     const html = renderToStaticMarkup(
       createElement(AuthorByline, { lastUpdated: "2026-06-29" }),
     );
-    expect(html).toContain("legal reviewer pending");
+    expect(html).toContain("Not reviewed by a licensed attorney");
+    expect(html).toContain("Published by");
+    expect(html).not.toContain("legal reviewer pending");
     expect(html).not.toContain("Reviewed by");
   });
 

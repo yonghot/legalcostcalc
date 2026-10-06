@@ -1,5 +1,11 @@
 # PROGRESS.md — LegalCostCalc
 
+## 2026-10-07 — AdSense $0 수정 시리즈 (AppFarm 3, 커밋 단위 기록)
+
+- 규칙: 푸시 = 프로덕션 배포. 최종 게이트·적대 검증 후 한 번만 푸시. 중간 배포 없음. 커밋은 로컬만.
+- 플랜 커밋 2 (K1, LEGAL-01): /terms의 자리표시자 관할 조항(9조)과 미검토 중재 조항(4B) 삭제, 조항 번호 1..10 재정렬. 임의 관할 지정 없음. 효력일을 내용이 실제로 바뀐 2026-10-07로 변경(약관 8조가 수정 시 효력일 갱신을 약속). 회귀 테스트 tests/regressions/no-visible-draft-placeholders.test.ts(소스·렌더 스캔).
+- 플랜 커밋 3 (K6·K30, LEGAL-02·10·45): 발행자 슬롯 src/lib/constants/publisher.ts(Actigence, https://actigence.ai, contact@actigence.ai)만이 값을 정의. 푸터에 발행자·정정 연락처 표기. 바이라인은 검토자 미설정 시 "Published by Actigence" + "Not reviewed by a licensed attorney."로 표기하고 "Reviewed for accuracy (legal reviewer pending)"와 "Editorial Team" 표기를 제거(검토가 실제로 없었는데 검토됨으로 읽히는 표기였음). NEXT_PUBLIC_REVIEWER_* 슬롯과 "Reviewed by <이름>" 분기는 유지. reviewer.ts는 리터럴 process.env.NEXT_PUBLIC_* 읽기로 변경. 기대값 정정(삭제·skip 아님): tests/reviewer.test.ts 의 "legal reviewer pending 포함" 단정 → "Not reviewed by a licensed attorney 포함·pending 부재", tests/guide-how-legal-fees-work.test.ts 의 "LegalCostCalc Editorial Team" 단정 → 발행자·미검토 고지 단정. 사유: K30, 자리표시자가 일어나지 않은 검토를 주장했음.
+
 ## 2026-10-06 — 수익 차단점 점검·수정 인계 (체크포인트 커밋, 2026-10-07 정정)
 
 - 주 차단점: 상위 담당자의 실제 AdSense 확인은 8/31부터 Preparing, 최근 30일 노출 0·US$0.00, 정책 위반 0, AutoAds ON. 승인 지연 원인은 코드 점검만으로 확정하지 못함.

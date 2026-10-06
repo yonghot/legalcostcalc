@@ -4,8 +4,8 @@
  * A single env/config-driven slot for a real, licensed-attorney reviewer's
  * name (+ optional credentials), read at render time. No default value is
  * ever fabricated: when NEXT_PUBLIC_REVIEWER_NAME is unset, getReviewerConfig()
- * returns null and callers (AuthorByline, OrganizationSchema) fall back to
- * the existing honest "(legal reviewer pending)" / editorial-team-only copy.
+ * returns null and callers (AuthorByline, OrganizationSchema) state that no
+ * licensed attorney has reviewed the page.
  *
  * Sourcing a real reviewer is an owner action (see the ad-revenue spec §9
  * K06 / §10 P04) — this module only wires the render path so the byline can
@@ -20,11 +20,9 @@ export interface ReviewerConfig {
   credentials: string | null;
 }
 
-function readEnv(key: string): string | null {
-  const v = process.env[key];
-  if (!v) return null;
-  const trimmed = v.trim();
-  return trimmed.length > 0 ? trimmed : null;
+function clean(value: string | undefined): string | null {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : null;
 }
 
 /**
@@ -33,10 +31,10 @@ function readEnv(key: string): string | null {
  * when a name is present.
  */
 export function getReviewerConfig(): ReviewerConfig | null {
-  const name = readEnv("NEXT_PUBLIC_REVIEWER_NAME");
+  const name = clean(process.env.NEXT_PUBLIC_REVIEWER_NAME);
   if (!name) return null;
   return {
     name,
-    credentials: readEnv("NEXT_PUBLIC_REVIEWER_CREDENTIALS"),
+    credentials: clean(process.env.NEXT_PUBLIC_REVIEWER_CREDENTIALS),
   };
 }

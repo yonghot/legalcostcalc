@@ -6,6 +6,8 @@ import { DEFAULT_STATE_SLUG } from "@/lib/constants/costs";
 import { FOCUS_RING_DARK } from "@/lib/utils/styles";
 import { ManageConsentLink } from "@/components/consent/manage-consent-link";
 import { ClearMyData } from "@/components/shared/clear-my-data";
+import { PublishedBy } from "@/components/shared/published-by";
+import { PUBLISHER } from "@/lib/constants/publisher";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -32,6 +34,19 @@ export function Footer() {
             <p className="text-sm text-slate-400">
               Free legal cost estimates for every US state. Helping you understand the
               real costs of legal matters.
+            </p>
+            <PublishedBy
+              className="mt-3 text-sm text-slate-400"
+              linkClassName={`text-slate-300 underline hover:text-teal-400 ${FOCUS_RING_DARK} rounded-sm`}
+            />
+            <p className="mt-1 text-sm text-slate-400">
+              Corrections and questions:{" "}
+              <a
+                href={`mailto:${PUBLISHER.email}`}
+                className={`text-slate-300 underline hover:text-teal-400 ${FOCUS_RING_DARK} rounded-sm`}
+              >
+                {PUBLISHER.email}
+              </a>
             </p>
           </div>
 

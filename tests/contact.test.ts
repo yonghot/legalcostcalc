@@ -26,7 +26,8 @@ import {
   MAX_MESSAGE_LENGTH,
   EMAIL_RE,
   getField,
-} from "@/app/api/contact/route";
+} from "@/lib/utils/feedback-validation";
+import { POST } from "@/app/api/contact/route";
 import { validateContactFields } from "@/components/shared/contact-form";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -66,10 +67,28 @@ function serverValidate(body: unknown): { ok: boolean; error?: string; status: n
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-describe("contact route — exported constants", () => {
+describe("contact validation constants", () => {
   it("MAX_NAME_LENGTH is 100", () => expect(MAX_NAME_LENGTH).toBe(100));
   it("MAX_EMAIL_LENGTH is 254", () => expect(MAX_EMAIL_LENGTH).toBe(254));
   it("MAX_MESSAGE_LENGTH is 2000", () => expect(MAX_MESSAGE_LENGTH).toBe(2000));
+});
+
+describe("POST /api/contact validation", () => {
+  it.each([
+    { name: "" },
+    { name: "A".repeat(MAX_NAME_LENGTH + 1) },
+    { email: "invalid" },
+    { message: "" },
+    { message: "A".repeat(MAX_MESSAGE_LENGTH + 1) },
+  ])("rejects invalid fields through the actual route: %j", async (fields) => {
+    const response = await POST(new Request("http://localhost/api/contact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-forwarded-for": "198.51.100.77" },
+      body: JSON.stringify(makeBody(fields)),
+    }));
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({ ok: false });
+  });
 });
 
 // ── getField helper ───────────────────────────────────────────────────────────

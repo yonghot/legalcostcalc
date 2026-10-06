@@ -89,9 +89,8 @@ export interface MonetizationConfig {
 
 // ── Parser helpers ────────────────────────────────────────────────────────────
 
-function readEnv(key: string): string | null {
-  if (typeof process === "undefined") return null;
-  const v = process.env[key];
+// Only literal process.env.NEXT_PUBLIC_* member access is inlined into client bundles; dynamic process.env[key] is empty in the browser.
+function readEnv(v: string | undefined): string | null {
   return v && v.trim() !== "" ? v.trim() : null;
 }
 
@@ -153,27 +152,27 @@ export function parsePrimaryCTAType(raw: string | null): PrimaryCTAType {
  * Safe to call in both server and client contexts.
  */
 export function getMonetizationConfig(): MonetizationConfig {
-  const adProvider = parseAdProvider(readEnv("NEXT_PUBLIC_AD_PROVIDER"));
-  const emailCaptureRaw = readEnv("NEXT_PUBLIC_EMAIL_CAPTURE");
+  const adProvider = parseAdProvider(readEnv(process.env.NEXT_PUBLIC_AD_PROVIDER));
+  const emailCaptureRaw = readEnv(process.env.NEXT_PUBLIC_EMAIL_CAPTURE);
 
   return {
     adProvider,
-    adSenseClientId: readEnv("NEXT_PUBLIC_ADSENSE_CLIENT_ID"),
-    ezoicEnabled: readEnv("NEXT_PUBLIC_EZOIC_ENABLED") === "true",
-    ezoicScriptSrc: readEnv("NEXT_PUBLIC_EZOIC_SCRIPT_SRC"),
-    raptiveSiteId: readEnv("NEXT_PUBLIC_RAPTIVE_SITE_ID"),
-    journeySiteId: readEnv("NEXT_PUBLIC_JOURNEY_SITE_ID"),
-    adsTxtRedirectUrl: readEnv("NEXT_PUBLIC_ADSTXT_REDIRECT_URL"),
-    primaryCTAType: parsePrimaryCTAType(readEnv("NEXT_PUBLIC_PRIMARY_CTA_TYPE")),
-    ppcNumber: readEnv("NEXT_PUBLIC_PPC_NUMBER"),
-    ppcLabel: readEnv("NEXT_PUBLIC_PPC_LABEL"),
-    cplUrl: readEnv("NEXT_PUBLIC_CPL_URL"),
-    cplLabel: readEnv("NEXT_PUBLIC_CPL_LABEL"),
-    featuredPartners: parseFeaturedPartners(readEnv("MON_FEATURED_PARTNERS")),
-    sponsorHtml: readEnv("NEXT_PUBLIC_SPONSOR_HTML"),
-    sponsorBackfillUrl: readEnv("NEXT_PUBLIC_SPONSOR_BACKFILL_URL"),
+    adSenseClientId: readEnv(process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID),
+    ezoicEnabled: readEnv(process.env.NEXT_PUBLIC_EZOIC_ENABLED) === "true",
+    ezoicScriptSrc: readEnv(process.env.NEXT_PUBLIC_EZOIC_SCRIPT_SRC),
+    raptiveSiteId: readEnv(process.env.NEXT_PUBLIC_RAPTIVE_SITE_ID),
+    journeySiteId: readEnv(process.env.NEXT_PUBLIC_JOURNEY_SITE_ID),
+    adsTxtRedirectUrl: readEnv(process.env.NEXT_PUBLIC_ADSTXT_REDIRECT_URL),
+    primaryCTAType: parsePrimaryCTAType(readEnv(process.env.NEXT_PUBLIC_PRIMARY_CTA_TYPE)),
+    ppcNumber: readEnv(process.env.NEXT_PUBLIC_PPC_NUMBER),
+    ppcLabel: readEnv(process.env.NEXT_PUBLIC_PPC_LABEL),
+    cplUrl: readEnv(process.env.NEXT_PUBLIC_CPL_URL),
+    cplLabel: readEnv(process.env.NEXT_PUBLIC_CPL_LABEL),
+    featuredPartners: parseFeaturedPartners(readEnv(process.env.MON_FEATURED_PARTNERS)),
+    sponsorHtml: readEnv(process.env.NEXT_PUBLIC_SPONSOR_HTML),
+    sponsorBackfillUrl: readEnv(process.env.NEXT_PUBLIC_SPONSOR_BACKFILL_URL),
     emailCaptureEnabled: emailCaptureRaw === "on",
-    postalAddress: readEnv("NEXT_PUBLIC_POSTAL_ADDRESS"),
-    autoAffiliate: readEnv("NEXT_PUBLIC_AUTOAFFILIATE"),
+    postalAddress: readEnv(process.env.NEXT_PUBLIC_POSTAL_ADDRESS),
+    autoAffiliate: readEnv(process.env.NEXT_PUBLIC_AUTOAFFILIATE),
   };
 }

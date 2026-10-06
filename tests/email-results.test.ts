@@ -15,6 +15,7 @@
  *     rather than an unhandled rejection.
  */
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { POST } from "@/app/api/email-results/route";
 
 function withEnv(overrides: Record<string, string | undefined>): () => void {
   const originals: Record<string, string | undefined> = {};
@@ -55,7 +56,7 @@ describe("isEnabled (T17 env gate)", () => {
       NEXT_PUBLIC_EMAIL_CAPTURE_ENABLED: undefined,
       NEXT_PUBLIC_POSTAL_ADDRESS: undefined,
     });
-    const { isEnabled } = await import("@/app/api/email-results/route");
+    const { isEnabled } = await import("@/lib/utils/email-results-validation");
     expect(isEnabled()).toBe(false);
   });
 
@@ -65,7 +66,7 @@ describe("isEnabled (T17 env gate)", () => {
       NEXT_PUBLIC_EMAIL_CAPTURE_ENABLED: undefined,
       NEXT_PUBLIC_POSTAL_ADDRESS: undefined,
     });
-    const { isEnabled } = await import("@/app/api/email-results/route");
+    const { isEnabled } = await import("@/lib/utils/email-results-validation");
     expect(isEnabled()).toBe(false);
   });
 
@@ -75,7 +76,7 @@ describe("isEnabled (T17 env gate)", () => {
       NEXT_PUBLIC_EMAIL_CAPTURE_ENABLED: "1",
       NEXT_PUBLIC_POSTAL_ADDRESS: undefined,
     });
-    const { isEnabled } = await import("@/app/api/email-results/route");
+    const { isEnabled } = await import("@/lib/utils/email-results-validation");
     expect(isEnabled()).toBe(false);
   });
 
@@ -85,7 +86,7 @@ describe("isEnabled (T17 env gate)", () => {
       NEXT_PUBLIC_EMAIL_CAPTURE_ENABLED: "1",
       NEXT_PUBLIC_POSTAL_ADDRESS: "LegalCostCalc, 123 Main St, Wilmington, DE",
     });
-    const { isEnabled } = await import("@/app/api/email-results/route");
+    const { isEnabled } = await import("@/lib/utils/email-results-validation");
     expect(isEnabled()).toBe(true);
   });
 
@@ -95,14 +96,14 @@ describe("isEnabled (T17 env gate)", () => {
       NEXT_PUBLIC_EMAIL_CAPTURE_ENABLED: "true",
       NEXT_PUBLIC_POSTAL_ADDRESS: "LegalCostCalc, 123 Main St, Wilmington, DE",
     });
-    const { isEnabled } = await import("@/app/api/email-results/route");
+    const { isEnabled } = await import("@/lib/utils/email-results-validation");
     expect(isEnabled()).toBe(false);
   });
 });
 
 describe("EmailResultsSchema", () => {
   it("accepts a valid payload", async () => {
-    const { EmailResultsSchema } = await import("@/app/api/email-results/route");
+    const { EmailResultsSchema } = await import("@/lib/utils/email-results-validation");
     const result = EmailResultsSchema.safeParse({
       email: "jane@example.com",
       calcType: "divorce",
@@ -113,7 +114,7 @@ describe("EmailResultsSchema", () => {
   });
 
   it("defaults marketingOptIn to false when omitted", async () => {
-    const { EmailResultsSchema } = await import("@/app/api/email-results/route");
+    const { EmailResultsSchema } = await import("@/lib/utils/email-results-validation");
     const result = EmailResultsSchema.safeParse({
       email: "jane@example.com",
       calcType: "divorce",
@@ -124,7 +125,7 @@ describe("EmailResultsSchema", () => {
   });
 
   it("rejects an invalid email shape", async () => {
-    const { EmailResultsSchema } = await import("@/app/api/email-results/route");
+    const { EmailResultsSchema } = await import("@/lib/utils/email-results-validation");
     const result = EmailResultsSchema.safeParse({
       email: "not-an-email",
       calcType: "divorce",
@@ -134,7 +135,7 @@ describe("EmailResultsSchema", () => {
   });
 
   it("rejects a missing calcType", async () => {
-    const { EmailResultsSchema } = await import("@/app/api/email-results/route");
+    const { EmailResultsSchema } = await import("@/lib/utils/email-results-validation");
     const result = EmailResultsSchema.safeParse({
       email: "jane@example.com",
       shareUrl: "https://legalcostcalc.co/california/divorce-cost",
@@ -143,7 +144,7 @@ describe("EmailResultsSchema", () => {
   });
 
   it("rejects a missing shareUrl", async () => {
-    const { EmailResultsSchema } = await import("@/app/api/email-results/route");
+    const { EmailResultsSchema } = await import("@/lib/utils/email-results-validation");
     const result = EmailResultsSchema.safeParse({
       email: "jane@example.com",
       calcType: "divorce",
@@ -157,7 +158,6 @@ describe("POST /api/email-results", () => {
 
   afterEach(() => {
     restore?.();
-    vi.resetModules();
     vi.unstubAllGlobals();
   });
 
@@ -167,7 +167,6 @@ describe("POST /api/email-results", () => {
       NEXT_PUBLIC_EMAIL_CAPTURE_ENABLED: undefined,
       NEXT_PUBLIC_POSTAL_ADDRESS: undefined,
     });
-    const { POST } = await import("@/app/api/email-results/route");
     const res = await POST(makeRequest({ email: "jane@example.com", calcType: "divorce", shareUrl: "https://legalcostcalc.co/california/divorce-cost" }));
     expect(res.status).toBe(404);
   });
@@ -178,7 +177,6 @@ describe("POST /api/email-results", () => {
       NEXT_PUBLIC_EMAIL_CAPTURE_ENABLED: "1",
       NEXT_PUBLIC_POSTAL_ADDRESS: "LegalCostCalc, 123 Main St, Wilmington, DE",
     });
-    const { POST } = await import("@/app/api/email-results/route");
     const req = new Request("http://localhost/api/email-results", {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-forwarded-for": "203.0.113.2" },
@@ -194,7 +192,6 @@ describe("POST /api/email-results", () => {
       NEXT_PUBLIC_EMAIL_CAPTURE_ENABLED: "1",
       NEXT_PUBLIC_POSTAL_ADDRESS: "LegalCostCalc, 123 Main St, Wilmington, DE",
     });
-    const { POST } = await import("@/app/api/email-results/route");
     const res = await POST(makeRequest({ email: "not-an-email", calcType: "divorce", shareUrl: "https://legalcostcalc.co/california/divorce-cost" }, "203.0.113.3"));
     expect(res.status).toBe(400);
   });
@@ -205,7 +202,6 @@ describe("POST /api/email-results", () => {
       NEXT_PUBLIC_EMAIL_CAPTURE_ENABLED: "1",
       NEXT_PUBLIC_POSTAL_ADDRESS: "LegalCostCalc, 123 Main St, Wilmington, DE",
     });
-    const { POST } = await import("@/app/api/email-results/route");
     const res = await POST(
       makeRequest(
         { email: "jane@example.com", calcType: "divorce", shareUrl: "javascript:alert(1)" },
@@ -226,7 +222,6 @@ describe("POST /api/email-results", () => {
       "fetch",
       vi.fn().mockRejectedValue(new Error("network unreachable")),
     );
-    const { POST } = await import("@/app/api/email-results/route");
     const res = await POST(
       makeRequest(
         { email: "jane@example.com", calcType: "divorce", shareUrl: "https://legalcostcalc.co/california/divorce-cost" },
@@ -246,7 +241,6 @@ describe("POST /api/email-results", () => {
       "fetch",
       vi.fn().mockResolvedValue(new Response(JSON.stringify({ ok: true }), { status: 200 })),
     );
-    const { POST } = await import("@/app/api/email-results/route");
     const res = await POST(
       makeRequest(
         { email: "jane@example.com", calcType: "divorce", shareUrl: "https://legalcostcalc.co/california/divorce-cost" },

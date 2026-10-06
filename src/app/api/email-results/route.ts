@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
 import { getClientIp, rateLimitGuard } from "@/lib/utils/api-security";
 import { isSafeUrl } from "@/lib/utils/sanitize";
+import { EmailResultsSchema, isEnabled } from "@/lib/utils/email-results-validation";
 
 /**
  * T17 — env-gated "Email my results" transactional endpoint. Distinct from
@@ -35,27 +35,6 @@ import { isSafeUrl } from "@/lib/utils/sanitize";
  */
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
-
-const MAX_CALC_TYPE_LENGTH = 100;
-
-const EmailResultsSchema = z.object({
-  email: z.string().trim().toLowerCase().email().max(254),
-  calcType: z.string().trim().min(1).max(MAX_CALC_TYPE_LENGTH),
-  shareUrl: z.string().trim().min(1).max(2048),
-  marketingOptIn: z.boolean().optional().default(false),
-});
-
-function isEnabled(): boolean {
-  // Repo guardrail: the existing NEXT_PUBLIC_POSTAL_ADDRESS CAN-SPAM gate
-  // from the compliance workstream is reused here too — all three must be
-  // set (server endpoint, public enable flag, AND the postal address a
-  // commercial email-collection form is required to display).
-  return (
-    Boolean(process.env.EMAIL_CAPTURE_ENDPOINT) &&
-    process.env.NEXT_PUBLIC_EMAIL_CAPTURE_ENABLED === "1" &&
-    Boolean(process.env.NEXT_PUBLIC_POSTAL_ADDRESS?.trim())
-  );
-}
 
 export async function POST(request: Request) {
   // Env-gated: absent unless both the server endpoint AND the public enable
@@ -138,6 +117,3 @@ export async function POST(request: Request) {
     { status: 200, headers: { "Cache-Control": "no-store" } },
   );
 }
-
-// Exported for unit tests.
-export { EmailResultsSchema, isEnabled };

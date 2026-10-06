@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getClientIp, rateLimitGuard } from "@/lib/utils/api-security";
+import { EMAIL_RE, MAX_EMAIL_LENGTH, MAX_NAME_LENGTH, MAX_MESSAGE_LENGTH, getField } from "@/lib/utils/feedback-validation";
 
 /**
  * Same-origin contact form endpoint (src/app/contact/page.tsx).
@@ -21,19 +22,6 @@ import { getClientIp, rateLimitGuard } from "@/lib/utils/api-security";
  */
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
-
-// Email shape — same conservative regex used across the codebase.
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const MAX_EMAIL_LENGTH = 254; // RFC 5321 limit
-const MAX_NAME_LENGTH = 100;
-const MAX_MESSAGE_LENGTH = 2000;
-
-/** Extract a trimmed string field from an unknown JSON body, or undefined. */
-function getField(body: unknown, key: string): string | undefined {
-  if (typeof body !== "object" || body === null) return undefined;
-  const val = (body as Record<string, unknown>)[key];
-  return typeof val === "string" ? val.trim() : undefined;
-}
 
 export async function POST(request: Request) {
   // Reuse the project's in-memory per-IP rate limiter.
@@ -104,6 +92,3 @@ export async function POST(request: Request) {
     { status: 200, headers: { "Cache-Control": "no-store" } },
   );
 }
-
-// Export constants for unit tests.
-export { MAX_NAME_LENGTH, MAX_EMAIL_LENGTH, MAX_MESSAGE_LENGTH, EMAIL_RE, getField };

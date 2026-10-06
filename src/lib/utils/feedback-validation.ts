@@ -8,6 +8,7 @@ export type FeedbackType = (typeof FEEDBACK_TYPES)[number];
 
 export const MAX_MESSAGE_LENGTH = 2000;
 export const MAX_EMAIL_LENGTH = 254;
+export const MAX_NAME_LENGTH = 100;
 export const MAX_PAGE_URL_LENGTH = 2048;
 export const MAX_SITE_LENGTH = 200;
 

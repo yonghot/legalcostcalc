@@ -1,5 +1,16 @@
 # PROGRESS.md — LegalCostCalc
 
+## 2026-10-06 — 수익 차단점 점검·수정 인계 (체크포인트 커밋, 2026-10-07 정정)
+
+- 주 차단점: 상위 담당자의 실제 AdSense 확인은 8/31부터 Preparing, 최근 30일 노출 0·US$0.00, 정책 위반 0, AutoAds ON. 승인 지연 원인은 코드 점검만으로 확정하지 못함.
+- Production 환경변수 이름만 조회: AdSense client·FEEDBACK_ENDPOINT 존재. 수동 슬롯·전화·CPL·제휴 URL 6종·스폰서·MON_FEATURED_PARTNERS·이메일 수집 설정은 없음. 환경변수 변경 없음.
+- 수정 1 (잠재 결함, 현재 프로덕션 영향 없음): `src/lib/monetization.ts`, `src/lib/constants/affiliates.ts`의 `process.env[key]` 동적 조회는 브라우저 번들에서 비어 있게 된다. 리터럴 `process.env.NEXT_PUBLIC_*` 참조로 바꿔 인라인되게 함. 수익화 env가 프로덕션에 설정돼 있지 않으므로 현재 사이트 동작은 변하지 않는다. 변수명과 HTTPS 검증은 그대로. 제휴 6키 하드코딩 맵과 `AFFILIATE_PARTNERS`의 드리프트는 `tests/monetization-client.test.ts`가 파트너별 `toHaveProperty`로 검출한다. `MON_FEATURED_PARTNERS`는 서버 전용 env라 클라이언트에서 여전히 비어 있음(K33, 별도 커밋에서 처리).
+- 수정 2: `src/lib/repositories/cost-seed-repository.ts`가 시드의 personal-injury 수임료 비율을 `?? null`로 보존(비-PI는 null 유지). 시드 숫자·검증일은 새로 만들거나 바꾸지 않음. 이 변경으로 PI 페이지에서 수임료 비율이 화면에 노출될 수 있으므로 해당 문구 정정(커밋 10·13) 전에는 배포하지 않는다.
+- 수정 3 (리팩터): `/api/contact`·`/api/email-results` 라우트의 상수·스키마·`isEnabled`를 `src/lib/utils/feedback-validation.ts`·신규 `src/lib/utils/email-results-validation.ts`로 이동(동작 동일). 신규 파일 3개: `src/lib/utils/email-results-validation.ts`, `tests/cost-service-fallback.test.ts`, `tests/monetization-client.test.ts`. `tests/email-results.test.ts`는 라우트를 파일 상단에서 한 번만 import(it 안의 cold import 5초 타임아웃 위험 제거, 타임아웃 확대 없음).
+- 체크포인트 검증(2026-10-07): 관련 4개 테스트 파일(monetization-client, cost-service-fallback, contact, email-results) 71/71 통과. 전체 린트·tsc·vitest·빌드 종료 코드: (최종 게이트 커밋에서 기록)
+- OPEN: 연락 폼(/api/contact)은 전달 수단이 없어도 성공을 반환한다. 피드백 route는 collector 응답의 .ok를 확인하지 않고 성공을 반환한다. 개인정보 문서의 이름·이메일 미수집 문구와 연락 폼 수집이 불일치한다. (LEGAL-12 / LEGAL-14 로 후속 처리)
+- 커밋·푸시·배포: 이 항목 시점에는 없음. 푸시는 최종 게이트 이후 한 번만.
+
 ## Traffic-Maximization Wave P2 (CODE-07) — Build Note (2026-07-04)
 
 Implements 부속P_트래픽극대화_딥리서치.md §4 CODE-07, building on top of Wave P0

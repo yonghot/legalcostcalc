@@ -129,11 +129,15 @@ export function getAffiliateTrackingUrl(
   partner: AffiliatePartner,
   isSafeUrl: (url: string) => boolean,
 ): string | undefined {
-  // NEXT_PUBLIC_* env vars are inlined at build time by Next.js; using a
-  // bracket-access lookup (process.env[varName]) works at runtime in both
-  // server and client contexts via the Next.js env-var substitution.
-  const rawValue =
-    typeof process !== "undefined" ? process.env[partner.affiliateUrlEnvVar] : undefined;
+  const urls: Record<string, string | undefined> = {
+    NEXT_PUBLIC_AFFILIATE_LEGALZOOM_URL: process.env.NEXT_PUBLIC_AFFILIATE_LEGALZOOM_URL,
+    NEXT_PUBLIC_AFFILIATE_ROCKETLAWYER_URL: process.env.NEXT_PUBLIC_AFFILIATE_ROCKETLAWYER_URL,
+    NEXT_PUBLIC_AFFILIATE_LEGALMATCH_URL: process.env.NEXT_PUBLIC_AFFILIATE_LEGALMATCH_URL,
+    NEXT_PUBLIC_AFFILIATE_AVVO_URL: process.env.NEXT_PUBLIC_AFFILIATE_AVVO_URL,
+    NEXT_PUBLIC_AFFILIATE_NOLO_URL: process.env.NEXT_PUBLIC_AFFILIATE_NOLO_URL,
+    NEXT_PUBLIC_AFFILIATE_LAWDEPOT_URL: process.env.NEXT_PUBLIC_AFFILIATE_LAWDEPOT_URL,
+  };
+  const rawValue = urls[partner.affiliateUrlEnvVar];
   if (!rawValue || !isSafeUrl(rawValue)) return undefined;
   return rawValue;
 }

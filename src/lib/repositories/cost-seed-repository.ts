@@ -41,6 +41,9 @@ interface SeedRow {
   hourly_rate_low: number | null;
   hourly_rate_median: number | null;
   hourly_rate_high: number | null;
+  contingency_fee_low?: number | null;
+  contingency_fee_median?: number | null;
+  contingency_fee_high?: number | null;
   typical_duration: string | null;
   common_fees: string[] | null;
   sources: string[] | null;
@@ -73,9 +76,9 @@ function toRow(seed: SeedRow): LegalCostRow {
     hourly_rate_low: seed.hourly_rate_low,
     hourly_rate_median: seed.hourly_rate_median,
     hourly_rate_high: seed.hourly_rate_high,
-    contingency_fee_low: null,
-    contingency_fee_median: null,
-    contingency_fee_high: null,
+    contingency_fee_low: seed.contingency_fee_low ?? null,
+    contingency_fee_median: seed.contingency_fee_median ?? null,
+    contingency_fee_high: seed.contingency_fee_high ?? null,
     typical_duration: seed.typical_duration,
     common_fees: seed.common_fees,
     sources: seed.sources,

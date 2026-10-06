@@ -17,25 +17,16 @@
  * 'internal' so it never lands in production reports. AdSense loading and the
  * consent flow below are untouched by this gate.
  *
- * Geo-differentiated consent (owner-approved) — see consent-config.ts:
- *  - EEA / UK / Swiss: leave consent DENIED on load; the banner is the opt-in.
- *    On Accept, the banner calls grantConsent(). If a returning EEA visitor had
- *    previously accepted, we re-grant here on load.
- *  - Everyone else (US default, incl. unknown country): grant consent
- *    immediately on load (US notice + opt-out / CCPA), unless the visitor has
- *    explicitly declined — then we respect that and leave consent denied.
+ * Consent: the region-scoped Consent Mode default is set inline in <head>
+ * (EEA/UK/CH denied, elsewhere granted); initConsent() only applies a stored
+ * Decline and later banner choices. See consent-config.ts.
  *
  * Scripts still require their respective NEXT_PUBLIC_* env vars to be present;
  * with no env set, this component injects nothing and the free site is unchanged.
  */
 
 import { useEffect } from "react";
-import {
-  getStoredConsent,
-  requiresOptIn,
-  grantConsent,
-  denyConsent,
-} from "./consent-config";
+import { initConsent } from "./consent-config";
 
 function injectScript(src: string, attrs: Record<string, string> = {}) {
   if (document.querySelector(`script[src="${src}"]`)) return; // already injected
@@ -138,45 +129,12 @@ function loadScripts() {
   }
 }
 
-/** Apply the consent decision for the current region on load. */
-function applyInitialConsent() {
-  const stored = getStoredConsent();
-
-  if (stored === "declined") {
-    denyConsent();
-    return;
-  }
-
-  if (requiresOptIn()) {
-    // EEA/UK/CH: only grant if the visitor previously accepted; otherwise wait
-    // for the banner's Accept (handled in cookie-consent-banner).
-    if (stored === "accepted") grantConsent();
-    return;
-  }
-
-  // US / opt-out / unknown: grant on first visit so personalized ads + analytics
-  // serve immediately. The banner still shows as a notice.
-  grantConsent();
-}
-
 export function ConsentedAnalytics() {
   useEffect(() => {
     // A stored decline must reach the queue before gtag.js processes config.
-    applyInitialConsent();
+    const stopConsent = initConsent();
     loadScripts();
-
-    // 3) React to later consent changes (banner Accept/Decline, re-open flow).
-    function handleConsentChange(e: Event) {
-      const consent = (e as CustomEvent<"accepted" | "declined">).detail;
-      if (consent === "accepted") grantConsent();
-      // On "declined" we intentionally do not push an update here; the banner
-      // records the choice and Consent Mode remains at its current (or default
-      // denied) state. A page reload re-evaluates via applyInitialConsent.
-    }
-    window.addEventListener("consentChange", handleConsentChange);
-    return () => {
-      window.removeEventListener("consentChange", handleConsentChange);
-    };
+    return stopConsent;
   }, []);
 
   // Renders nothing — side-effect only.

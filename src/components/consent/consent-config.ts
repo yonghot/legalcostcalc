@@ -1,34 +1,16 @@
-/**
- * Shared consent configuration & helpers.
- *
- * Centralises the geo-differentiated consent model so the banner and the
- * analytics loader agree on a single source of truth (no duplicated logic).
- *
- * Model (owner-approved):
- *  - EEA / UK / Swiss visitors  → consent stays DENIED until explicit Accept.
- *    The cookie banner is shown as the opt-in. (Google's certified CMP, enabled
- *    later in the AdSense dashboard, also covers these regions.)
- *  - Everyone else (US default, incl. unknown country) → consent is GRANTED
- *    immediately on load (US notice + opt-out / CCPA posture). The banner may
- *    still display as a notice but does NOT block ads/analytics.
- */
+// EEA/UK/CH consent UI is Google's CMP; our code must never send update(granted) there or it conflicts with the TCF decision.
 
 export const CONSENT_KEY = "cookie_consent";
 export const COUNTRY_COOKIE = "visitor_country";
 
 export type ConsentValue = "accepted" | "declined" | null;
 
-/**
- * Countries requiring explicit opt-in (GDPR / UK GDPR / Swiss FADP).
- * EEA member states + Iceland, Liechtenstein, Norway + GB + CH.
- */
 export const OPT_IN_COUNTRIES = new Set<string>([
   "AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR",
   "HU", "IE", "IT", "LV", "LT", "LU", "MT", "NL", "PL", "PT", "RO", "SK",
   "SI", "ES", "SE", "IS", "LI", "NO", "GB", "CH",
 ]);
 
-/** Read the visitor country set by middleware.ts (defaults to "XX" unknown). */
 export function getVisitorCountry(): string {
   if (typeof document === "undefined") return "XX";
   const match = document.cookie
@@ -37,48 +19,49 @@ export function getVisitorCountry(): string {
   return match ? decodeURIComponent(match.split("=")[1]).toUpperCase() : "XX";
 }
 
-/** True when the visitor is in a region that requires explicit opt-in. */
 export function requiresOptIn(country: string = getVisitorCountry()): boolean {
   return OPT_IN_COUNTRIES.has(country);
 }
 
-/** Read the stored consent value without triggering a React re-render. */
 export function getStoredConsent(): ConsentValue {
   if (typeof window === "undefined") return null;
-  const v = localStorage.getItem(CONSENT_KEY);
-  if (v === "accepted" || v === "declined") return v;
+  try {
+    const v = localStorage.getItem(CONSENT_KEY);
+    if (v === "accepted" || v === "declined") return v;
+  } catch {
+    return null;
+  }
   return null;
 }
 
-/** Persist the visitor's choice and broadcast a custom event so other
- *  components (ConsentedAnalytics) can react without a full page reload. */
 export function persistConsent(value: "accepted" | "declined") {
-  localStorage.setItem(CONSENT_KEY, value);
+  try {
+    localStorage.setItem(CONSENT_KEY, value);
+  } catch {
+    // the choice still applies to this page view through the event below
+  }
   window.dispatchEvent(new CustomEvent("consentChange", { detail: value }));
 }
 
-/**
- * Clear the stored consent choice and re-open the banner.
- * Used by the "Do Not Sell or Share / Manage Consent" footer control.
- */
-export function reopenConsent() {
-  if (typeof window === "undefined") return;
-  localStorage.removeItem(CONSENT_KEY);
-  window.dispatchEvent(new CustomEvent("consentReopen"));
+export type InitialConsentPlan = "none" | "update-denied";
+
+export function planInitialConsent(country: string, stored: ConsentValue): InitialConsentPlan {
+  if (requiresOptIn(country)) return "none";
+  return stored === "declined" ? "update-denied" : "none";
 }
 
-/* ---- Consent Mode v2 gtag helpers (shared) ---------------------------- */
+export function bannerMode(country: string): "cmp" | "own" {
+  return requiresOptIn(country) ? "cmp" : "own";
+}
 
-type GtagArgs =
-  | ["consent", "default" | "update", Record<string, unknown>]
-  | ["js", Date]
-  | ["config", string, Record<string, unknown>?];
+export function manageConsentAction(country: string): "cmp" | "banner" {
+  return requiresOptIn(country) ? "cmp" : "banner";
+}
 
-// Window.dataLayer / Window.gtag / Window.__gtagInitialised are declared
-// globally in src/types/window.d.ts.
+type GtagArgs = ["consent", "update", Record<string, unknown>];
 
-/** Push a Consent Mode v2 command, falling back to dataLayer if gtag()
- *  hasn't been defined yet (e.g. the inline defaults script in <head>). */
+// Window.dataLayer / Window.gtag are declared globally in src/types/window.d.ts.
+
 function pushConsent(...args: GtagArgs) {
   if (typeof window === "undefined") return;
   if (typeof window.gtag === "function") {
@@ -86,7 +69,6 @@ function pushConsent(...args: GtagArgs) {
     return;
   }
   window.dataLayer = window.dataLayer || [];
-  // gtag.js parses IArguments-shaped entries; an array is accepted by the queue.
   window.dataLayer.push(args);
 }
 
@@ -104,11 +86,54 @@ const DENIED = {
   analytics_storage: "denied",
 } as const;
 
-/** Grant all consent categories (US/opt-out default, or EEA after Accept). */
 export function grantConsent() {
   pushConsent("consent", "update", { ...GRANTED });
 }
 
 export function denyConsent() {
   pushConsent("consent", "update", { ...DENIED });
+}
+
+function applyConsentChange(country: string, value: "accepted" | "declined") {
+  if (value === "declined") {
+    denyConsent();
+    return;
+  }
+  if (bannerMode(country) === "own") grantConsent();
+}
+
+export function initConsent(): () => void {
+  if (planInitialConsent(getVisitorCountry(), getStoredConsent()) === "update-denied") denyConsent();
+  const onChange = (event: Event) => {
+    const value = (event as CustomEvent<"accepted" | "declined">).detail;
+    if (value === "accepted" || value === "declined") applyConsentChange(getVisitorCountry(), value);
+  };
+  window.addEventListener("consentChange", onChange);
+  return () => window.removeEventListener("consentChange", onChange);
+}
+
+export function subscribeConsentReopen(onOpen: () => void): () => void {
+  const handler = () => {
+    if (bannerMode(getVisitorCountry()) === "own") onOpen();
+  };
+  window.addEventListener("consentReopen", handler);
+  return () => window.removeEventListener("consentReopen", handler);
+}
+
+interface GoogleFc {
+  callbackQueue?: Array<() => void>;
+  showRevocationMessage?: () => void;
+}
+
+export function openManageConsent() {
+  if (typeof window === "undefined") return;
+  if (manageConsentAction(getVisitorCountry()) === "cmp") {
+    const w = window as Window & { googlefc?: GoogleFc };
+    w.googlefc = w.googlefc || {};
+    const fc = w.googlefc;
+    fc.callbackQueue = fc.callbackQueue || [];
+    fc.callbackQueue.push(() => w.googlefc?.showRevocationMessage?.());
+    return;
+  }
+  window.dispatchEvent(new CustomEvent("consentReopen"));
 }

@@ -148,7 +148,7 @@ export function TermsGateCheckbox({
             rel="noopener noreferrer"
             className={`text-teal-700 underline ${FOCUS_RING} rounded-sm`}
           >
-            Terms of Use
+            Terms of Service
           </Link>{" "}
           and understand results are estimates, not professional advice.
         </label>

@@ -222,6 +222,11 @@ export default function AboutPage() {
             <h2 className="text-lg font-semibold text-slate-900">Publisher</h2>
             <PublishedBy className="mt-2 text-sm text-slate-600" linkClassName="underline hover:text-teal-600" />
             <p className="mt-2 text-sm text-slate-600">{PUBLISHER.correctionText}</p>
+            <p className="mt-2 text-sm text-slate-600">
+              LegalCostCalc is free to use and may be funded by advertising, including Google
+              AdSense. If we add affiliate links, they will be labeled. Advertising and any
+              affiliate links do not influence our cost estimates.
+            </p>
           </div>
 
           <div className="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-6">

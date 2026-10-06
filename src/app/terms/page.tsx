@@ -170,23 +170,22 @@ export default function TermsPage() {
               </p>
             </section>
 
-            {/* 7. Third-Party & Affiliate Links */}
+            {/* 7. Third-Party Links */}
             <section>
               <h2 className="text-xl font-semibold text-slate-900">
-                7. Third-Party &amp; Affiliate Links
+                7. Third-Party Links
               </h2>
               <p className="mt-2 leading-relaxed">
-                The Site contains links to third-party websites and legal
-                service providers. Some of these links are advertisements or
-                affiliate links, meaning we may earn a commission or flat
-                advertising fee if you click through, at no additional cost to
-                you. These placements are{" "}
+                The Site may link to third-party websites and legal service
+                providers. If we add affiliate links, they will be labeled, and
+                we may earn a commission or flat advertising fee if you click
+                through, at no additional cost to you. Any such placement is{" "}
                 <strong>advertising, not a referral or recommendation</strong>
                 . We do not recommend or endorse any particular attorney,
                 firm, or service, we do not vet or evaluate the third parties
                 that appear, and we do not control the content of any
                 third-party site or the outcome of any engagement you enter
-                into with them. Our advertising and affiliate relationships do
+                into with them. Advertising and any affiliate relationships do
                 not influence our cost data or estimates.
               </p>
             </section>

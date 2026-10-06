@@ -140,9 +140,9 @@ export default function PrivacyPage() {
             <section>
               <h2 className="text-xl font-semibold text-slate-900">Affiliate links</h2>
               <p className="mt-2 leading-relaxed">
-                Some outbound links to legal-service providers are affiliate links; we may earn
-                a commission at no extra cost to you if you use them. Affiliate relationships do
-                not influence our cost data or estimates.
+                If we add affiliate links to legal-service providers, they will be labeled, and we
+                may earn a commission at no extra cost to you if you use them. Affiliate
+                relationships would not influence our cost data or estimates.
               </p>
             </section>
 
@@ -270,11 +270,6 @@ export default function PrivacyPage() {
                   <strong>Supabase</strong> — the database behind the cost
                   figures. Read-only, public data; no user submissions are
                   stored.
-                </li>
-                <li>
-                  <strong>Clio</strong> — an affiliate partner linked from some
-                  pages. Following such a link takes you to Clio&apos;s own site,
-                  governed by its privacy policy, and may set its own cookies.
                 </li>
               </ul>
               <p className="mt-3 leading-relaxed">

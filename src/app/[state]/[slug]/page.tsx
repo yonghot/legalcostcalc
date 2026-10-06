@@ -21,6 +21,7 @@ import { AuthorByline } from "@/components/shared/author-byline";
 import { UpdatedBadge } from "@/components/shared/updated-badge";
 import { buildMeta, CANONICAL_ORIGIN } from "@/lib/seo";
 import { isIndexable } from "@/lib/index-policy";
+import { costFamilyKey, familyYear, latestContentYear } from "@/lib/content-dates";
 import { Breadcrumbs } from "@/components/seo/breadcrumbs";
 import { HubLinksBar } from "@/components/seo/hub-links-bar";
 import { StateCostAnalysis } from "@/components/seo/state-cost-analysis";
@@ -69,9 +70,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: "Not Found", robots: { index: false, follow: false } };
   }
 
+  const year = familyYear(costFamilyKey(categoryInfo.slug)) ?? latestContentYear();
   const description = categoryInfo.seoDescriptionTemplate
     .replace("{state}", stateInfo.name)
-    .replace("{year}", String(new Date().getFullYear()));
+    .replace("{year}", String(year));
 
   // T09 thin-page gate + K8 index policy: pages without a real per-page data
   // point (or outside the keep list) are noindex,follow — never removed.
@@ -81,6 +83,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title: `${categoryInfo.displayName} Cost in ${stateInfo.name}`,
     description,
     path: `/${stateInfo.slug}/${categorySlug}-cost`,
+    year,
     robots: indexable ? undefined : { index: false, follow: true },
   });
 }
@@ -105,7 +108,7 @@ export default async function StateCategoryPage({ params }: PageProps) {
   }
 
   const moderateCost = costs.find((c) => c.complexity === "moderate");
-  const year = new Date().getFullYear();
+  const year = familyYear(costFamilyKey(categoryInfo.slug)) ?? latestContentYear();
 
   // CODE-05 — per-entity FAQ answers. The five programmatic answers used to
   // restate the cost band, hourly band, duration and fee list that the answer

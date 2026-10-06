@@ -1,98 +1,40 @@
 import type { MetadataRoute } from "next";
 import { STATES } from "@/lib/constants/states";
 import { CATEGORIES } from "@/lib/constants/categories";
-import { DATA_VERSION_DATE } from "@/lib/constants/data-meta";
 import { INDEXED_PAGES } from "@/lib/index-policy";
 import { CANONICAL_ORIGIN } from "@/lib/seo";
-import { GUIDE_UPDATED } from "@/app/how-legal-fees-work/content";
+import { allCostFamilyKeys, costFamilyKey, getFamilyDate, maxFamilyDate } from "@/lib/content-dates";
+
+type SitemapEntry = MetadataRoute.Sitemap[number];
+
+function entry(url: string, priority: number, date: string | undefined): SitemapEntry {
+  return date ? { url, lastModified: date, priority } : { url, priority };
+}
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const lastModified = DATA_VERSION_DATE;
-  // U-03 (부속U §4): the guide's own real content-verification date, NOT the
-  // cost-dataset's DATA_VERSION_DATE — /how-legal-fees-work is independent
-  // editorial content (verified 2026-07-18, see content.ts), unrelated to
-  // when costs.json was last refreshed. Using the shared dataset date here
-  // would report a stale lastmod for a page that was actually authored/
-  // verified more recently.
-  const guideLastModified = new Date(`${GUIDE_UPDATED}T00:00:00Z`);
+  const familyDate = (key: string) => getFamilyDate(key)?.date;
 
   const staticPages: MetadataRoute.Sitemap = [
-    {
-      url: CANONICAL_ORIGIN,
-      lastModified,
-      changeFrequency: "monthly",
-      priority: 1.0,
-    },
-    {
-      url: `${CANONICAL_ORIGIN}/compare`,
-      lastModified,
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
-    {
-      // K07 — divorce-cost-by-state hub (July seasonal build queue priority #2).
-      url: `${CANONICAL_ORIGIN}/divorce-cost-by-state`,
-      lastModified,
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
-    {
-      // CODE-04 — statistics/data "linkable asset" page.
-      url: `${CANONICAL_ORIGIN}/legal-cost-statistics`,
-      lastModified,
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
-    {
-      // U-02 (부속U §4/§5) — original editorial guide, AdSense low-value-
-      // content response. lastModified = the guide's own GUIDE_UPDATED (see
-      // U-03 comment on `guideLastModified` above), not the shared dataset
-      // date.
-      url: `${CANONICAL_ORIGIN}/how-legal-fees-work`,
-      lastModified: guideLastModified,
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
-    {
-      url: `${CANONICAL_ORIGIN}/about`,
-      lastModified,
-      changeFrequency: "monthly",
-      priority: 0.6,
-    },
-    {
-      url: `${CANONICAL_ORIGIN}/embed`,
-      lastModified,
-      changeFrequency: "monthly",
-      priority: 0.4,
-    },
+    entry(CANONICAL_ORIGIN, 1.0, familyDate("page:home")),
+    entry(`${CANONICAL_ORIGIN}/compare`, 0.8, familyDate("page:compare")),
+    entry(`${CANONICAL_ORIGIN}/divorce-cost-by-state`, 0.8, familyDate("page:divorce-cost-by-state")),
+    entry(`${CANONICAL_ORIGIN}/legal-cost-statistics`, 0.8, familyDate("page:legal-cost-statistics")),
+    entry(`${CANONICAL_ORIGIN}/how-legal-fees-work`, 0.8, familyDate("guide")),
+    entry(`${CANONICAL_ORIGIN}/about`, 0.6, familyDate("page:about")),
+    entry(`${CANONICAL_ORIGIN}/embed`, 0.4, familyDate("page:embed")),
   ];
 
-  // Hub index pages — core navigation, always indexable (state/category
-  // hubs derive their listed links from INDEXABLE_PAGES themselves).
+  const allCostDate = maxFamilyDate(allCostFamilyKeys());
   const hubPages: MetadataRoute.Sitemap = [
-    ...STATES.map((state) => ({
-      url: `${CANONICAL_ORIGIN}/${state.slug}`,
-      lastModified,
-      changeFrequency: "weekly" as const,
-      priority: 0.6,
-    })),
-    ...CATEGORIES.map((cat) => ({
-      url: `${CANONICAL_ORIGIN}/category/${cat.slug}`,
-      lastModified,
-      changeFrequency: "weekly" as const,
-      priority: 0.6,
-    })),
+    ...STATES.map((state) => entry(`${CANONICAL_ORIGIN}/${state.slug}`, 0.6, allCostDate)),
+    ...CATEGORIES.map((cat) =>
+      entry(`${CANONICAL_ORIGIN}/category/${cat.slug}`, 0.6, familyDate(costFamilyKey(cat.slug))),
+    ),
   ];
 
-  // T09/K8: only pages that pass the hasUniqueData gate and the index policy
-  // are emitted — see src/lib/index-policy.ts. generateMetadata's robots
-  // directive reads the same policy; hubs keep linking every hasUniqueData page.
-  const seoPages: MetadataRoute.Sitemap = INDEXED_PAGES.map((entry) => ({
-    url: `${CANONICAL_ORIGIN}${entry.path}`,
-    lastModified,
-    changeFrequency: "weekly",
-    priority: 0.7,
-  }));
+  const seoPages: MetadataRoute.Sitemap = INDEXED_PAGES.map((page) =>
+    entry(`${CANONICAL_ORIGIN}${page.path}`, 0.7, familyDate(costFamilyKey(page.category.slug))),
+  );
 
   console.log(
     `sitemap: ${staticPages.length + hubPages.length + seoPages.length} indexable URLs ` +

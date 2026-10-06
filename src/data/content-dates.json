@@ -1,0 +1,77 @@
+{
+  "cost:divorce": {
+    "date": "2026-10-07",
+    "basis": "content-changed",
+    "evidence": "ddff296 removed the unsourced court filing fee range and the fee arithmetic derived from it; c51949a removed per-figure source attribution. Cost figures unchanged since a69a8aa (2026-04-05); source lists last changed in 4d8e536 (2026-07-01)."
+  },
+  "cost:dui": {
+    "date": "2026-10-07",
+    "basis": "content-changed",
+    "evidence": "ddff296 removed the unsourced court filing fee range and the fee arithmetic derived from it; c51949a removed per-figure source attribution. Cost figures unchanged since a69a8aa (2026-04-05); source lists last changed in 4d8e536 (2026-07-01)."
+  },
+  "cost:personal-injury": {
+    "date": "2026-10-07",
+    "basis": "content-changed",
+    "evidence": "c5c78ad rewrote the zero-hourly-rate text as contingency and case expenses; ddff296 removed the unsourced court filing fee range; c51949a removed per-figure source attribution; d97c9d3 aligned the contingency text with the numeric band. Cost figures unchanged since a69a8aa (2026-04-05); source lists last changed in 4d8e536 (2026-07-01)."
+  },
+  "cost:bankruptcy": {
+    "date": "2026-10-07",
+    "basis": "content-changed",
+    "evidence": "c51949a removed per-figure source attribution. Cost figures unchanged since a69a8aa (2026-04-05); source lists last changed in 4d8e536 (2026-07-01)."
+  },
+  "cost:real-estate": {
+    "date": "2026-10-07",
+    "basis": "content-changed",
+    "evidence": "c51949a removed per-figure source attribution. Cost figures unchanged since a69a8aa (2026-04-05); source lists last changed in 4d8e536 (2026-07-01)."
+  },
+  "cost:estate-planning": {
+    "date": "2026-10-07",
+    "basis": "content-changed",
+    "evidence": "c51949a removed per-figure source attribution. Cost figures unchanged since a69a8aa (2026-04-05); source lists last changed in 4d8e536 (2026-07-01)."
+  },
+  "cost:criminal-defense": {
+    "date": "2026-10-07",
+    "basis": "content-changed",
+    "evidence": "ddff296 removed the unsourced court filing fee range and the fee arithmetic derived from it; c51949a removed per-figure source attribution. Cost figures unchanged since a69a8aa (2026-04-05); source lists last changed in 4d8e536 (2026-07-01)."
+  },
+  "cost:immigration": {
+    "date": "2026-10-07",
+    "basis": "content-changed",
+    "evidence": "c51949a removed per-figure source attribution. Cost figures unchanged since a69a8aa (2026-04-05); fee lines and source lists last changed in 4d8e536 (2026-07-01)."
+  },
+  "guide": {
+    "date": "2026-07-18",
+    "basis": "content-changed",
+    "evidence": "b1951d8 authored the guide; its content has not changed since."
+  },
+  "page:home": {
+    "date": "2026-08-31",
+    "basis": "content-changed",
+    "evidence": "287bad4 last changed the home page copy."
+  },
+  "page:compare": {
+    "date": "2026-07-02",
+    "basis": "content-changed",
+    "evidence": "3c04a81 last changed the compare page body (breadcrumbs); f0e4033 changed its copy the same day."
+  },
+  "page:divorce-cost-by-state": {
+    "date": "2026-07-03",
+    "basis": "content-changed",
+    "evidence": "3f5b224 last changed the divorce hub copy."
+  },
+  "page:legal-cost-statistics": {
+    "date": "2026-07-04",
+    "basis": "content-changed",
+    "evidence": "7ee2264 created the statistics page; its figures derive from the cost seed, unchanged since 4d8e536 (2026-07-01)."
+  },
+  "page:about": {
+    "date": "2026-10-07",
+    "basis": "content-changed",
+    "evidence": "e81bd9b replaced the About publisher text."
+  },
+  "page:embed": {
+    "date": "2026-07-01",
+    "basis": "content-changed",
+    "evidence": "4d8e536 created the embed page; its content has not changed since."
+  }
+}

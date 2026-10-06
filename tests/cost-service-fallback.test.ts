@@ -12,7 +12,7 @@ import {
   findCostsByStatesAndCategory,
 } from "@/lib/repositories/cost-repository";
 import { findSeedCostsByFilters } from "@/lib/repositories/cost-seed-repository";
-import { DATA_VERSION_DATE } from "@/lib/constants/data-meta";
+import { costFamilyKey, getFamilyDate } from "@/lib/content-dates";
 
 beforeEach(() => {
   vi.spyOn(console, "warn").mockImplementation(() => {});
@@ -51,7 +51,7 @@ describe("sourced cost content during database outages", () => {
           high: seed.contingency_fee_high,
         });
         expect(cost.sources).toEqual(seed.sources);
-        expect(cost.lastVerifiedAt).toBe(DATA_VERSION_DATE.toISOString());
+        expect(cost.lastVerifiedAt).toBe(`${getFamilyDate(costFamilyKey(cost.category))!.date}T00:00:00.000Z`);
       }
     },
   );

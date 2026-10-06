@@ -27,7 +27,7 @@
  * the pages are never empty again.
  */
 import costsSeed from "@/data/seed/costs.json";
-import { DATA_VERSION_DATE } from "@/lib/constants/data-meta";
+import { allCostFamilyKeys, costFamilyKey, getFamilyDate, maxFamilyDate } from "@/lib/content-dates";
 import { LegalCostRow } from "@/lib/types";
 
 /** The seed's row shape — a subset of `LegalCostRow` (no id/timestamps). */
@@ -55,14 +55,14 @@ const COMPLEXITY_ORDER: Record<string, number> = {
   simple: 2,
 };
 
-/**
- * The seed carries no per-row verification date, so every row inherits the
- * dataset's verification date (`DATA_VERSION_DATE`, bumped when the data is
- * re-verified). This is the honest value: these rows were all verified together.
- */
-const SEED_VERIFIED_AT = DATA_VERSION_DATE.toISOString();
+// Seed rows carry no verification date: they take their cost family's content date, which marks a content change, not a source re-check.
+function seedDate(category: string): string {
+  const date = getFamilyDate(costFamilyKey(category))?.date ?? maxFamilyDate(allCostFamilyKeys());
+  return `${date}T00:00:00.000Z`;
+}
 
 function toRow(seed: SeedRow): LegalCostRow {
+  const verifiedAt = seedDate(seed.category);
   return {
     // Deterministic synthetic id: the natural key of the row. Stable across
     // builds so React keys and any client-side caching stay consistent.
@@ -82,9 +82,9 @@ function toRow(seed: SeedRow): LegalCostRow {
     typical_duration: seed.typical_duration,
     common_fees: seed.common_fees,
     sources: seed.sources,
-    last_verified_at: SEED_VERIFIED_AT,
-    created_at: SEED_VERIFIED_AT,
-    updated_at: SEED_VERIFIED_AT,
+    last_verified_at: verifiedAt,
+    created_at: verifiedAt,
+    updated_at: verifiedAt,
   };
 }
 

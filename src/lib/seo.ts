@@ -14,6 +14,7 @@
  * fallback used sitewide) — never a *.vercel.app preview host.
  */
 import { Metadata } from "next";
+import { latestContentYear } from "@/lib/content-dates";
 
 export const SITE_NAME = "LegalCostCalc";
 
@@ -31,12 +32,13 @@ const MAX_TITLE_LENGTH = 60;
  * `core` is the keyword-first phrase (e.g. "Divorce Cost in California") that
  * MUST appear verbatim at the start of the returned title, so it always
  * satisfies the "title matches H1 leading phrase" acceptance criterion.
- * `year` defaults to the current year. Progressively tries longer/shorter
+ * `year` is the content year taken from a content-dates record, never the
+ * clock. Progressively tries longer/shorter
  * padded suffixes until one lands in range; a final hard-truncate is a
  * safety net that should never trigger for real (state, category) pairs
  * (verified by tests/seo-meta.test.ts across the full page matrix).
  */
-export function fitTitle(core: string, year: number = new Date().getFullYear()): string {
+export function fitTitle(core: string, year: number): string {
   const suffixes = [
     `: ${year} Attorney Fee Guide`,
     `: ${year} Fee & Cost Guide`,
@@ -81,7 +83,7 @@ export interface BuildMetaParams {
   description: string;
   /** Site-relative canonical path, e.g. "/california/divorce-cost" or "/about". */
   path: string;
-  /** Optional year override (defaults to current year) for title padding. */
+  /** Content year for title padding (defaults to the latest year in content-dates). */
   year?: number;
   /** Set true to fix the title verbatim (skip the fit algorithm) for short static pages. */
   skipFit?: boolean;
@@ -108,7 +110,7 @@ export function buildMeta({
   skipFit = false,
   robots,
 }: BuildMetaParams): Metadata {
-  const finalTitle = skipFit ? title : fitTitle(title, year);
+  const finalTitle = skipFit ? title : fitTitle(title, year ?? latestContentYear());
   const canonicalUrl = `${CANONICAL_ORIGIN}${path}`;
 
   // K09 — Discover hygiene: every explicit robots override this helper emits

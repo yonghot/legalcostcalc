@@ -40,6 +40,9 @@ interface SeedRow {
   hourly_rate_low: number | null;
   hourly_rate_median: number | null;
   hourly_rate_high: number | null;
+  contingency_fee_low?: number | null;
+  contingency_fee_median?: number | null;
+  contingency_fee_high?: number | null;
   typical_duration: string | null;
   common_fees: string[] | null;
   sources: string[] | null;
@@ -61,7 +64,10 @@ function seedRowToLegalCostData(row: SeedRow): LegalCostData {
       median: row.hourly_rate_median ?? 0,
       high: row.hourly_rate_high ?? 0,
     },
-    contingencyFee: null,
+    contingencyFee:
+      row.contingency_fee_low != null && row.contingency_fee_median != null && row.contingency_fee_high != null
+        ? { low: row.contingency_fee_low, median: row.contingency_fee_median, high: row.contingency_fee_high }
+        : null,
     typicalDuration: row.typical_duration ?? "Varies",
     commonFees: row.common_fees ?? [],
     sources: row.sources ?? [],
@@ -143,6 +149,28 @@ describe("buildAnswerBlock — full indexable-page matrix", () => {
       for (const pattern of SUPERLATIVE_PATTERNS) {
         expect(block.answer).not.toMatch(pattern);
       }
+    }
+  });
+
+  it("every personal-injury page states its contingency band in 40-60 words, never a $0 figure", () => {
+    const pages = INDEXABLE_PAGES.filter((p) => p.category.slug === "personal-injury");
+    expect(pages.length).toBeGreaterThan(0);
+    for (const entry of pages) {
+      const costs = getCostsFor(entry.state.code, "personal-injury");
+      const moderate = costs.find((c) => c.complexity === "moderate")!;
+      expect(moderate.contingencyFee).not.toBeNull();
+      const block = buildAnswerBlock({
+        category: entry.category,
+        state: entry.state,
+        costs,
+        dataVerifiedDate: moderate.lastVerifiedAt,
+      });
+      const { low, high } = moderate.contingencyFee!;
+      expect(block.answer).toContain(`${low}-${high}%`);
+      expect(block.answer).toMatch(/nationwide/);
+      expect(block.answer).not.toMatch(/\$0/);
+      expect(block.answerWordCount).toBeGreaterThanOrEqual(40);
+      expect(block.answerWordCount).toBeLessThanOrEqual(60);
     }
   });
 

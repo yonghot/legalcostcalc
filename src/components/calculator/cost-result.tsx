@@ -118,7 +118,10 @@ export const CostResult = memo(function CostResult({
                   {cost.contingencyFee.low}% – {cost.contingencyFee.high}%
                 </p>
                 <p className="mt-1 font-mono text-xs text-slate-500">
-                  Median: {cost.contingencyFee.median}% of settlement
+                  Median: {cost.contingencyFee.median}% of any recovery
+                </p>
+                <p className="mt-1 text-xs text-slate-500">
+                  Typical nationwide range, not specific to {stateName}.
                 </p>
               </div>
             )}

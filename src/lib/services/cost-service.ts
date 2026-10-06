@@ -16,6 +16,8 @@ function isValidComplexity(value: string): value is Complexity {
   return VALID_COMPLEXITIES.includes(value as Complexity);
 }
 
+const CONTINGENCY_TEXT_LINE = /^Contingency fee \(/i;
+
 function mapRowToData(row: LegalCostRow): LegalCostData {
   const complexity = isValidComplexity(row.complexity) ? row.complexity : "moderate";
 
@@ -31,6 +33,10 @@ function mapRowToData(row: LegalCostRow): LegalCostData {
           high: row.contingency_fee_high,
         }
       : null;
+
+  const commonFees = presentCommonFees(row.common_fees ?? [], row.state_code, row.category).filter(
+    (fee) => !(contingencyFee && CONTINGENCY_TEXT_LINE.test(fee)),
+  );
 
   return {
     id: row.id,
@@ -49,7 +55,7 @@ function mapRowToData(row: LegalCostRow): LegalCostData {
     },
     contingencyFee,
     typicalDuration: row.typical_duration ?? "Varies",
-    commonFees: presentCommonFees(row.common_fees ?? [], row.state_code, row.category),
+    commonFees,
     sources: row.sources ?? [],
     lastVerifiedAt: row.last_verified_at ?? row.updated_at,
   };

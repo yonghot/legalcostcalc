@@ -57,6 +57,7 @@ export async function generateStaticParams() {
 }
 
 export const revalidate = 604800; // 7 days
+export const dynamicParams = false;
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { state: stateSlug, slug } = await params;
@@ -65,7 +66,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const categoryInfo = categorySlug ? CATEGORY_MAP.get(categorySlug) : null;
 
   if (!stateInfo || !categoryInfo) {
-    return { title: "Not Found" };
+    return { title: "Not Found", robots: { index: false, follow: false } };
   }
 
   const description = categoryInfo.seoDescriptionTemplate

@@ -20,11 +20,12 @@ export async function generateStaticParams() {
 }
 
 export const revalidate = 604800; // 7 days
+export const dynamicParams = false;
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { category: categorySlug } = await params;
   const categoryInfo = CATEGORY_MAP.get(categorySlug);
-  if (!categoryInfo) return { title: "Not Found" };
+  if (!categoryInfo) return { title: "Not Found", robots: { index: false, follow: false } };
 
   return buildMeta({
     title: `${categoryInfo.displayName} Cost by State`,

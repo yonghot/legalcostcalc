@@ -32,6 +32,7 @@ export async function generateStaticParams() {
 }
 
 export const revalidate = 604800; // 7 days
+export const dynamicParams = false;
 
 // Embeds shouldn't be indexed as standalone pages — the canonical content lives
 // on the main /[state]/[slug] route.

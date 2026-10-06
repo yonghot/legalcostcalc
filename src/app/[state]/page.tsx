@@ -21,11 +21,12 @@ export async function generateStaticParams() {
 }
 
 export const revalidate = 604800; // 7 days
+export const dynamicParams = false;
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { state: stateSlug } = await params;
   const stateInfo = STATE_BY_SLUG.get(stateSlug);
-  if (!stateInfo) return { title: "Not Found" };
+  if (!stateInfo) return { title: "Not Found", robots: { index: false, follow: false } };
 
   return buildMeta({
     title: `Legal Costs in ${stateInfo.name}`,

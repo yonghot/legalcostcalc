@@ -1,0 +1,10 @@
+[
+  {
+    "state": "CA",
+    "category": "divorce",
+    "item": "Court filing fee",
+    "range": "$435-$450",
+    "sourceUrl": "https://selfhelp.courts.ca.gov/divorce/start-divorce/file",
+    "fetchedOn": "2026-10-07"
+  }
+]

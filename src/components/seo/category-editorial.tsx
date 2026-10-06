@@ -1,9 +1,7 @@
 import { formatCurrency } from "@/lib/utils/format";
 import { buildBenchmarkSynthesis } from "@/lib/seo/geo";
 import { sumFeeRanges } from "@/lib/seo/state-faq";
-
-/** How many statutory lines the itemised list shows — the total must match it. */
-const MAX_ITEMISED_FEES = 4;
+import { verifiedFeeForLine } from "@/lib/verified-fees";
 import { getNationalAverage } from "@/lib/page-index";
 import type { CategoryInfo } from "@/lib/types/category";
 import type { StateInfo } from "@/lib/types/state";
@@ -47,22 +45,13 @@ export function CategoryEditorial({
   const hourlyBilled = Boolean(moderate && moderate.hourlyRate.median > 0);
   const contingencyBilled = Boolean(moderate && !hourlyBilled && moderate.contingencyFee);
 
-  // CODE-05 — the worked example used to restate the hourly band, the implied
-  // hours, the duration and the fee list that three other sections of the page
-  // had already shown, which made it one of the largest identical blocks two
-  // sibling pages shared. It now does arithmetic those sections do not: each
-  // statutory line sized against THIS state's median, so the percentages differ
-  // per state even though the fee schedule does not.
-  // The itemised list below renders at most four fees, so the total has to be
-  // the total OF THOSE FOUR. Summing every recorded fee while showing a subset
-  // produced a figure the visible lines could not add up to on all 408 pages —
-  // a reader checking the arithmetic would find it wrong.
-  const itemisedFees = moderate ? moderate.commonFees.slice(0, MAX_ITEMISED_FEES) : [];
-  const feeTotals = moderate ? sumFeeRanges(itemisedFees) : null;
-  const omittedFeeCount = moderate ? moderate.commonFees.length - itemisedFees.length : 0;
+  // Fee arithmetic is limited to fee lines with a dated primary source. The
+  // seed's fee ranges are identical in every state, so dividing them into a
+  // state median or adding them up produced precision the data does not have.
   const feeShares = (() => {
     if (!moderate || moderate.costRange.median <= 0) return [];
-    return itemisedFees.flatMap((fee) => {
+    return moderate.commonFees.flatMap((fee) => {
+      if (!verifiedFeeForLine(fee, stateInfo.code, categoryInfo.slug)) return [];
       const parsed = sumFeeRanges([fee]);
       if (!parsed) return [];
       const label = fee.replace(/\s*\([^)]*\)\s*$/, "").trim();
@@ -125,7 +114,10 @@ export function CategoryEditorial({
                 <span className="font-mono font-semibold">{formatCurrency(moderate.costRange.low)}</span>{" "}
                 and{" "}
                 <span className="font-mono font-semibold">{formatCurrency(moderate.costRange.high)}</span>
-                . Each statutory line below is sized against that median.
+                .
+                {contingencyBilled &&
+                  " The attorney's own fee on a contingency matter is a percentage of any recovery and is not part of these dollar figures."}
+                {feeShares.length > 0 && " Fees with a dated primary source are sized against that median below."}
               </p>
               {feeShares.length > 0 && (
                 <ul className="mt-3 list-disc space-y-1.5 pl-5">
@@ -133,42 +125,6 @@ export function CategoryEditorial({
                     <li key={share}>{share}</li>
                   ))}
                 </ul>
-              )}
-              {feeTotals && (
-                <p className="mt-3">
-                  Added together the itemised lines come to{" "}
-                  <span className="font-mono font-semibold">{formatCurrency(feeTotals.low)}</span>–
-                  <span className="font-mono font-semibold">{formatCurrency(feeTotals.high)}</span>
-                  {hourlyBilled ? (
-                    <>
-                      , which leaves roughly{" "}
-                      <span className="font-mono font-semibold">
-                        {formatCurrency(Math.max(0, moderate.costRange.median - feeTotals.high))}
-                      </span>
-                      –
-                      <span className="font-mono font-semibold">
-                        {formatCurrency(Math.max(0, moderate.costRange.median - feeTotals.low))}
-                      </span>{" "}
-                      of the {stateInfo.name} median as professional time — the part that
-                      differs between quotes.
-                    </>
-                  ) : contingencyBilled ? (
-                    <>
-                      . The attorney&apos;s own fee on a contingency matter is a percentage of any
-                      recovery and is not part of these dollar figures.
-                    </>
-                  ) : (
-                    "."
-                  )}
-                  {omittedFeeCount > 0 && (
-                    <>
-                      {" "}
-                      {omittedFeeCount === 1
-                        ? "One further recorded fee is not itemised above and is not in that total."
-                        : `${omittedFeeCount} further recorded fees are not itemised above and are not in that total.`}
-                    </>
-                  )}
-                </p>
               )}
               {benchmarkSynthesis && (
                 // CODE-06 — analytical-synthesis sentence, data-derived, with

@@ -7,6 +7,7 @@ import {
   findSeedCostsByStatesAndCategory,
 } from "@/lib/repositories/cost-seed-repository";
 import { STATE_MAP } from "@/lib/constants/states";
+import { presentCommonFees } from "@/lib/verified-fees";
 import { Complexity, LegalCostData, LegalCostRow, CostComparisonResult } from "@/lib/types";
 
 const VALID_COMPLEXITIES: readonly Complexity[] = ["simple", "moderate", "complex"] as const;
@@ -48,7 +49,7 @@ function mapRowToData(row: LegalCostRow): LegalCostData {
     },
     contingencyFee,
     typicalDuration: row.typical_duration ?? "Varies",
-    commonFees: row.common_fees ?? [],
+    commonFees: presentCommonFees(row.common_fees ?? [], row.state_code, row.category),
     sources: row.sources ?? [],
     lastVerifiedAt: row.last_verified_at ?? row.updated_at,
   };

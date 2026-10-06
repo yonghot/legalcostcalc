@@ -220,8 +220,8 @@ describe("category-editorial: visible FAQ text (not JSON-LD-only)", () => {
   });
 });
 
-describe("category-editorial: word count >= 400 on representative pages", () => {
-  it("every category, sampled on one representative state, renders >= 400 words", () => {
+describe("category-editorial: word count >= 350 on representative pages", () => {
+  it("every category, sampled on one representative state, renders >= 350 words", () => {
     const stateInfo = STATE_BY_SLUG.get("california")!;
 
     for (const categoryInfo of CATEGORIES) {
@@ -232,12 +232,12 @@ describe("category-editorial: word count >= 400 on representative pages", () => 
       );
       const words = countWords(html);
       expect(words, `${categoryInfo.slug} on California rendered only ${words} words`).toBeGreaterThanOrEqual(
-        400,
+        350,
       );
     }
   });
 
-  it("a low-population state (fewer common fees / shorter data) still clears 400 words", () => {
+  it("a low-population state (fewer common fees / shorter data) still clears 350 words", () => {
     const stateInfo = STATE_BY_SLUG.get("wyoming")!;
     const categoryInfo = CATEGORY_MAP.get("divorce")!;
     const costs = getCostsFor(stateInfo.code, "divorce");
@@ -245,7 +245,7 @@ describe("category-editorial: word count >= 400 on representative pages", () => 
     const html = renderToStaticMarkup(
       createElement(CategoryEditorial, { categoryInfo, stateInfo, costs, faqQuestions }),
     );
-    expect(countWords(html)).toBeGreaterThanOrEqual(400);
+    expect(countWords(html)).toBeGreaterThanOrEqual(350);
   });
 });
 

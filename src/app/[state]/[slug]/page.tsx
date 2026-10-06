@@ -310,6 +310,8 @@ export default async function StateCategoryPage({ params }: PageProps) {
         <CostDetailsSection
           categoryName={categoryInfo.displayName}
           stateName={stateInfo.name}
+          stateCode={stateInfo.code}
+          categorySlug={categoryInfo.slug}
           commonFees={moderateCost.commonFees}
           hourlyRate={moderateCost.hourlyRate}
           typicalDuration={moderateCost.typicalDuration}

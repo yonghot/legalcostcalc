@@ -1,10 +1,13 @@
 import Link from "next/link";
 import { formatCurrency } from "@/lib/utils/format";
+import { formatFetchedOn, verifiedFeeForLine } from "@/lib/verified-fees";
 import type { CostRange, LegalCostData } from "@/lib/types";
 
 interface CostDetailsSectionProps {
   categoryName: string;
   stateName: string;
+  stateCode?: string;
+  categorySlug?: string;
   commonFees: string[];
   hourlyRate?: CostRange;
   typicalDuration?: string;
@@ -15,6 +18,8 @@ interface CostDetailsSectionProps {
 export function CostDetailsSection({
   categoryName,
   stateName,
+  stateCode,
+  categorySlug,
   commonFees,
   hourlyRate,
   typicalDuration,
@@ -128,12 +133,31 @@ export function CostDetailsSection({
               Common {categoryName} Fees in {stateName}
             </h2>
             <ul className="space-y-2">
-              {commonFees.map((fee, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-slate-700">
-                  <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-teal-500" />
-                  {fee}
-                </li>
-              ))}
+              {commonFees.map((fee, i) => {
+                const verified =
+                  stateCode && categorySlug ? verifiedFeeForLine(fee, stateCode, categorySlug) : null;
+                return (
+                  <li key={i} className="flex items-start gap-2 text-sm text-slate-700">
+                    <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-teal-500" />
+                    <span>
+                      {fee}
+                      {verified && (
+                        <span className="block text-xs text-slate-500">
+                          Checked {formatFetchedOn(verified.fetchedOn)} at{" "}
+                          <a
+                            href={verified.sourceUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-teal-700 underline hover:text-teal-800"
+                          >
+                            {new URL(verified.sourceUrl).hostname}
+                          </a>
+                        </span>
+                      )}
+                    </span>
+                  </li>
+                );
+              })}
             </ul>
           </div>
           <div>

@@ -43,13 +43,13 @@ describe("K4: personal injury pages never print a zero hourly rate", () => {
 });
 
 describe("K4: hourly matters keep their hourly sentences", () => {
-  it("California divorce still shows the hourly band, implied hours and the professional-time remainder", async () => {
+  it("California divorce still shows the hourly band and the implied billed hours", async () => {
     const page = text(await renderPage(StateCategoryPage, { state: "california", slug: "divorce-cost" } as never));
     expect(page).toMatch(/Attorney rate: \$\d[\d,]*–\$\d[\d,]* an hour across the three tiers/);
     expect(page).toMatch(/Attorney Hourly Rate in California/);
     expect(page).toMatch(/at \$\d[\d,]*–\$\d[\d,]*\/hr over/);
     expect(page).toMatch(/Billed hours: about/);
-    expect(page).toMatch(/as professional time/);
+    expect(page).not.toMatch(/as professional time/);
   });
 });
 

@@ -43,12 +43,3 @@ export function presentCommonFees(
     return verified ? verifiedFeeLine(verified) : UNVERIFIED_COURT_FEE_LINE;
   });
 }
-
-export function formatFetchedOn(isoDate: string): string {
-  return new Date(`${isoDate}T00:00:00Z`).toLocaleDateString("en-US", {
-    timeZone: "UTC",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-}

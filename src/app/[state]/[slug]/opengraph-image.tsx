@@ -4,6 +4,7 @@ import { CATEGORY_MAP } from "@/lib/constants/categories";
 import { getModerateCostRange } from "@/lib/page-index";
 import { formatCurrency } from "@/lib/utils/format";
 import { getOgAsOfLabel } from "@/lib/seo/og-freshness";
+import { costFamilyKey } from "@/lib/content-dates";
 
 export const runtime = "edge";
 export const alt = "Legal Cost Estimate";
@@ -36,7 +37,7 @@ export default async function OGImage({
   // no interpolated or invented figures, no fake ratings/superlatives).
   const range =
     stateInfo && categoryInfo ? getModerateCostRange(stateInfo.code, categoryInfo.slug) : null;
-  const asOfLabel = getOgAsOfLabel();
+  const asOfLabel = getOgAsOfLabel(categoryInfo ? [costFamilyKey(categoryInfo.slug)] : []);
 
   return new ImageResponse(
     (

@@ -1,18 +1,10 @@
-import { DEFAULT_FIGURES_LAST_VERIFIED } from "@/lib/constants/figures";
+import { dateLabel, latestFamily } from "@/lib/content-dates";
 
 /**
- * CODE-05 — shared "as of {date}" label for OG images, sourced from the SAME
- * real, sitewide-verified date already used by UpdatedBadge/AuthorByline/
- * sitemap.ts (DEFAULT_FIGURES_LAST_VERIFIED / DATA_VERSION_DATE) — never
- * `new Date()` (which would stamp a fabricated freshness signal that
- * changes on every deploy/render regardless of whether the underlying data
- * changed).
+ * Freshness label for OG images, taken from the page family's content-dates
+ * records (the latest of the given keys), never `new Date()`.
  */
-export function getOgAsOfLabel(): string {
-  const iso = DEFAULT_FIGURES_LAST_VERIFIED;
-  if (!iso) return "";
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return "";
-  const formatted = date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
-  return `As of ${formatted}`;
+export function getOgAsOfLabel(keys: readonly string[]): string {
+  const record = latestFamily(keys);
+  return record ? dateLabel(record) : "";
 }

@@ -14,7 +14,7 @@ describe("home publisher content", () => {
     expect(source).toContain("How the estimate is built");
     expect(source).toContain("Two worked examples");
     expect(source).toContain("Assumptions and limits");
-    expect(source).toContain("Sources and verification date");
+    expect(source).toContain(">Sources</h3>");
     expect(source.match(/[A-Za-z][A-Za-z'-]*/g)?.length ?? 0).toBeGreaterThanOrEqual(550);
   });
 });

@@ -3,6 +3,7 @@ import { CATEGORY_MAP } from "@/lib/constants/categories";
 import { INDEXABLE_PAGES, getModerateMedianCost } from "@/lib/page-index";
 import { formatCurrency } from "@/lib/utils/format";
 import { getOgAsOfLabel } from "@/lib/seo/og-freshness";
+import { costFamilyKey } from "@/lib/content-dates";
 
 export const runtime = "edge";
 export const alt = "Legal Cost by State Comparison";
@@ -30,7 +31,7 @@ export default async function OGImage({
   const stateCount = stateCosts.length;
   const overallMedian =
     stateCount > 0 ? [...stateCosts].sort((a, b) => a - b)[Math.floor(stateCount / 2)] : null;
-  const asOfLabel = getOgAsOfLabel();
+  const asOfLabel = getOgAsOfLabel(categoryInfo ? [costFamilyKey(categoryInfo.slug)] : []);
 
   return new ImageResponse(
     (

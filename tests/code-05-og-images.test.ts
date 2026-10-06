@@ -17,7 +17,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { getOgAsOfLabel } from "@/lib/seo/og-freshness";
-import { DEFAULT_FIGURES_LAST_VERIFIED } from "@/lib/constants/figures";
+import { costFamilyKey, getFamilyDate } from "@/lib/content-dates";
 
 function readSource(relPath: string): string {
   return readFileSync(path.resolve(__dirname, "..", relPath), "utf8");
@@ -34,12 +34,17 @@ function stripComments(src: string): string {
 }
 
 describe("CODE-05: getOgAsOfLabel — real, non-fabricated freshness label", () => {
-  it("produces a human-readable 'As of {date}' string from the real sitewide-verified date", () => {
-    const label = getOgAsOfLabel();
-    expect(label).toMatch(/^As of /);
-    // Must reflect the actual DEFAULT_FIGURES_LAST_VERIFIED year, not `new Date()`'s year.
-    const year = new Date(DEFAULT_FIGURES_LAST_VERIFIED as string).getUTCFullYear();
+  it("produces a human-readable label from the page family's content-dates record", () => {
+    const label = getOgAsOfLabel([costFamilyKey("divorce")]);
+    expect(label).toMatch(/^Updated /);
+    // Must reflect the record's year, not `new Date()`'s year.
+    const year = new Date(getFamilyDate(costFamilyKey("divorce"))!.date).getUTCFullYear();
     expect(label).toContain(String(year));
+  });
+
+  it("is empty when no record exists", () => {
+    expect(getOgAsOfLabel([])).toBe("");
+    expect(getOgAsOfLabel(["cost:not-a-category"])).toBe("");
   });
 });
 

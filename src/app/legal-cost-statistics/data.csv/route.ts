@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { buildStatisticsAggregate } from "@/lib/seo/statistics";
-import { DATA_VERSION_DATE } from "@/lib/constants/data-meta";
+import { getFamilyDate } from "@/lib/content-dates";
 
 /**
  * CODE-04 — /legal-cost-statistics/data.csv: the same real aggregation as
@@ -19,7 +19,7 @@ function csvEscape(value: string | number): string {
 
 export async function GET() {
   const aggregate = buildStatisticsAggregate();
-  const dataVerifiedDate = DATA_VERSION_DATE.toISOString().slice(0, 10);
+  const dateUpdated = getFamilyDate("page:legal-cost-statistics")?.date ?? "";
 
   const header = [
     "category",
@@ -33,7 +33,7 @@ export async function GET() {
     "lowest_cost_state_name",
     "lowest_cost_state_median_usd",
     "high_vs_low_percent",
-    "data_verified_date",
+    "date_updated",
   ];
 
   const rows = aggregate.categoryRows.map((row) =>
@@ -49,7 +49,7 @@ export async function GET() {
       row.lowestState.name,
       row.lowestState.median,
       row.highVsLowPercent,
-      dataVerifiedDate,
+      dateUpdated,
     ]
       .map(csvEscape)
       .join(","),

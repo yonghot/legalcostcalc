@@ -29,7 +29,7 @@ import { RelatedCalculators } from "@/components/seo/related-calculators";
 import { CANONICAL_ORIGIN } from "@/lib/seo";
 import { FOCUS_RING } from "@/lib/utils/styles";
 import { POPULAR_STATE_CODES } from "@/lib/constants/popular";
-import { DEFAULT_FIGURES_LAST_VERIFIED } from "@/lib/constants/figures";
+import { getFamilyDate } from "@/lib/content-dates";
 import { RecentCalculations } from "@/components/shared/recent-calculations";
 import { SeasonalBadge } from "@/components/shared/seasonal-badge";
 import { HomePublisherContent } from "@/components/seo/home-publisher-content";
@@ -65,7 +65,7 @@ export default function HomePage() {
         name="LegalCostCalc — Legal Cost Calculator"
         description="Free legal cost calculator for all 50 US states. Estimate attorney fees, court costs, and total expenses for divorce, DUI, bankruptcy, personal injury, and more."
         url="https://legalcostcalc.co/"
-        dateModified={DEFAULT_FIGURES_LAST_VERIFIED}
+        dateModified={getFamilyDate("page:home")?.date ?? null}
       />
       {/* CODE-02: FAQPage JSON-LD removed (deprecated for SERP display in
           2026). The Q&A remains as visible on-page text in the FAQ section
@@ -76,7 +76,7 @@ export default function HomePage() {
         headline="How Much Will Your Legal Matter Really Cost?"
         description="Free legal cost calculator for all 50 US states. Get estimated costs for divorce, DUI, bankruptcy, personal injury, and more."
         url={CANONICAL_ORIGIN}
-        dateModified={DEFAULT_FIGURES_LAST_VERIFIED}
+        dateModified={getFamilyDate("page:home")?.date ?? null}
       />
       {/* Hero Section */}
       <section className="bg-gradient-to-b from-teal-50 to-white py-16 sm:py-20">

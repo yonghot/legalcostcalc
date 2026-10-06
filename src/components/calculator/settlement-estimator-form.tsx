@@ -435,7 +435,6 @@ export function SettlementEstimatorForm() {
         {output !== null && (
           <div className="mt-4">
             <ResultDisclaimer
-              lastVerified={null}
               sourceUrl={SETTLEMENT_CONTINGENCY_FIGURE.source}
               sourceLabel="Nolo: Contingency Fee Basics"
             />

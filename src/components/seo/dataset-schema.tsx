@@ -7,11 +7,8 @@ interface DatasetSchemaProps {
   description: string;
   /** Canonical URL of the page describing/hosting the dataset. */
   url: string;
-  /**
-   * ISO date (YYYY-MM-DD) the underlying data was last verified — MUST come
-   * from a real verified-data field (DATA_VERSION_DATE), never `new Date()`.
-   */
-  dateModified: string;
+  /** ISO date from the page's content-dates record, never `new Date()`. */
+  dateModified: string | null;
   /** Absolute URLs of the machine-readable feed variants (data.json/data.csv). */
   distributionUrls: { url: string; encodingFormat: "application/json" | "text/csv" }[];
 }
@@ -42,7 +39,7 @@ export function DatasetSchema({
     name,
     description,
     url,
-    dateModified,
+    ...(dateModified ? { dateModified } : {}),
     license: "https://creativecommons.org/licenses/by/4.0/",
     creator: publisherNode(),
     publisher: publisherNode(),

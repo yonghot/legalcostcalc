@@ -19,7 +19,7 @@
  *     /how-legal-fees-work (>=1).
  *   - Sitemap lastmod for the guide reflects the guide's own real
  *     verification date (GUIDE_UPDATED), not the unrelated cost-dataset
- *     DATA_VERSION_DATE (U-03).
+ *     the retired global DATA_VERSION_DATE (U-03).
  */
 import { describe, it, expect, vi } from "vitest";
 import { createElement } from "react";

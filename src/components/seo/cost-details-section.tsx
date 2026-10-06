@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { formatCurrency } from "@/lib/utils/format";
-import { formatFetchedOn, verifiedFeeForLine } from "@/lib/verified-fees";
+import { formatDate } from "@/lib/content-dates";
+import { verifiedFeeForLine } from "@/lib/verified-fees";
 import type { CostRange, LegalCostData } from "@/lib/types";
 
 interface CostDetailsSectionProps {
@@ -143,7 +144,7 @@ export function CostDetailsSection({
                       {fee}
                       {verified && (
                         <span className="block text-xs text-slate-500">
-                          Checked {formatFetchedOn(verified.fetchedOn)} at{" "}
+                          Checked {formatDate(verified.fetchedOn, "day")} at{" "}
                           <a
                             href={verified.sourceUrl}
                             target="_blank"

@@ -8,7 +8,7 @@ import { DivorceHubTable, type DivorceHubRow } from "@/components/seo/divorce-hu
 import { DivorceHubFaqLink } from "@/components/seo/divorce-hub-faq-link";
 import { INDEXABLE_PAGES, getCostByComplexity } from "@/lib/page-index";
 import { buildMeta } from "@/lib/seo";
-import { DEFAULT_FIGURES_LAST_VERIFIED } from "@/lib/constants/figures";
+import { getFamilyDate } from "@/lib/content-dates";
 import { AdsenseLoader } from "@/components/ads/adsense-loader";
 
 export const revalidate = 604800; // 7 days
@@ -63,7 +63,7 @@ export default function DivorceCostByStatePage() {
           />
 
           <div className="mt-4 flex flex-wrap items-center gap-3">
-            <UpdatedBadge lastVerified={DEFAULT_FIGURES_LAST_VERIFIED} />
+            <UpdatedBadge record={getFamilyDate("page:divorce-cost-by-state")} />
           </div>
 
           <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
@@ -78,7 +78,11 @@ export default function DivorceCostByStatePage() {
             (disputed terms requiring court hearings and negotiation).
           </p>
 
-          <AuthorByline lastUpdated={DEFAULT_FIGURES_LAST_VERIFIED} className="mt-6" />
+          <AuthorByline
+            lastUpdated={getFamilyDate("page:divorce-cost-by-state")?.date ?? null}
+            basis={getFamilyDate("page:divorce-cost-by-state")?.basis}
+            className="mt-6"
+          />
         </div>
       </section>
 

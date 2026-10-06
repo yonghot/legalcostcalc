@@ -29,6 +29,7 @@ import { buildAnswerBlock } from "@/lib/seo/geo";
 import { AnswerBlock } from "@/components/seo/answer-block";
 import { formatCurrency } from "@/lib/utils/format";
 import type { LegalCostData, Complexity } from "@/lib/types";
+import { costFamilyKey, getFamilyDate } from "@/lib/content-dates";
 
 interface SeedRow {
   category: string;
@@ -101,7 +102,7 @@ describe("buildAnswerBlock — full indexable-page matrix", () => {
         category: entry.category,
         state: entry.state,
         costs,
-        dataVerifiedDate: costs.find((c) => c.complexity === "moderate")?.lastVerifiedAt ?? null,
+        dateRecord: getFamilyDate(costFamilyKey(entry.category.slug)) ?? null,
       });
 
       // Query-phrased H2.
@@ -163,7 +164,7 @@ describe("buildAnswerBlock — full indexable-page matrix", () => {
         category: entry.category,
         state: entry.state,
         costs,
-        dataVerifiedDate: moderate.lastVerifiedAt,
+        dateRecord: getFamilyDate(costFamilyKey(entry.category.slug)) ?? null,
       });
       const { low, high } = moderate.contingencyFee!;
       expect(block.answer).toContain(`${low}-${high}%`);
@@ -181,7 +182,7 @@ describe("buildAnswerBlock — full indexable-page matrix", () => {
       category,
       state,
       costs: [],
-      dataVerifiedDate: null,
+      dateRecord: null,
     });
 
     expect(block.tableRows).toEqual([]);
@@ -200,7 +201,7 @@ describe("AnswerBlock component — server-rendered HTML structure", () => {
     category: categoryInfo,
     state: stateInfo,
     costs,
-    dataVerifiedDate: costs.find((c) => c.complexity === "moderate")?.lastVerifiedAt ?? null,
+    dateRecord: getFamilyDate(costFamilyKey(categoryInfo.slug)) ?? null,
   });
 
   it("renders an <h2> with the query-phrased heading", () => {
@@ -236,7 +237,9 @@ describe("AnswerBlock component — server-rendered HTML structure", () => {
 
   it("renders a dated freshness marker", () => {
     const html = renderToStaticMarkup(createElement(AnswerBlock, { block }));
-    expect(html).toContain("Data verified:");
+    expect(html).toContain(block.freshnessLabel!);
+    expect(html).toContain("Updated ");
+    expect(html).not.toContain("Data verified");
   });
 
   it("is a pure server component (no 'use client' directive, no hooks)", async () => {

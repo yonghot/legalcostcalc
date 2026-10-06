@@ -15,11 +15,7 @@ interface ArticleSchemaProps {
    * guardrail) unless a real value is supplied.
    */
   datePublished?: string | null;
-  /**
-   * ISO date (YYYY-MM-DD) the underlying cost data was last verified — MUST
-   * come from a real verified-data field, never `new Date()`. Mirrors the
-   * `dateModified` policy already used by SoftwareApplicationSchema.
-   */
+  /** ISO date from the page family's content-dates record, never `new Date()`. */
   dateModified?: string | null;
 }
 

@@ -30,7 +30,7 @@ export default function OGImage() {
       : null;
   const contestedMedian =
     contestedCosts.length > 0 ? contestedCosts[Math.floor(contestedCosts.length / 2)] : null;
-  const asOfLabel = getOgAsOfLabel();
+  const asOfLabel = getOgAsOfLabel(["page:divorce-cost-by-state"]);
 
   return new ImageResponse(
     (

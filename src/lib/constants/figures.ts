@@ -1,8 +1,8 @@
 /**
  * figures.ts — Central metadata registry for hardcoded figures that drive
- * results and are NOT already covered by per-row `sources`/`lastVerifiedAt`
- * fields (see src/data/seed/costs.json, which carries its own `sources[]`
- * per row and is versioned globally via DATA_VERSION_DATE).
+ * results and are NOT already covered by per-row `sources` fields (see
+ * src/data/seed/costs.json, which carries its own `sources[]` per row; page
+ * dates live in src/data/content-dates.json).
  *
  * COMPLIANCE RULE (P0 risk-mitigation pass): only real, verifiable
  * `lastVerified` dates and `source` URLs may be recorded here. Where no
@@ -11,8 +11,6 @@
  * an "unsourced figure" in the compliance report — never invent a date or a
  * source URL.
  *
- * ResultDisclaimer reads DEFAULT_FIGURES_LAST_VERIFIED to render "Figures
- * last updated: {date}" next to calculator results.
  */
 
 export interface FigureMeta {
@@ -27,20 +25,18 @@ export interface FigureMeta {
 }
 
 /**
- * Cost dataset (src/data/seed/costs.json) — global verification date.
- * Source: PROGRESS.md "Phase-3 Handoff Note (2026-06-29)" — `DATA_VERSION_DATE`
- * bumped to 2026-06-29 after the cost-data regression pass (banned-URL cleanup,
- * `tests/costs-data-integrity.test.ts`). Per-row `sources[]` URLs are carried in
- * costs.json itself and surfaced in the UI (CostResult "Data Sources").
+ * Cost dataset (src/data/seed/costs.json). The 2026-06-29 "verification date"
+ * was a constant bumped by hand; no comparison against the cited sources was
+ * recorded, so the dataset carries no verification date. Per-row `sources[]`
+ * URLs are in costs.json and shown in the UI (CostResult "Data Sources").
  */
 export const COST_DATASET_FIGURE: FigureMeta = {
   label: "Legal cost dataset (all categories / states)",
-  lastVerified: "2026-06-29",
+  lastVerified: null,
   source: null,
   note:
-    "Per-row sources[] are embedded in src/data/seed/costs.json and rendered " +
-    "inline on each result. This entry tracks the dataset-wide verification " +
-    "pass date (DATA_VERSION_DATE in src/lib/constants/data-meta.ts).",
+    "No recorded comparison of the figures against the cited sources; page " +
+    "dates come from src/data/content-dates.json and mark content changes.",
 };
 
 /**
@@ -62,13 +58,7 @@ export const SETTLEMENT_CONTINGENCY_FIGURE: FigureMeta = {
 };
 
 /** Figures with a known, repo-verifiable source AND date — safe to surface directly. */
-export const VERIFIED_FIGURES: FigureMeta[] = [COST_DATASET_FIGURE];
+export const VERIFIED_FIGURES: FigureMeta[] = [];
 
 /** Figures missing a verifiable date and/or source — reported, never fabricated. */
-export const UNSOURCED_FIGURES: FigureMeta[] = [SETTLEMENT_CONTINGENCY_FIGURE];
-
-/**
- * Default "figures last updated" date shown by ResultDisclaimer when no
- * page-specific date is supplied. Mirrors DATA_VERSION_DATE.
- */
-export const DEFAULT_FIGURES_LAST_VERIFIED = COST_DATASET_FIGURE.lastVerified;
+export const UNSOURCED_FIGURES: FigureMeta[] = [COST_DATASET_FIGURE, SETTLEMENT_CONTINGENCY_FIGURE];

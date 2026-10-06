@@ -9,7 +9,7 @@ import { ResultDisclaimer } from "@/components/compliance/ResultDisclaimer";
 import { LegalCostData } from "@/lib/types";
 import { formatCurrency } from "@/lib/utils/format";
 import { isSafeUrl } from "@/lib/utils/sanitize";
-import { checkDataFreshness } from "@/lib/utils/data-freshness";
+import { costFamilyKey, dateLabel, getFamilyDate, isOlderThanOneYear } from "@/lib/content-dates";
 import { Clock, DollarSign, FileText, ExternalLink, Percent } from "lucide-react";
 import { FOCUS_RING } from "@/lib/utils/styles";
 import { ResultMonetization } from "@/components/monetization/ResultMonetization";
@@ -57,6 +57,7 @@ export const CostResult = memo(function CostResult({
   if (!cost) return null;
 
   const safeSourceUrls = cost.sources.filter(isSafeUrl);
+  const dateRecord = getFamilyDate(costFamilyKey(cost.category));
 
   // Personal-injury attorneys charge contingency fees, not hourly rates.
   // When all hourly values are 0 and contingency data is available, show the
@@ -189,27 +190,21 @@ export const CostResult = memo(function CostResult({
           )}
 
           {/* Data freshness */}
-          {cost.lastVerifiedAt && (() => {
-            const { isStale, formattedDate } = checkDataFreshness(cost.lastVerifiedAt);
-
-            return (
-              <div className="mt-4">
-                {isStale && (
-                  <p className="mb-1 text-xs font-medium text-amber-600">
-                    This data may be outdated. Last verified over 1 year ago.
-                  </p>
-                )}
-                <p className="text-xs text-slate-400">
-                  Last verified: {formattedDate}
+          {dateRecord && (
+            <div className="mt-4">
+              {isOlderThanOneYear(dateRecord.date) && (
+                <p className="mb-1 text-xs font-medium text-amber-600">
+                  This data may be outdated. This page has not been updated in over a year.
                 </p>
-                {safeSourceUrls.length < 2 && (
-                  <p className="mt-1 text-xs italic text-slate-400">
-                    Estimated range (single source)
-                  </p>
-                )}
-              </div>
-            );
-          })()}
+              )}
+              <p className="text-xs text-slate-400">{dateLabel(dateRecord)}</p>
+              {safeSourceUrls.length < 2 && (
+                <p className="mt-1 text-xs italic text-slate-400">
+                  Estimated range (single source)
+                </p>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -229,7 +224,7 @@ export const CostResult = memo(function CostResult({
           the figures' last-verified date and, when available, the first
           verified source link. */}
       <ResultDisclaimer
-        lastVerified={cost.lastVerifiedAt ?? undefined}
+        dateText={dateRecord ? dateLabel(dateRecord) : null}
         sourceUrl={safeSourceUrls[0]}
       />
 

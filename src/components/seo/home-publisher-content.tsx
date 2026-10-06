@@ -1,4 +1,3 @@
-import { DEFAULT_FIGURES_LAST_VERIFIED } from "@/lib/constants/figures";
 import { getTierFigures } from "@/lib/page-index";
 
 const usd = new Intl.NumberFormat("en-US", {
@@ -102,7 +101,7 @@ export function HomePublisherContent() {
         </div>
 
         <div>
-          <h3 className="text-xl font-semibold text-slate-900">Sources and verification date</h3>
+          <h3 className="text-xl font-semibold text-slate-900">Sources</h3>
           <p className="mt-3 leading-7 text-slate-600">
             The dataset uses publicly available legal-cost research and official fee information.
             Core references include the{" "}
@@ -110,12 +109,9 @@ export function HomePublisherContent() {
             <a className="underline hover:text-teal-700" href="https://www.bls.gov/ooh/legal/lawyers.htm" target="_blank" rel="noopener noreferrer">U.S. Bureau of Labor Statistics lawyers profile</a>,{" "}
             <a className="underline hover:text-teal-700" href="https://www.uscourts.gov/court-programs/bankruptcy/bankruptcy-basics" target="_blank" rel="noopener noreferrer">U.S. Courts bankruptcy information</a>, and{" "}
             <a className="underline hover:text-teal-700" href="https://www.uscis.gov/forms/filing-fees" target="_blank" rel="noopener noreferrer">USCIS filing-fee information</a>.
-            Individual result pages show the references attached to their own data row. The bundled
-            dataset was last verified on{" "}
-            <time dateTime={DEFAULT_FIGURES_LAST_VERIFIED ?? undefined} className="font-medium text-slate-900">
-              {DEFAULT_FIGURES_LAST_VERIFIED ?? "an unrecorded date"}
-            </time>. A later official fee schedule or a provider’s written terms should take
-            precedence over this snapshot.
+            Individual result pages show the references attached to their own data row. A later
+            official fee schedule or a provider’s written terms should take precedence over the
+            figures shown here.
           </p>
         </div>
       </div>

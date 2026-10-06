@@ -7,6 +7,7 @@ import { EmbedResizeReporter } from "@/components/embed/embed-resize-reporter";
 import { AnswerBlock } from "@/components/seo/answer-block";
 import { buildAnswerBlock } from "@/lib/seo/geo";
 import { getCostForPage } from "@/lib/services/cost-service";
+import { costFamilyKey, getFamilyDate } from "@/lib/content-dates";
 import { STATES, STATE_BY_SLUG } from "@/lib/constants/states";
 import { CATEGORIES, CATEGORY_MAP } from "@/lib/constants/categories";
 
@@ -93,12 +94,11 @@ export default async function EmbedCalculatorPage({ params }: PageProps) {
   } catch {
     costs = [];
   }
-  const moderateCost = costs.find((c) => c.complexity === "moderate");
   const answerBlockData = buildAnswerBlock({
     category: categoryInfo,
     state: stateInfo,
     costs,
-    dataVerifiedDate: moderateCost?.lastVerifiedAt ?? null,
+    dateRecord: getFamilyDate(costFamilyKey(categoryInfo.slug)) ?? null,
   });
 
   return (

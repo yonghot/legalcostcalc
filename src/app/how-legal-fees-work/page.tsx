@@ -8,6 +8,7 @@ import { ArticleSchema } from "@/components/seo/article-schema";
 import { AuthorByline } from "@/components/shared/author-byline";
 import { UpdatedBadge } from "@/components/shared/updated-badge";
 import { buildMeta, CANONICAL_ORIGIN } from "@/lib/seo";
+import { getFamilyDate } from "@/lib/content-dates";
 import { DEFAULT_STATE_SLUG } from "@/lib/constants/costs";
 import {
   GUIDE_UPDATED,
@@ -131,7 +132,7 @@ export default function HowLegalFeesWorkPage() {
           />
 
           <div className="mt-4 flex flex-wrap items-center gap-3">
-            <UpdatedBadge lastVerified={GUIDE_UPDATED} />
+            <UpdatedBadge record={getFamilyDate("guide")} />
           </div>
 
           <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
@@ -143,7 +144,7 @@ export default function HowLegalFeesWorkPage() {
             disclosed, and disputed. General information only, not legal advice.
           </p>
 
-          <AuthorByline lastUpdated={GUIDE_UPDATED} className="mt-6" />
+          <AuthorByline lastUpdated={GUIDE_UPDATED} basis={getFamilyDate("guide")?.basis} className="mt-6" />
         </div>
       </section>
 
@@ -285,7 +286,7 @@ export default function HowLegalFeesWorkPage() {
             ))}
           </ul>
           <p className="mt-3 text-xs text-slate-500">
-            Content last reviewed {GUIDE_UPDATED}. Fee rules, rates, and
+            Content last updated {GUIDE_UPDATED}. Fee rules, rates, and
             statutory dollar/percentage thresholds change — always confirm the
             current requirement with the official source before relying on it.
           </p>
@@ -338,7 +339,7 @@ export default function HowLegalFeesWorkPage() {
           </ul>
         </section>
 
-        <AuthorByline lastUpdated={GUIDE_UPDATED} className="mt-8" />
+        <AuthorByline lastUpdated={GUIDE_UPDATED} basis={getFamilyDate("guide")?.basis} className="mt-8" />
       </div>
     </div>
   );

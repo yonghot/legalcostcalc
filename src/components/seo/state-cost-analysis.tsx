@@ -30,6 +30,7 @@ import {
   trajectorySentence,
 } from "@/lib/seo/state-context";
 import { formatCurrency } from "@/lib/utils/format";
+import { costFamilyKey, dateLabel, getFamilyDate } from "@/lib/content-dates";
 import type { LegalCostData } from "@/lib/types/cost";
 
 /**
@@ -126,13 +127,7 @@ export function StateCostAnalysis({
 
   const sources = Array.from(new Set(moderate.sources ?? []));
 
-  // Per-row verification date (CLAUDE.md data rule: display lastVerifiedAt
-  // wherever cost figures appear). Falls back to the raw string if unparseable
-  // rather than inventing a date.
-  const parsedVerified = new Date(moderate.lastVerifiedAt);
-  const lastVerifiedLabel = Number.isNaN(parsedVerified.getTime())
-    ? moderate.lastVerifiedAt
-    : parsedVerified.toLocaleDateString("en-US", { year: "numeric", month: "long" });
+  const dateRecord = getFamilyDate(costFamilyKey(categorySlug));
 
   return (
     <section className="py-8" aria-labelledby="cost-analysis-heading">
@@ -572,7 +567,7 @@ export function StateCostAnalysis({
           </p>
         )}
         <p className="mt-3 text-xs text-slate-500">
-          Verified {lastVerifiedLabel}. Filing fees change on the {stateName} court&apos;s own
+          {dateRecord && <>{dateLabel(dateRecord)}. </>}Filing fees change on the {stateName} court&apos;s own
           schedule; billing models are covered in the{" "}
           <Link href="/how-legal-fees-work" className="font-medium text-teal-700 underline hover:text-teal-800">
             legal fees guide

@@ -9,6 +9,7 @@ import { getCostForPage } from "@/lib/services/cost-service";
 import { buildAnswerBlock } from "@/lib/seo/geo";
 import { AnswerBlock } from "@/components/seo/answer-block";
 import { CostDetailsSection } from "@/components/seo/cost-details-section";
+import { costFamilyKey, getFamilyDate } from "@/lib/content-dates";
 
 const ZERO_HOURLY: Array<[string, RegExp]> = [
   ["a $0-$0 band", /\$0\s*[–-]\s*\$0/],
@@ -61,7 +62,7 @@ describe("K4: personal injury answer block leads with the contingency fee and la
       category: CATEGORY_MAP.get("personal-injury")!,
       state: STATE_BY_SLUG.get("new-york")!,
       costs,
-      dataVerifiedDate: moderate.lastVerifiedAt,
+      dateRecord: getFamilyDate(costFamilyKey("personal-injury")) ?? null,
     });
     return { costs, moderate, block };
   };
@@ -104,7 +105,7 @@ describe("K4: personal injury answer block leads with the contingency fee and la
       category: CATEGORY_MAP.get("divorce")!,
       state: STATE_BY_SLUG.get("california")!,
       costs,
-      dataVerifiedDate: costs[0].lastVerifiedAt,
+      dateRecord: getFamilyDate(costFamilyKey("divorce")) ?? null,
     });
     expect(block.answer).toMatch(/Typical attorney rates run \$\d/);
     expect(block.factors).toContain("Attorney hourly rate, which varies by state and experience level");

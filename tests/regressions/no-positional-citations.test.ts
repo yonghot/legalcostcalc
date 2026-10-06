@@ -8,6 +8,7 @@ import { CATEGORIES, CATEGORY_MAP } from "@/lib/constants/categories";
 import { getCostForPage } from "@/lib/services/cost-service";
 import { buildAnswerBlock } from "@/lib/seo/geo";
 import { AnswerBlock } from "@/components/seo/answer-block";
+import { costFamilyKey, getFamilyDate } from "@/lib/content-dates";
 
 const text = (html: string) =>
   html
@@ -29,14 +30,13 @@ const blockFor = async (stateSlug: string, categorySlug: string) => {
   const state = STATE_BY_SLUG.get(stateSlug)!;
   const category = CATEGORY_MAP.get(categorySlug)!;
   const costs = await getCostForPage(categorySlug, state.code);
-  const moderate = costs.find((c) => c.complexity === "moderate");
   return {
     costs,
     block: buildAnswerBlock({
       category,
       state,
       costs,
-      dataVerifiedDate: moderate?.lastVerifiedAt ?? null,
+      dateRecord: getFamilyDate(costFamilyKey(categorySlug)) ?? null,
     }),
   };
 };

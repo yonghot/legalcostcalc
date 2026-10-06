@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { buildStatisticsAggregate } from "@/lib/seo/statistics";
-import { DATA_VERSION_DATE } from "@/lib/constants/data-meta";
+import { getFamilyDate } from "@/lib/content-dates";
 
 /**
  * CODE-04 — /legal-cost-statistics/data.json: the same real aggregation
@@ -14,7 +14,7 @@ export async function GET() {
   const aggregate = buildStatisticsAggregate();
 
   const body = {
-    dataVerifiedDate: DATA_VERSION_DATE.toISOString().slice(0, 10),
+    dateUpdated: getFamilyDate("page:legal-cost-statistics")?.date ?? null,
     source: "https://legalcostcalc.co/legal-cost-statistics",
     totalDataPoints: aggregate.totalDataPoints,
     findings: aggregate.findings,

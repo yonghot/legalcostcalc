@@ -7,12 +7,7 @@ interface SoftwareApplicationSchemaProps {
   description: string;
   /** Canonical URL of the page hosting the tool. */
   url: string;
-  /**
-   * T11: ISO date (YYYY-MM-DD) the underlying cost data was last verified —
-   * MUST come from a real verified-data field (e.g. a cost row's
-   * `lastVerifiedAt`), never `new Date()`. Emitted as `dateModified` only
-   * when present; omitted entirely otherwise (no fabricated freshness).
-   */
+  /** ISO date from the page family's content-dates record; omitted when absent. */
   dateModified?: string | null;
 }
 
@@ -26,7 +21,7 @@ interface SoftwareApplicationSchemaProps {
  *
  * T11 E-E-A-T: adds `author`/`publisher` Organization linkage (mirrors
  * OrganizationSchema on the home page) and `dateModified` driven by the
- * page's real `lastVerifiedAt` data field — never stamped with the render
+ * page family's content-dates record — never stamped with the render
  * timestamp (anti-pattern #10, deceptive freshness).
  *
  * Security: content is serialised via safeJsonLd() (escapes "<" to "<"),

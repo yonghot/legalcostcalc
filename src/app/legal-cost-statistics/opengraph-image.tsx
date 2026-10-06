@@ -13,7 +13,7 @@ export default function OGImage() {
   // stat from buildStatisticsAggregate() (same aggregation the page itself
   // renders — no interpolated or invented figures, no fake ratings).
   const { headline, categoryRows } = buildStatisticsAggregate();
-  const asOfLabel = getOgAsOfLabel();
+  const asOfLabel = getOgAsOfLabel(["page:legal-cost-statistics"]);
 
   return new ImageResponse(
     (

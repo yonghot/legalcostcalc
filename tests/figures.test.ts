@@ -9,7 +9,8 @@
  *     source) — never fabricated.
  *   - UNSOURCED_FIGURES entries are exactly the ones missing a verifiable date,
  *     and must never silently gain a fabricated date.
- *   - DEFAULT_FIGURES_LAST_VERIFIED mirrors the dataset figure's date.
+ *   - The cost dataset has no verification date: the retired 2026-06-29
+ *     constant was bumped by hand with no recorded comparison against sources.
  */
 
 import { describe, it, expect } from "vitest";
@@ -18,16 +19,13 @@ import {
   UNSOURCED_FIGURES,
   COST_DATASET_FIGURE,
   SETTLEMENT_CONTINGENCY_FIGURE,
-  DEFAULT_FIGURES_LAST_VERIFIED,
 } from "@/lib/constants/figures";
 
 describe("figures.ts — verified figures", () => {
-  it("COST_DATASET_FIGURE has a real ISO lastVerified date", () => {
-    expect(COST_DATASET_FIGURE.lastVerified).toBe("2026-06-29");
-    expect(() => {
-      if (!COST_DATASET_FIGURE.lastVerified) throw new Error("missing date");
-      return new Date(COST_DATASET_FIGURE.lastVerified);
-    }).not.toThrow();
+  it("COST_DATASET_FIGURE carries no verification date and is listed as unsourced", () => {
+    expect(COST_DATASET_FIGURE.lastVerified).toBeNull();
+    expect(UNSOURCED_FIGURES).toContain(COST_DATASET_FIGURE);
+    expect(VERIFIED_FIGURES).not.toContain(COST_DATASET_FIGURE);
   });
 
   it("every VERIFIED_FIGURES entry has a non-null lastVerified date", () => {
@@ -58,8 +56,9 @@ describe("figures.ts — unsourced figures (no-fabrication guard)", () => {
   });
 });
 
-describe("figures.ts — DEFAULT_FIGURES_LAST_VERIFIED", () => {
-  it("mirrors COST_DATASET_FIGURE.lastVerified", () => {
-    expect(DEFAULT_FIGURES_LAST_VERIFIED).toBe(COST_DATASET_FIGURE.lastVerified);
+describe("figures.ts — no global verification date", () => {
+  it("does not export the retired default date", async () => {
+    const mod = await import("@/lib/constants/figures");
+    expect(mod).not.toHaveProperty("DEFAULT_FIGURES_LAST_VERIFIED");
   });
 });

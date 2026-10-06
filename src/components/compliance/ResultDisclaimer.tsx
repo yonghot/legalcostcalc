@@ -1,6 +1,5 @@
 import { AlertTriangle } from "lucide-react";
 import { isSafeUrl } from "@/lib/utils/sanitize";
-import { DEFAULT_FIGURES_LAST_VERIFIED } from "@/lib/constants/figures";
 
 /**
  * ResultDisclaimer — layered disclaimer placed ADJACENT to calculator
@@ -10,7 +9,7 @@ import { DEFAULT_FIGURES_LAST_VERIFIED } from "@/lib/constants/figures";
  *
  * This component supplements that invariant with:
  *   - the strong LEGAL-vertical disclaimer skeleton (UPL risk mitigation)
- *   - a "Figures last updated" date read from the central figures config
+ *   - an optional date label taken from the page family's content-dates record
  *   - an optional primary-source link slot
  *
  * Renders unconditionally (no env gate) — this is safety copy, not a
@@ -18,8 +17,8 @@ import { DEFAULT_FIGURES_LAST_VERIFIED } from "@/lib/constants/figures";
  */
 
 export interface ResultDisclaimerProps {
-  /** ISO date (YYYY-MM-DD) the relevant figures were last verified. Falls back to the dataset default. */
-  lastVerified?: string | null;
+  /** Date label such as "Updated October 2026"; omitted when no record exists. */
+  dateText?: string | null;
   /** Optional primary-source URL to link ("verify with the official source"). Must be HTTPS. */
   sourceUrl?: string | null;
   /** Optional label for the source link. Defaults to "Primary source". */
@@ -28,20 +27,12 @@ export interface ResultDisclaimerProps {
 }
 
 export function ResultDisclaimer({
-  lastVerified = DEFAULT_FIGURES_LAST_VERIFIED,
+  dateText,
   sourceUrl,
   sourceLabel = "Primary source",
   className,
 }: ResultDisclaimerProps) {
   const safeSourceUrl = sourceUrl && isSafeUrl(sourceUrl) ? sourceUrl : null;
-
-  const formattedDate = lastVerified
-    ? new Date(lastVerified).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })
-    : null;
 
   return (
     <div
@@ -62,10 +53,10 @@ export function ResultDisclaimer({
             licensed attorney in your jurisdiction before acting on these
             numbers.
           </p>
-          {(formattedDate || safeSourceUrl) && (
+          {(dateText || safeSourceUrl) && (
             <p className="text-xs text-amber-600">
-              {formattedDate && <>Figures last updated: {formattedDate}</>}
-              {formattedDate && safeSourceUrl && " · "}
+              {dateText}
+              {dateText && safeSourceUrl && " · "}
               {safeSourceUrl && (
                 <a
                   href={safeSourceUrl}

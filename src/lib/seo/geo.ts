@@ -19,6 +19,7 @@ import { formatCurrency } from "@/lib/utils/format";
 import type { CategoryInfo } from "@/lib/types/category";
 import type { StateInfo } from "@/lib/types/state";
 import type { CostRange, LegalCostData } from "@/lib/types";
+import { dateLabel, formatDate, type FamilyDate } from "@/lib/content-dates";
 
 const MIN_ANSWER_WORDS = 40;
 const MAX_ANSWER_WORDS = 60;
@@ -46,8 +47,8 @@ export interface AnswerBlockEntity {
   state: StateInfo;
   /** All complexity rows for this (state, category) pair — real data only. */
   costs: LegalCostData[];
-  /** ISO date (YYYY-MM-DD) the underlying data was verified. */
-  dataVerifiedDate: string | null;
+  /** The page family's content-dates record; null when none is recorded. */
+  dateRecord: FamilyDate | null;
 }
 
 export interface AnswerBlock {
@@ -65,17 +66,10 @@ export interface AnswerBlock {
   stats: AnswerBlockStat[];
   /** The rows' sources, listed once as references and never matched to a figure. */
   sources: AnswerBlockSource[];
-  /** Human-readable "As of {date}" freshness label, or null if no verified date exists. */
+  /** "Updated <date>" or "Sources checked <date>" from the content-dates record, or null. */
   freshnessLabel: string | null;
   /** What the dollar figures in the table measure, when it is not the attorney's own fee. */
   costBasisNote: string | null;
-}
-
-function humanDate(iso: string | null): string | null {
-  if (!iso) return null;
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return null;
-  return date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
 }
 
 function sourceHostLabel(url: string): string {
@@ -106,26 +100,26 @@ function buildAnswerParagraph(
   category: CategoryInfo,
   state: StateInfo,
   moderate: LegalCostData | undefined,
-  freshnessLabel: string | null,
+  dateRecord: FamilyDate | null,
 ): string {
   const catLower = category.displayName.toLowerCase();
+  const asOf = dateRecord?.basis === "sources-rechecked" ? `As of ${formatDate(dateRecord.date, "day")}, ` : "";
+  const sentence = (lead: string) => (asOf ? `${asOf}${lead}` : lead.charAt(0).toUpperCase() + lead.slice(1));
+  const article = /^[aeiou]/.test(catLower) ? "an" : "a";
 
   if (!moderate) {
     return (
-      `As of ${freshnessLabel ?? "the most recent data update"}, ${catLower} cost data for ` +
-      `${state.name} is still being collected on LegalCostCalc. General estimates for this ` +
-      `legal matter typically depend on case complexity, attorney hourly rate, and court ` +
-      `filing fees, which vary by county and jurisdiction within the state.`
+      `${sentence(`${catLower} cost data for ${state.name} is still being collected on LegalCostCalc.`)} ` +
+      `General estimates for this legal matter typically depend on case complexity, attorney ` +
+      `hourly rate, and court filing fees, which vary by county and jurisdiction within the state.`
     );
   }
-
-  const asOf = freshnessLabel ? `As of ${freshnessLabel}, ` : "";
 
   if (isContingencyMatter(moderate)) {
     const { low, high } = moderate.contingencyFee;
     const lead = `${catLower} attorneys typically work on contingency, commonly ${low}-${high}% of any recovery (a typical nationwide range, not specific to ${state.name}).`;
     return (
-      `${asOf}${asOf ? lead : lead.charAt(0).toUpperCase() + lead.slice(1)} ` +
+      `${sentence(lead)} ` +
       `Estimated case expenses for a moderate-complexity case in ${state.name} run ` +
       `${formatCurrency(moderate.costRange.low)}-${formatCurrency(moderate.costRange.high)}, ` +
       `median ${formatCurrency(moderate.costRange.median)}, covering filing fees, records and experts ` +
@@ -156,47 +150,41 @@ function buildAnswerParagraph(
       ? ` Common related costs include ${moderate.commonFees.slice(0, 2).join(" and ").toLowerCase()}.`
       : "";
 
-  return (
-    `${asOf}a ${catLower} in ${state.name} costs on average ${formatCurrency(moderate.costRange.median)}, ` +
-    `typically ${formatCurrency(moderate.costRange.low)}-${formatCurrency(moderate.costRange.high)} ` +
-    `for a moderate-complexity case, based on sourced attorney-fee and court-cost data.` +
-    `${feeClause}${duration}${feesClause}`
+  const opening = sentence(
+    `${article} ${catLower} in ${state.name} costs on average ${formatCurrency(moderate.costRange.median)}, ` +
+      `typically ${formatCurrency(moderate.costRange.low)}-${formatCurrency(moderate.costRange.high)} ` +
+      `for a moderate-complexity case, based on sourced attorney-fee and court-cost data.`,
   );
+  return `${opening}${feeClause}${duration}${feesClause}`;
 }
 
 /**
- * Trims or pads the paragraph to land in the 40-60 word range while keeping
- * it grammatically whole (drops/keeps whole sentences only — never cuts
- * mid-sentence, which would corrupt a real number).
+ * Fits the paragraph into the 40-60 word range while keeping it grammatically
+ * whole (whole sentences only, never cut mid-sentence, which would corrupt a
+ * real number).
  */
 function fitAnswerWordRange(paragraph: string): string {
-  const words = countWords(paragraph);
-  if (words <= MAX_ANSWER_WORDS && words >= MIN_ANSWER_WORDS) return paragraph;
+  let text = paragraph;
 
-  if (words > MAX_ANSWER_WORDS) {
+  if (countWords(text) > MAX_ANSWER_WORDS) {
     // Drop trailing sentences until within range, never mid-sentence.
-    const sentences = paragraph.match(/[^.!?]+[.!?]+/g) ?? [paragraph];
+    const sentences = text.match(/[^.!?]+[.!?]+/g) ?? [text];
     let acc = "";
     for (const sentence of sentences) {
       const candidate = acc + sentence;
       if (countWords(candidate) > MAX_ANSWER_WORDS && acc) break;
       acc = candidate;
     }
-    return acc.trim();
+    text = acc.trim();
   }
 
-  // Defense-in-depth: if a future data row leaves the paragraph short of the
-  // 40-word floor (e.g. no hourly rate, no contingency fee, no duration all
-  // at once), append a generic, non-fabricated closing clause rather than
-  // shipping a sub-40-word answer. Never invents a number.
-  if (words < MIN_ANSWER_WORDS) {
-    return (
-      `${paragraph} Actual cost depends on the specific facts of the case, the county where it is ` +
-      "filed, and which attorney is retained."
-    ).trim();
+  // A trimmed or short paragraph below the 40-word floor gets a generic,
+  // non-fabricated closing clause; it never invents a number.
+  if (countWords(text) < MIN_ANSWER_WORDS) {
+    text = `${text} Actual cost depends on the specific facts of the case, the county where it is filed, and which attorney is retained.`.trim();
   }
 
-  return paragraph;
+  return text;
 }
 
 function buildFactors(category: CategoryInfo, costs: LegalCostData[]): string[] {
@@ -292,11 +280,11 @@ function buildTableRows(costs: LegalCostData[]): AnswerBlockRow[] {
  * should render nothing (or a minimal placeholder) in that case.
  */
 export function buildAnswerBlock(entity: AnswerBlockEntity): AnswerBlock {
-  const { category, state, costs, dataVerifiedDate } = entity;
+  const { category, state, costs, dateRecord } = entity;
   const moderate = costs.find((c) => c.complexity === "moderate");
-  const freshnessLabel = humanDate(dataVerifiedDate ?? moderate?.lastVerifiedAt ?? null);
+  const freshnessLabel = dateRecord ? dateLabel(dateRecord, "day") : null;
 
-  const rawAnswer = buildAnswerParagraph(category, state, moderate, freshnessLabel);
+  const rawAnswer = buildAnswerParagraph(category, state, moderate, dateRecord);
   const answer = fitAnswerWordRange(rawAnswer);
 
   return {

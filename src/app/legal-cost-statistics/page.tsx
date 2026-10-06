@@ -8,14 +8,14 @@ import { StatisticsTable } from "@/components/seo/statistics-table";
 import { DatasetSchema } from "@/components/seo/dataset-schema";
 import { buildStatisticsAggregate } from "@/lib/seo/statistics";
 import { buildMeta, CANONICAL_ORIGIN } from "@/lib/seo";
-import { DATA_VERSION_DATE } from "@/lib/constants/data-meta";
+import { getFamilyDate } from "@/lib/content-dates";
 import { formatCurrency } from "@/lib/utils/format";
 import { AdsenseLoader } from "@/components/ads/adsense-loader";
 
 export const revalidate = 604800; // 7 days
 
 const PAGE_PATH = "/legal-cost-statistics";
-const DATA_VERIFIED_ISO = DATA_VERSION_DATE.toISOString().slice(0, 10);
+const DATE_RECORD = getFamilyDate("page:legal-cost-statistics");
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildMeta({
@@ -51,7 +51,7 @@ export default function LegalCostStatisticsPage() {
         name="LegalCostCalc Legal Cost Statistics"
         description="Aggregated median legal costs, highest- and lowest-cost states, and cross-state comparisons across 8 legal matter types in the United States."
         url={canonicalUrl}
-        dateModified={DATA_VERIFIED_ISO}
+        dateModified={DATE_RECORD?.date ?? null}
         distributionUrls={[
           { url: `${canonicalUrl}/data.json`, encodingFormat: "application/json" },
           { url: `${canonicalUrl}/data.csv`, encodingFormat: "text/csv" },
@@ -71,7 +71,7 @@ export default function LegalCostStatisticsPage() {
           />
 
           <div className="mt-4 flex flex-wrap items-center gap-3">
-            <UpdatedBadge lastVerified={DATA_VERIFIED_ISO} />
+            <UpdatedBadge record={DATE_RECORD} />
           </div>
 
           <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
@@ -90,7 +90,7 @@ export default function LegalCostStatisticsPage() {
             </p>
           )}
 
-          <AuthorByline lastUpdated={DATA_VERIFIED_ISO} className="mt-6" />
+          <AuthorByline lastUpdated={DATE_RECORD?.date ?? null} basis={DATE_RECORD?.basis} className="mt-6" />
         </div>
       </section>
 

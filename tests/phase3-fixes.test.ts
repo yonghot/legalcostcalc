@@ -7,13 +7,14 @@
  *   - SEC-003: isSafeUrl now https-only (http:// is blocked)
  *   - CORR-001: contingency fee mapped in cost-service / LegalCostData type
  *   - CORR-002: personal-injury rows have contingency data, hourly rates all zero
- *   - CORR-003: DATA_VERSION_DATE bumped to 2026-06-29
+ *   - CORR-003: the single DATA_VERSION_DATE (2026-06-29) was replaced by per-family
+ *     content-dates records; the records stay real, fixed ISO dates
  */
 
 import { describe, it, expect } from "vitest";
 import { safeJsonLd } from "@/lib/utils/json-ld";
 import { isSafeUrl } from "@/lib/utils/sanitize";
-import { DATA_VERSION_DATE } from "@/lib/constants/data-meta";
+import contentDates from "@/data/content-dates.json";
 import rawCosts from "../src/data/seed/costs.json";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -192,19 +193,27 @@ describe("costs.json — non-personal-injury rows do not have contingency fee da
   });
 });
 
-// ── MINOR: DATA_VERSION_DATE bumped ──────────────────────────────────────────
+// ── MINOR: per-family content dates replace the single data-version date ─────
 
-describe("DATA_VERSION_DATE — bumped to 2026-06-29", () => {
-  it("is a Date instance", () => {
-    expect(DATA_VERSION_DATE).toBeInstanceOf(Date);
+describe("content-dates — real fixed dates replace DATA_VERSION_DATE", () => {
+  const records = Object.entries(contentDates as Record<string, { date: string }>);
+
+  it("every record is a fixed ISO date", () => {
+    for (const [key, record] of records) {
+      expect(record.date, key).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(Number.isNaN(new Date(`${record.date}T00:00:00Z`).getTime()), key).toBe(false);
+    }
   });
 
-  it("is 2026-06-29 (ISO date)", () => {
-    expect(DATA_VERSION_DATE.toISOString().startsWith("2026-06-29")).toBe(true);
+  it("no record is earlier than the MVP commit (2026-04-05)", () => {
+    for (const [key, record] of records) {
+      expect(record.date >= "2026-04-05", key).toBe(true);
+    }
   });
 
-  it("is not earlier than 2026-06-28 (old stale date)", () => {
-    const OLD_DATE = new Date("2026-04-11T00:00:00Z");
-    expect(DATA_VERSION_DATE.getTime()).toBeGreaterThan(OLD_DATE.getTime());
+  it("no cost family still carries the retired 2026-06-29 global date", () => {
+    for (const [key, record] of records) {
+      if (key.startsWith("cost:")) expect(record.date, key).not.toBe("2026-06-29");
+    }
   });
 });

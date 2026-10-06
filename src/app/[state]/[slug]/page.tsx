@@ -5,7 +5,6 @@ import { Disclaimer } from "@/components/shared/disclaimer";
 import { STATES, STATE_BY_SLUG } from "@/lib/constants/states";
 import { CATEGORIES, CATEGORY_MAP } from "@/lib/constants/categories";
 import { formatCurrency } from "@/lib/utils/format";
-import { checkDataFreshness } from "@/lib/utils/data-freshness";
 import { getCostForPage } from "@/lib/services/cost-service";
 import { CostDisplay } from "@/components/shared/cost-display";
 import { Card, CardContent } from "@/components/ui/card";
@@ -21,7 +20,14 @@ import { AuthorByline } from "@/components/shared/author-byline";
 import { UpdatedBadge } from "@/components/shared/updated-badge";
 import { buildMeta, CANONICAL_ORIGIN } from "@/lib/seo";
 import { isIndexable } from "@/lib/index-policy";
-import { costFamilyKey, familyYear, latestContentYear } from "@/lib/content-dates";
+import {
+  costFamilyKey,
+  dateLabel,
+  familyYear,
+  getFamilyDate,
+  isOlderThanOneYear,
+  latestContentYear,
+} from "@/lib/content-dates";
 import { Breadcrumbs } from "@/components/seo/breadcrumbs";
 import { HubLinksBar } from "@/components/seo/hub-links-bar";
 import { StateCostAnalysis } from "@/components/seo/state-cost-analysis";
@@ -108,6 +114,7 @@ export default async function StateCategoryPage({ params }: PageProps) {
   }
 
   const moderateCost = costs.find((c) => c.complexity === "moderate");
+  const dateRecord = getFamilyDate(costFamilyKey(categoryInfo.slug));
   const year = familyYear(costFamilyKey(categoryInfo.slug)) ?? latestContentYear();
 
   // CODE-05 — per-entity FAQ answers. The five programmatic answers used to
@@ -161,7 +168,7 @@ export default async function StateCategoryPage({ params }: PageProps) {
     category: categoryInfo,
     state: stateInfo,
     costs,
-    dataVerifiedDate: moderateCost?.lastVerifiedAt ?? null,
+    dateRecord: dateRecord ?? null,
   });
 
   const canonicalUrl = `${CANONICAL_ORIGIN}/${stateInfo.slug}/${categoryInfo.slug}-cost`;
@@ -179,7 +186,7 @@ export default async function StateCategoryPage({ params }: PageProps) {
         headline={`How Much Does a ${categoryInfo.displayName} Cost in ${stateInfo.name}?`}
         description={`${categoryInfo.displayName} cost estimates in ${stateInfo.name}, including attorney fees, court costs, and other expenses.`}
         url={canonicalUrl}
-        dateModified={moderateCost?.lastVerifiedAt ?? null}
+        dateModified={dateRecord?.date ?? null}
       />
       <BreadcrumbSchema
         items={[
@@ -192,7 +199,7 @@ export default async function StateCategoryPage({ params }: PageProps) {
         name={`${categoryInfo.displayName} Cost Calculator — ${stateInfo.name}`}
         description={`Free calculator estimating ${categoryInfo.displayName.toLowerCase()} costs in ${stateInfo.name}, including attorney fees, court costs, and common fees.`}
         url={canonicalUrl}
-        dateModified={moderateCost?.lastVerifiedAt ?? null}
+        dateModified={dateRecord?.date ?? null}
       />
 
       <section className="bg-gradient-to-b from-teal-50 to-white py-16 sm:py-20">
@@ -213,7 +220,7 @@ export default async function StateCategoryPage({ params }: PageProps) {
               <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
                 How Much Does a {categoryInfo.displayName} Cost in {stateInfo.name}?
               </h1>
-              <UpdatedBadge lastVerified={moderateCost?.lastVerifiedAt ?? null} />
+              <UpdatedBadge record={dateRecord} />
             </div>
             <p className="mt-3 text-lg text-slate-600">
               {year} cost estimates for {categoryInfo.displayName.toLowerCase()} in {stateInfo.name},
@@ -233,7 +240,7 @@ export default async function StateCategoryPage({ params }: PageProps) {
               <AnswerBlock block={answerBlockData} compact />
             </div>
 
-            <AuthorByline lastUpdated={moderateCost?.lastVerifiedAt ?? null} className="mt-4" />
+            <AuthorByline lastUpdated={dateRecord?.date ?? null} basis={dateRecord?.basis} className="mt-4" />
           </div>
 
           {/* Quick stats */}
@@ -289,22 +296,16 @@ export default async function StateCategoryPage({ params }: PageProps) {
           )}
 
           {/* Data freshness */}
-          {moderateCost?.lastVerifiedAt && (() => {
-            const { isStale, formattedDate } = checkDataFreshness(moderateCost.lastVerifiedAt);
-
-            return (
-              <div className="mt-4 text-center">
-                {isStale && (
-                  <p className="text-xs font-medium text-amber-600">
-                    This data may be outdated. Last verified over 1 year ago.
-                  </p>
-                )}
-                <p className="text-xs text-slate-400">
-                  Last verified: {formattedDate}
+          {dateRecord && (
+            <div className="mt-4 text-center">
+              {isOlderThanOneYear(dateRecord.date) && (
+                <p className="text-xs font-medium text-amber-600">
+                  This data may be outdated. This page has not been updated in over a year.
                 </p>
-              </div>
-            );
-          })()}
+              )}
+              <p className="text-xs text-slate-400">{dateLabel(dateRecord)}</p>
+            </div>
+          )}
         </div>
       </section>
 

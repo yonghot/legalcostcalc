@@ -31,9 +31,7 @@ export function AnswerBlock({ block, compact = false }: AnswerBlockProps) {
         <p className="mt-3 text-base leading-relaxed text-slate-700">{answer}</p>
 
         {freshnessLabel && (
-          <p className="mt-2 text-xs font-medium text-slate-500">
-            Data verified: {freshnessLabel}
-          </p>
+          <p className="mt-2 text-xs font-medium text-slate-500">{freshnessLabel}</p>
         )}
 
         {tableRows.length > 0 && (

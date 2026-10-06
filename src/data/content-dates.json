@@ -45,9 +45,9 @@
     "evidence": "b1951d8 authored the guide; its content has not changed since."
   },
   "page:home": {
-    "date": "2026-08-31",
+    "date": "2026-10-07",
     "basis": "content-changed",
-    "evidence": "287bad4 last changed the home page copy."
+    "evidence": "The K3 visible-dates commit of 2026-10-07 removed the home page's claim that the bundled dataset was last verified on a given date; 287bad4 had last changed the home copy on 2026-08-31."
   },
   "page:compare": {
     "date": "2026-07-02",

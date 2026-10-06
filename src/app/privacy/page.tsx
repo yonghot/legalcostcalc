@@ -5,7 +5,6 @@
 
 import type { Metadata } from "next";
 import { Disclaimer } from "@/components/shared/disclaimer";
-import { DATA_VERSION_DATE } from "@/lib/constants/data-meta";
 import { PublishedBy } from "@/components/shared/published-by";
 import { PUBLISHER } from "@/lib/constants/publisher";
 import { AdsenseLoader } from "@/components/ads/adsense-loader";
@@ -17,18 +16,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/privacy" },
 };
 
-/**
- * POLICY_EFFECTIVE_DATE — the legal effective date of this privacy policy.
- * This is intentionally separate from DATA_VERSION_DATE, which tracks when
- * cost data was last verified and drives sitemap/SEO signals.
- */
 const POLICY_EFFECTIVE_DATE = "July 2, 2026";
-
-const UPDATED = DATA_VERSION_DATE.toLocaleDateString("en-US", {
-  year: "numeric",
-  month: "long",
-  day: "numeric",
-});
 
 export default function PrivacyPage() {
   return (
@@ -42,7 +30,7 @@ export default function PrivacyPage() {
             Privacy Policy
           </h1>
           <p className="mt-2 text-sm text-slate-500">
-            Effective date: {POLICY_EFFECTIVE_DATE} &middot; Last data update: {UPDATED}
+            Effective date: {POLICY_EFFECTIVE_DATE}
           </p>
 
           <div className="mt-8 space-y-8 text-slate-700">

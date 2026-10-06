@@ -6,7 +6,7 @@
  * fastest-lever content structure for AI-answer citation (Perplexity/ChatGPT
  * Search/AI Overviews) is a query-phrased H2, an immediate 40-60 word answer
  * paragraph with the REAL computed numbers, a compact data table, a cost-
- * factor list, and >=2 inline source-attributed stats plus a visible
+ * factor list, and >=2 computed stats plus a visible
  * freshness marker. This module builds that structure from the page's own
  * already-computed cost data — it never invents numbers.
  *
@@ -34,9 +34,11 @@ export interface AnswerBlockRow {
 export interface AnswerBlockStat {
   /** The statistic sentence itself, e.g. "The median cost is $2,250." */
   text: string;
-  /** Inline source attribution, e.g. "Nolo, 2026 legal cost survey". */
-  sourceLabel: string;
-  sourceUrl: string;
+}
+
+export interface AnswerBlockSource {
+  label: string;
+  url: string;
 }
 
 export interface AnswerBlockEntity {
@@ -59,8 +61,10 @@ export interface AnswerBlock {
   tableRows: AnswerBlockRow[];
   /** 5-10 cost factors driving the price, real per-category/state facts. */
   factors: string[];
-  /** >=2 inline source-attributed statistics. */
+  /** >=2 statistics computed from the rows. */
   stats: AnswerBlockStat[];
+  /** The rows' sources, listed once as references and never matched to a figure. */
+  sources: AnswerBlockSource[];
   /** Human-readable "As of {date}" freshness label, or null if no verified date exists. */
   freshnessLabel: string | null;
   /** What the dollar figures in the table measure, when it is not the attorney's own fee. */
@@ -234,33 +238,21 @@ function buildStats(
   const stats: AnswerBlockStat[] = [];
   const contingency = isContingencyMatter(moderate);
 
-  if (moderate && moderate.sources[0]) {
+  if (moderate && moderate.sources.length > 0) {
     stats.push({
       text: contingency
         ? `The median estimated case expense for a moderate-complexity ${category.displayName.toLowerCase()} case in ${state.name} is ` +
           `${formatCurrency(moderate.costRange.median)}.`
         : `The median ${category.displayName.toLowerCase()} cost in ${state.name} is ` +
           `${formatCurrency(moderate.costRange.median)} for a moderate-complexity case.`,
-      sourceLabel: sourceHostLabel(moderate.sources[0]),
-      sourceUrl: moderate.sources[0],
     });
   }
 
-  if (moderate?.hourlyRate.median && moderate.sources[1]) {
-    stats.push({
-      text: `Median attorney hourly rate: ${formatCurrency(moderate.hourlyRate.median)}/hr.`,
-      sourceLabel: sourceHostLabel(moderate.sources[1]),
-      sourceUrl: moderate.sources[1],
-    });
-  } else if (moderate?.hourlyRate.median && moderate.sources[0]) {
-    stats.push({
-      text: `Median attorney hourly rate: ${formatCurrency(moderate.hourlyRate.median)}/hr.`,
-      sourceLabel: sourceHostLabel(moderate.sources[0]),
-      sourceUrl: moderate.sources[0],
-    });
+  if (moderate?.hourlyRate.median && moderate.sources.length > 0) {
+    stats.push({ text: `Median attorney hourly rate: ${formatCurrency(moderate.hourlyRate.median)}/hr.` });
   }
 
-  if (simple && complex && simple.sources[0]) {
+  if (simple && complex && simple.sources.length > 0) {
     stats.push({
       text: contingency
         ? `Estimated case expenses run ${formatCurrency(simple.costRange.median)} for a simple case versus ` +
@@ -269,12 +261,15 @@ function buildStats(
         : `A simple case runs ${formatCurrency(simple.costRange.median)} versus ` +
           `${formatCurrency(complex.costRange.median)} for a complex case — a difference driven ` +
           "mainly by attorney hours and whether the matter is contested.",
-      sourceLabel: sourceHostLabel(simple.sources[0]),
-      sourceUrl: simple.sources[0],
     });
   }
 
   return stats.slice(0, 4);
+}
+
+function buildSources(costs: LegalCostData[]): AnswerBlockSource[] {
+  const urls = [...new Set(costs.flatMap((c) => c.sources))];
+  return urls.map((url) => ({ label: sourceHostLabel(url), url }));
 }
 
 function buildTableRows(costs: LegalCostData[]): AnswerBlockRow[] {
@@ -311,6 +306,7 @@ export function buildAnswerBlock(entity: AnswerBlockEntity): AnswerBlock {
     tableRows: buildTableRows(costs),
     factors: buildFactors(category, costs),
     stats: buildStats(category, state, costs),
+    sources: buildSources(costs),
     freshnessLabel,
     costBasisNote: isContingencyMatter(moderate)
       ? "Dollar figures in this table are estimated case expenses (filing fees, records, experts), not attorney fees; the attorney's fee is a contingency percentage of any recovery."

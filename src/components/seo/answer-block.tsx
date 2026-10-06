@@ -9,7 +9,8 @@ interface AnswerBlockProps {
 /**
  * CODE-01 — server-rendered GEO answer block: query-phrased H2, a 40-60 word
  * answer paragraph with real computed numbers, a compact cost-breakdown
- * table, a cost-factor list, >=2 inline source-attributed stats, and a dated
+ * table, a cost-factor list, >=2 computed stats, one list of the sources
+ * consulted, and a dated
  * freshness marker. Rendered as the FIRST content block on both the full
  * /[state]/[slug] page and the /embed/[state]/[slug] page so cited embeds
  * carry the same extractable passage (부속P §4 CODE-01).
@@ -18,7 +19,7 @@ interface AnswerBlockProps {
  * initial HTML response (verifiable via curl with JS disabled).
  */
 export function AnswerBlock({ block, compact = false }: AnswerBlockProps) {
-  const { heading, answer, tableRows, factors, stats, freshnessLabel, costBasisNote } = block;
+  const { heading, answer, tableRows, factors, stats, sources, freshnessLabel, costBasisNote } = block;
 
   return (
     <section className={compact ? "mb-6" : "border-b border-slate-100 bg-white py-10 sm:py-12"}>
@@ -95,19 +96,28 @@ export function AnswerBlock({ block, compact = false }: AnswerBlockProps) {
         {stats.length > 0 && (
           <ul className="mt-6 space-y-2 border-t border-slate-100 pt-4 text-sm text-slate-600">
             {stats.map((stat) => (
-              <li key={stat.text}>
-                {stat.text}{" "}
-                <a
-                  href={stat.sourceUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-teal-600 underline hover:text-teal-700"
-                >
-                  ({stat.sourceLabel})
-                </a>
-              </li>
+              <li key={stat.text}>{stat.text}</li>
             ))}
           </ul>
+        )}
+
+        {sources.length > 0 && (
+          <p className="mt-4 text-xs text-slate-500">
+            Sources consulted (general references for this category, not matched to individual figures):{" "}
+            {sources.map((source, i) => (
+              <span key={source.url}>
+                {i > 0 && ", "}
+                <a
+                  href={source.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-teal-700 underline hover:text-teal-800"
+                >
+                  {source.label}
+                </a>
+              </span>
+            ))}
+          </p>
         )}
       </div>
     </section>

@@ -126,13 +126,14 @@ describe("buildAnswerBlock — full indexable-page matrix", () => {
       expect(block.factors.length).toBeGreaterThanOrEqual(5);
       expect(block.factors.length).toBeLessThanOrEqual(10);
 
-      // >=2 inline source-attributed stats, each citing a real source URL
-      // that traces back to the seed dataset.
+      // >=2 computed stats, plus one list of the rows' sources that traces
+      // back to the seed dataset and is never matched to a single figure.
       expect(block.stats.length).toBeGreaterThanOrEqual(2);
-      for (const stat of block.stats) {
-        expect(stat.sourceUrl).toMatch(/^https?:\/\//);
+      expect(block.sources.length).toBeGreaterThan(0);
+      for (const source of block.sources) {
+        expect(source.url).toMatch(/^https?:\/\//);
         const allSources = costs.flatMap((c) => c.sources);
-        expect(allSources).toContain(stat.sourceUrl);
+        expect(allSources).toContain(source.url);
       }
 
       // Dated freshness marker.
@@ -157,6 +158,7 @@ describe("buildAnswerBlock — full indexable-page matrix", () => {
 
     expect(block.tableRows).toEqual([]);
     expect(block.stats).toEqual([]);
+    expect(block.sources).toEqual([]);
     expect(block.answer).not.toMatch(/\$[\d,]+/); // no invented dollar figure
     expect(block.answerWordCount).toBeGreaterThan(0);
   });
@@ -193,10 +195,14 @@ describe("AnswerBlock component — server-rendered HTML structure", () => {
     expect(html).toContain(block.factors[0]);
   });
 
-  it("renders >=2 source-attributed stats with real outbound source links", () => {
+  it("renders >=2 stats and the sources consulted with real outbound source links", () => {
     const html = renderToStaticMarkup(createElement(AnswerBlock, { block }));
     for (const stat of block.stats) {
-      expect(html).toContain(stat.sourceUrl);
+      expect(html).toContain(stat.text);
+    }
+    expect(html).toContain("Sources consulted");
+    for (const source of block.sources) {
+      expect(html).toContain(source.url);
     }
   });
 

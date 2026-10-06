@@ -6,6 +6,7 @@ import { AnalyticsInit } from "@/components/consent/analytics-init";
 import { FeedbackWidget } from "@/components/shared/feedback-widget";
 import { WebVitalsReporter } from "@/components/shared/web-vitals-reporter";
 import { resolveAdsenseClient } from "@/lib/env";
+import { CONSENT_DEFAULT_SCRIPT } from "@/lib/consent/default-script";
 import "./globals.css";
 
 const inter = Inter({
@@ -17,11 +18,6 @@ const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-jetbrains-mono",
 });
-
-// Google Consent Mode v2 defaults. Static literal — no untrusted input. Must
-// run before any Google script so the initial state is well-defined (denied).
-const CONSENT_MODE_DEFAULTS =
-  "window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied',wait_for_update:500});window.gtag=window.gtag||gtag;";
 
 export const metadata: Metadata = {
   title: {
@@ -81,17 +77,12 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
       <head>
         {/*
-          Google Consent Mode v2 DEFAULTS — must run BEFORE any Google script
-          (gtag.js / adsbygoogle.js) so the initial state is well-defined. Starts
-          DENIED everywhere; ConsentedAnalytics updates to granted per region
-          (US/opt-out immediately on load; EEA/UK/CH on banner Accept).
-          Content is a static literal. The AdSense loader is rendered by the
-          content pages, in the body, so it always follows this.
-
-          EEA/UK AdSense consent: Google's certified CMP is configured in the
-          AdSense dashboard → Privacy & messaging.
+          Consent Mode v2 defaults, region-scoped: EEA/UK/CH denied (Google's
+          certified CMP governs there), everywhere else granted. Must stay a
+          server-rendered inline script ahead of every Google script; the AdSense
+          loader is rendered by content pages in the body so it always follows.
         */}
-        <script id="consent-mode-defaults">{CONSENT_MODE_DEFAULTS}</script>
+        <script id="consent-mode-defaults">{CONSENT_DEFAULT_SCRIPT}</script>
       </head>
       <body
         className="min-h-screen bg-white font-sans text-slate-900 antialiased"

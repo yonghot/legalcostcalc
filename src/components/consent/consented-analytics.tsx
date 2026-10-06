@@ -34,6 +34,7 @@ import {
   getStoredConsent,
   requiresOptIn,
   grantConsent,
+  denyConsent,
 } from "./consent-config";
 
 function injectScript(src: string, attrs: Record<string, string> = {}) {
@@ -141,8 +142,10 @@ function loadScripts() {
 function applyInitialConsent() {
   const stored = getStoredConsent();
 
-  // Visitor explicitly declined — honour it everywhere, leave consent denied.
-  if (stored === "declined") return;
+  if (stored === "declined") {
+    denyConsent();
+    return;
+  }
 
   if (requiresOptIn()) {
     // EEA/UK/CH: only grant if the visitor previously accepted; otherwise wait
@@ -158,11 +161,9 @@ function applyInitialConsent() {
 
 export function ConsentedAnalytics() {
   useEffect(() => {
-    // 1) Load the third-party scripts unconditionally (env-guarded).
-    loadScripts();
-
-    // 2) Apply the region-appropriate consent state.
+    // A stored decline must reach the queue before gtag.js processes config.
     applyInitialConsent();
+    loadScripts();
 
     // 3) React to later consent changes (banner Accept/Decline, re-open flow).
     function handleConsentChange(e: Event) {

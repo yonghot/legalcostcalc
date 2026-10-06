@@ -78,6 +78,7 @@ describe("CODE-08 — privacy policy required elements", () => {
       "src/components/consent/consented-analytics.tsx",
       "src/components/consent/analytics-init.tsx",
       "src/app/layout.tsx",
+      "src/lib/consent/default-script.ts",
     ]
       .map((rel) => {
         try {

@@ -28,7 +28,6 @@ import RootLayout from "@/app/layout";
 import { AdsenseLoader } from "@/components/ads/adsense-loader";
 
 const ROOT = path.resolve(__dirname, "..");
-const LAYOUT = readFileSync(path.join(ROOT, "src", "app", "layout.tsx"), "utf8");
 const LOADER = readFileSync(path.join(ROOT, "src", "components", "ads", "adsense-loader.tsx"), "utf8");
 const RENDERED = renderToStaticMarkup(createElement(RootLayout, null, createElement(AdsenseLoader)));
 const CONSENTED = readFileSync(
@@ -69,9 +68,9 @@ describe("CODE-02 — AdSense loader is server-rendered", () => {
     expect(defaultsAt).toBeGreaterThan(-1);
     expect(loaderAt).toBeGreaterThan(-1);
     expect(defaultsAt).toBeLessThan(loaderAt);
-    expect(LAYOUT).toMatch(/ad_storage:'denied'/);
-    expect(LAYOUT).toMatch(/ad_personalization:'denied'/);
-    expect(LAYOUT).toMatch(/ad_user_data:'denied'/);
+    expect(RENDERED).toMatch(/ad_storage:'denied'/);
+    expect(RENDERED).toMatch(/ad_personalization:'denied'/);
+    expect(RENDERED).toMatch(/ad_user_data:'denied'/);
   });
 
   it("does not gate the loader on a consent decision (Consent Mode governs that)", () => {

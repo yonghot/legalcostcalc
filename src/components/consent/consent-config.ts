@@ -97,7 +97,18 @@ const GRANTED = {
   analytics_storage: "granted",
 } as const;
 
+const DENIED = {
+  ad_storage: "denied",
+  ad_user_data: "denied",
+  ad_personalization: "denied",
+  analytics_storage: "denied",
+} as const;
+
 /** Grant all consent categories (US/opt-out default, or EEA after Accept). */
 export function grantConsent() {
   pushConsent("consent", "update", { ...GRANTED });
+}
+
+export function denyConsent() {
+  pushConsent("consent", "update", { ...DENIED });
 }

@@ -8,6 +8,7 @@ import { CATEGORIES, CATEGORY_MAP } from "@/lib/constants/categories";
 import { getCostForPage } from "@/lib/services/cost-service";
 import { buildAnswerBlock } from "@/lib/seo/geo";
 import { AnswerBlock } from "@/components/seo/answer-block";
+import { CostResult } from "@/components/calculator/cost-result";
 import { costFamilyKey, getFamilyDate } from "@/lib/content-dates";
 
 const text = (html: string) =>
@@ -82,6 +83,28 @@ describe("K4: no inline source attribution decided by array position", () => {
       expect(html).toContain(`href="${source.url}"`);
     }
     expect((html.match(/Sources consulted/g) ?? []).length).toBe(1);
+  });
+
+  it("the calculator result card does not call the first listed source the primary source", async () => {
+    for (const category of ["divorce", "bankruptcy", "immigration"]) {
+      const costs = await getCostForPage(category, "AL");
+      const html = text(
+        renderToStaticMarkup(
+          createElement(CostResult, {
+            results: [costs.find((c) => c.complexity === "moderate")!],
+            stateName: "Alabama",
+            categoryName: category,
+            categorySlug: category,
+            stateCode: "AL",
+            stateSlug: "alabama",
+            monetizationDisabled: true,
+          }),
+        ),
+      );
+      expect(html, category).not.toMatch(/Primary source/i);
+      expect(html, category).toContain("Data Sources");
+      expect(html, category).toContain("Source 1");
+    }
   });
 
   it("holds for every state and category", async () => {

@@ -221,12 +221,9 @@ export const CostResult = memo(function CostResult({
 
       {/* ResultDisclaimer — layered UPL disclaimer ADJACENT to the result
           (never footer-only), supplementing the top Disclaimer above. Shows
-          the figures' last-verified date and, when available, the first
-          verified source link. */}
-      <ResultDisclaimer
-        dateText={dateRecord ? dateLabel(dateRecord) : null}
-        sourceUrl={safeSourceUrls[0]}
-      />
+          the page's content date; the sources are listed once under "Data
+          Sources" and none is named as the primary one. */}
+      <ResultDisclaimer dateText={dateRecord ? dateLabel(dateRecord) : null} />
 
       {/* U-05 (부속U §4/§5) — guide link at the result moment. Plain text
           link (no card/border), clearly distinct from the ad markers in

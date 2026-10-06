@@ -8,7 +8,7 @@
  * Acceptance criteria under test:
  *   - No page renders <FaqSchema> (FAQPage JSON-LD) into <head> anymore.
  *   - The home page and every /[state]/[slug] page emit Article JSON-LD
- *     (author Person-or-Organization, publisher Organization, dateModified
+ *     (author Person-or-Organization (Actigence), publisher Organization, dateModified
  *     from real verified data).
  *   - BreadcrumbList is still wired (unchanged, confirmed present).
  *   - SoftwareApplication is still wired, aggregateRating is never emitted
@@ -111,7 +111,8 @@ describe("CODE-02 — Article JSON-LD", () => {
           url: "https://legalcostcalc.co/",
         }),
       );
-      expect(htmlWithoutReviewer).toContain("LegalCostCalc Editorial Team");
+      expect(htmlWithoutReviewer).toContain('"author":{"@type":"Organization","name":"Actigence"');
+      expect(htmlWithoutReviewer).not.toContain("Editorial Team");
 
       process.env.NEXT_PUBLIC_REVIEWER_NAME = "Jane Smith";
       // getReviewerConfig reads process.env at call time (see

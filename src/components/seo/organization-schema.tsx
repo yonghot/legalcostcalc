@@ -1,42 +1,24 @@
 /**
- * Schema.org WebSite + Organization structured data for E-E-A-T signals.
- * Used on the home page to help Google understand the site.
+ * Schema.org WebSite + publisher Organization graph for the home page.
  *
- * T11: adds a `contributor` entry describing the honest editorial-team
- * authorship model already disclosed in <AuthorByline> ("LegalCostCalc
- * Editorial Team", reviewer pending) — deliberately NOT a schema.org Person
- * with an invented name/credentials (no-fabrication guardrail).
- * `dateModified` is driven by the same real, verified dataset date used
- * everywhere else (DEFAULT_FIGURES_LAST_VERIFIED), never a render-time stamp.
+ * The Organization node is the publisher (src/lib/constants/publisher.ts),
+ * never a self-referencing node named after the site, and it states no
+ * founding date, team, or review. `dateModified` comes from the real verified
+ * dataset date (DEFAULT_FIGURES_LAST_VERIFIED), never a render-time stamp.
  *
- * CODE-02: the WebSite node also carries `potentialAction: SearchAction`
- * (Sitelinks Searchbox eligibility) pointing at the real /compare?states=...
- * comparison route — this is part of the still-supported 2026 rich-result
- * set that replaces the deprecated FAQPage/HowTo schema previously emitted
- * elsewhere on this site.
+ * The WebSite node carries `potentialAction: SearchAction` pointing at the
+ * real /search route.
  *
- * K06: when a real reviewer is configured (src/lib/reviewer.ts,
- * NEXT_PUBLIC_REVIEWER_NAME), an ADDITIONAL `reviewedBy` Person entry is
- * included — this only ever reflects an owner-supplied real name/credential,
- * never a fabricated one. When unset, the schema graph is unchanged from
- * before this wave.
- *
- * Security note (unchanged pattern from before this wave): content is
- * rendered via `safeJsonLd()`, which escapes '<' before injection into
- * `dangerouslySetInnerHTML`, matching every other JSON-LD component in this
- * repo (see src/lib/utils/json-ld.ts) — this is the repo's established safe
- * pattern for structured data (not raw/untrusted HTML), and all fields here
- * are internal, hardcoded/constant strings or owner-supplied env values, not
- * user/request-derived content.
+ * Content is serialised with safeJsonLd() (escapes '<', '>' and '&'); every
+ * field is an internal constant, none is user or request derived.
  */
 
-import { safeJsonLd } from "@/lib/utils/json-ld";
+import { publisherNode, safeJsonLd } from "@/lib/utils/json-ld";
 import { CANONICAL_ORIGIN } from "@/lib/seo";
 import { DEFAULT_FIGURES_LAST_VERIFIED } from "@/lib/constants/figures";
-import { getReviewerConfig } from "@/lib/reviewer";
+import { PUBLISHER } from "@/lib/constants/publisher";
 
 export function OrganizationSchema() {
-  const reviewer = getReviewerConfig();
   const schema = {
     "@context": "https://schema.org",
     "@graph": [
@@ -57,46 +39,11 @@ export function OrganizationSchema() {
           },
           "query-input": "required name=search_term_string",
         },
-        publisher: {
-          "@type": "Organization",
-          name: "LegalCostCalc",
-          url: CANONICAL_ORIGIN,
-          logo: {
-            "@type": "ImageObject",
-            url: `${CANONICAL_ORIGIN}/icon-512.svg`,
-          },
-        },
+        publisher: publisherNode(),
       },
       {
-        "@type": "Organization",
-        name: "LegalCostCalc",
-        url: CANONICAL_ORIGIN,
-        description:
-          "Transparent legal cost information tool providing source-verified cost estimates for common legal matters across all US states.",
-        foundingDate: "2026",
-        knowsAbout: [
-          "Legal costs",
-          "Attorney fees",
-          "Court costs",
-          "Legal services pricing",
-        ],
-        // Honest editorial-team authorship model — see AuthorByline. Not a
-        // fabricated Person entity (no invented name/credentials).
-        contributor: {
-          "@type": "Organization",
-          name: "LegalCostCalc Editorial Team",
-        },
-        // K06 — only present when a real reviewer is env-configured (see
-        // module docs above). No name/credential is ever invented here.
-        ...(reviewer
-          ? {
-              reviewedBy: {
-                "@type": "Person",
-                name: reviewer.name,
-                ...(reviewer.credentials ? { honorificSuffix: reviewer.credentials } : {}),
-              },
-            }
-          : {}),
+        ...publisherNode(),
+        email: PUBLISHER.email,
       },
     ],
   };

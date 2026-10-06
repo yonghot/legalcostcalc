@@ -1,5 +1,4 @@
-import { safeJsonLd } from "@/lib/utils/json-ld";
-import { CANONICAL_ORIGIN } from "@/lib/seo";
+import { publisherNode, safeJsonLd } from "@/lib/utils/json-ld";
 
 interface SoftwareApplicationSchemaProps {
   /** Tool name, e.g. "Divorce Cost Calculator". */
@@ -54,16 +53,8 @@ export function SoftwareApplicationSchema({
       priceCurrency: "USD",
     },
     ...(dateModified ? { dateModified } : {}),
-    author: {
-      "@type": "Organization",
-      name: "LegalCostCalc",
-      url: CANONICAL_ORIGIN,
-    },
-    publisher: {
-      "@type": "Organization",
-      name: "LegalCostCalc",
-      url: CANONICAL_ORIGIN,
-    },
+    author: publisherNode(),
+    publisher: publisherNode(),
   };
 
   return (

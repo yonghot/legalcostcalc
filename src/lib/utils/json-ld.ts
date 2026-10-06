@@ -1,3 +1,5 @@
+import { PUBLISHER } from "@/lib/constants/publisher";
+
 /**
  * Safely serializes a JSON-LD object for injection into a <script> tag.
  * Escapes `<`, `>`, and `&` to Unicode escape sequences to prevent
@@ -12,4 +14,12 @@ export function safeJsonLd(obj: Record<string, unknown>): string {
     .replace(/</g, "\\u003c")
     .replace(/>/g, "\\u003e")
     .replace(/&/g, "\\u0026");
+}
+
+export function publisherNode() {
+  return {
+    "@type": "Organization",
+    name: PUBLISHER.name,
+    url: PUBLISHER.url,
+  };
 }

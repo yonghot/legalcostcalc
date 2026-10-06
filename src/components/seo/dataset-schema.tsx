@@ -1,5 +1,4 @@
-import { safeJsonLd } from "@/lib/utils/json-ld";
-import { CANONICAL_ORIGIN } from "@/lib/seo";
+import { publisherNode, safeJsonLd } from "@/lib/utils/json-ld";
 
 interface DatasetSchemaProps {
   /** Dataset name, e.g. "LegalCostCalc Legal Cost Statistics". */
@@ -45,11 +44,8 @@ export function DatasetSchema({
     url,
     dateModified,
     license: "https://creativecommons.org/licenses/by/4.0/",
-    creator: {
-      "@type": "Organization",
-      name: "LegalCostCalc",
-      url: CANONICAL_ORIGIN,
-    },
+    creator: publisherNode(),
+    publisher: publisherNode(),
     distribution: distributionUrls.map((d) => ({
       "@type": "DataDownload",
       contentUrl: d.url,

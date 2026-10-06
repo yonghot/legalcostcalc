@@ -1,5 +1,4 @@
-import { safeJsonLd } from "@/lib/utils/json-ld";
-import { CANONICAL_ORIGIN } from "@/lib/seo";
+import { publisherNode, safeJsonLd } from "@/lib/utils/json-ld";
 import { getReviewerConfig } from "@/lib/reviewer";
 
 interface ArticleSchemaProps {
@@ -24,27 +23,17 @@ interface ArticleSchemaProps {
   dateModified?: string | null;
 }
 
-// NOTE ON SAFETY: this component mirrors the exact JSON-LD injection pattern
-// already used sitewide (see breadcrumb-schema.tsx, faq-schema.tsx,
-// software-application-schema.tsx, organization-schema.tsx). All fields
-// serialized here are internal, controlled strings/constants (page config,
-// env-configured reviewer name, or real dataset dates) — never raw
-// user/request input. safeJsonLd() escapes "<"/">"/"&" before injection,
-// matching Google's own "html safe" JSON serialization mode, which is the
-// established defense-in-depth measure for this repo's JSON-LD components.
 /**
- * CODE-02 — schema.org Article JSON-LD (author Person/Organization,
- * publisher Organization, dateModified=data-verified). Part of the
- * still-supported 2026 rich-result set (Article + BreadcrumbList +
- * SoftwareApplication/WebApplication + WebSite/SearchAction) that REPLACES
- * the deprecated FAQPage/HowTo schema previously emitted on these pages.
+ * CODE-02 — schema.org Article JSON-LD (still-supported 2026 rich-result set;
+ * replaces the deprecated FAQPage/HowTo schema).
  *
- * Author identity: when a real, owner-configured reviewer exists
- * (NEXT_PUBLIC_REVIEWER_NAME via src/lib/reviewer.ts) we emit a genuine
- * schema.org Person as `author`. Otherwise `author` is the Organization
- * (LegalCostCalc Editorial Team) — never an invented Person. This mirrors
- * the exact no-fabrication pattern already established in
- * OrganizationSchema's `reviewedBy` field.
+ * Author and publisher are the publisher Organization
+ * (src/lib/constants/publisher.ts). Only when a real, owner-configured reviewer
+ * exists (NEXT_PUBLIC_REVIEWER_NAME via src/lib/reviewer.ts) is `author` a
+ * schema.org Person; no team, reviewer or Person is ever invented.
+ *
+ * Serialised with safeJsonLd(); every field is an internal constant, env-held
+ * reviewer name or real dataset date, never user or request input.
  */
 export function ArticleSchema({
   headline,
@@ -61,11 +50,7 @@ export function ArticleSchema({
         name: reviewer.name,
         ...(reviewer.credentials ? { honorificSuffix: reviewer.credentials } : {}),
       }
-    : {
-        "@type": "Organization",
-        name: "LegalCostCalc Editorial Team",
-        url: CANONICAL_ORIGIN,
-      };
+    : publisherNode();
 
   const schema = {
     "@context": "https://schema.org",
@@ -76,21 +61,13 @@ export function ArticleSchema({
     ...(datePublished ? { datePublished } : {}),
     ...(dateModified ? { dateModified } : {}),
     author,
-    publisher: {
-      "@type": "Organization",
-      name: "LegalCostCalc",
-      url: CANONICAL_ORIGIN,
-      logo: {
-        "@type": "ImageObject",
-        url: `${CANONICAL_ORIGIN}/icon-512.svg`,
-      },
-    },
+    publisher: publisherNode(),
   };
 
   return (
     <script
       type="application/ld+json"
-      // eslint-disable-next-line react/no-danger -- static internal JSON-LD, escaped via safeJsonLd (see file-level note above)
+      // eslint-disable-next-line react/no-danger -- static internal JSON-LD, escaped via safeJsonLd
       dangerouslySetInnerHTML={{ __html: safeJsonLd(schema) }}
     />
   );

@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 // NOTE TO OPERATOR: swap "LegalCostCalc" below for your registered legal business
 // name wherever the comment "LEGAL ENTITY" appears.
 
-const EFFECTIVE_DATE = "July 2, 2026";
+const EFFECTIVE_DATE = "October 7, 2026";
 
 // Shared className for in-page anchor links (WCAG 2.4.7 AA focus-visible requirement)
 const linkCls = `text-teal-700 underline rounded-sm ${FOCUS_RING}`;
@@ -136,10 +136,10 @@ export default function TermsPage() {
               </p>
             </section>
 
-            {/* 4A. Indemnification */}
+            {/* 5. Indemnification */}
             <section>
               <h2 className="text-xl font-semibold text-slate-900">
-                4A. Indemnification
+                5. Indemnification
               </h2>
               <p className="mt-2 leading-relaxed">
                 You agree to defend, indemnify, and hold harmless
@@ -154,54 +154,10 @@ export default function TermsPage() {
               </p>
             </section>
 
-            {/* 4B. Arbitration & Class Action Waiver */}
+            {/* 6. Intellectual Property */}
             <section>
               <h2 className="text-xl font-semibold text-slate-900">
-                4B. Binding Individual Arbitration &amp; Class-Action Waiver
-              </h2>
-              <div className="mt-2 space-y-2 leading-relaxed">
-                <p>
-                  <strong>
-                    PLEASE READ THIS SECTION CAREFULLY — IT AFFECTS YOUR LEGAL
-                    RIGHTS, INCLUDING YOUR RIGHT TO FILE A LAWSUIT IN COURT.
-                  </strong>
-                </p>
-                <p>
-                  You and LegalCostCalc agree that any dispute, claim, or
-                  controversy arising out of or relating to these Terms or
-                  your use of the Site (&quot;Dispute&quot;) will be resolved
-                  through <strong>binding individual arbitration</strong>,
-                  rather than in court, except that either party may bring an
-                  individual action in small-claims court for Disputes within
-                  that court&apos;s jurisdiction.
-                </p>
-                <p>
-                  <strong>
-                    Class-action and jury-trial waiver.
-                  </strong>{" "}
-                  You and LegalCostCalc each waive the right to a jury trial
-                  and agree that any arbitration or proceeding will be
-                  conducted only on an individual basis and not in a class,
-                  consolidated, or representative action. The arbitrator may
-                  not consolidate more than one person&apos;s claims and may
-                  not otherwise preside over any form of a class or
-                  representative proceeding.
-                </p>
-                <p>
-                  If this class-action waiver is found unenforceable as to a
-                  particular Dispute, then that Dispute (and only that
-                  Dispute) may proceed in court, subject to the governing law
-                  and venue provisions below, but the remainder of this
-                  arbitration provision will remain in force for all other
-                  Disputes.
-                </p>
-              </div>
-            </section>
-
-            {/* 5. Intellectual Property */}
-            <section>
-              <h2 className="text-xl font-semibold text-slate-900">
-                5. Intellectual Property
+                6. Intellectual Property
               </h2>
               <p className="mt-2 leading-relaxed">
                 All original content on this Site — including text, design,
@@ -214,10 +170,10 @@ export default function TermsPage() {
               </p>
             </section>
 
-            {/* 6. Third-Party & Affiliate Links */}
+            {/* 7. Third-Party & Affiliate Links */}
             <section>
               <h2 className="text-xl font-semibold text-slate-900">
-                6. Third-Party &amp; Affiliate Links
+                7. Third-Party &amp; Affiliate Links
               </h2>
               <p className="mt-2 leading-relaxed">
                 The Site contains links to third-party websites and legal
@@ -235,10 +191,10 @@ export default function TermsPage() {
               </p>
             </section>
 
-            {/* 7. Advertising */}
+            {/* 8. Advertising */}
             <section>
               <h2 className="text-xl font-semibold text-slate-900">
-                7. Advertising
+                8. Advertising
               </h2>
               <p className="mt-2 leading-relaxed">
                 We may display advertisements served by Google AdSense and
@@ -253,10 +209,10 @@ export default function TermsPage() {
               </p>
             </section>
 
-            {/* 8. Modifications */}
+            {/* 9. Modifications */}
             <section>
               <h2 className="text-xl font-semibold text-slate-900">
-                8. Modifications to Terms
+                9. Modifications to Terms
               </h2>
               <p className="mt-2 leading-relaxed">
                 We reserve the right to modify these Terms at any time. When
@@ -267,27 +223,7 @@ export default function TermsPage() {
               </p>
             </section>
 
-            {/* 9. Governing Law & Venue */}
-            <section>
-              <h2 className="text-xl font-semibold text-slate-900">
-                9. Governing Law &amp; Venue
-              </h2>
-              <p className="mt-2 leading-relaxed">
-                {/* GOVERNING-LAW STATE: not yet specified by the operator. Do not
-                    assume a state of incorporation/operation — set the specific
-                    U.S. state here once the entity's home state is confirmed. */}
-                These Terms are governed by and construed in accordance with
-                the laws of the United States and the operator&apos;s state of
-                organization or principal place of business (to be specified
-                by the operator), without regard to conflict-of-law
-                principles. Subject to the arbitration provision in Section
-                4B above, any Dispute not subject to arbitration shall be
-                brought exclusively in the state or federal courts located in
-                that jurisdiction, and you consent to personal jurisdiction
-                and venue there.
-              </p>
-            </section>
-
+            {/* Governing law and arbitration are intentionally omitted; do not replace them with an arbitrary jurisdiction. */}
             {/* 10. Contact */}
             <section>
               <h2 className="text-xl font-semibold text-slate-900">

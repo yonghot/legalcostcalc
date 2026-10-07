@@ -77,10 +77,10 @@ describe("CODE-03 — 'Embed this calculator' panel on the main calculator page"
     expect(src).toMatch(/import\s*\{\s*EmbedPanel\s*\}/);
   });
 
-  it("EmbedPanel wraps the same EmbedSnippet component used on /embed (identical markup/rel policy everywhere)", () => {
+  it("EmbedPanel points to /embed (the one place that carries the snippet and its rel policy) instead of printing the snippet on every state page", () => {
     const src = readSource("src/components/embed/embed-panel.tsx");
-    expect(src).toMatch(/import\s*\{\s*EmbedSnippet\s*\}/);
-    expect(src).toMatch(/<EmbedSnippet/);
+    expect(src).toContain('href="/embed"');
+    expect(src).not.toMatch(/EmbedSnippet/);
   });
 });
 

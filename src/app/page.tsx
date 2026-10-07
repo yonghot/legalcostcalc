@@ -30,7 +30,6 @@ import { FOCUS_RING } from "@/lib/utils/styles";
 import { POPULAR_STATE_CODES } from "@/lib/constants/popular";
 import { getFamilyDate } from "@/lib/content-dates";
 import { RecentCalculations } from "@/components/shared/recent-calculations";
-import { SeasonalBadge } from "@/components/shared/seasonal-badge";
 import { HomePublisherContent } from "@/components/seo/home-publisher-content";
 import { AdsenseLoader } from "@/components/ads/adsense-loader";
 
@@ -83,10 +82,6 @@ export default function HomePage() {
           <Disclaimer />
 
           <div className="mt-8 text-center">
-            {/* U-04 — season/revisit hook badge. See src/components/shared/seasonal-badge.tsx for sourcing. */}
-            <div className="mb-4 flex justify-center">
-              <SeasonalBadge />
-            </div>
             <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
               How Much Will Your Legal Matter{" "}
               <span className="text-teal-600">Really</span> Cost?

@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 import { STATE_BY_SLUG } from "@/lib/constants/states";
 import { CATEGORY_MAP } from "@/lib/constants/categories";
 import { getModerateCostRange } from "@/lib/page-index";
-import { formatCurrency } from "@/lib/utils/format";
+import { aOrAn, formatCurrency } from "@/lib/utils/format";
 import { getOgAsOfLabel } from "@/lib/seo/og-freshness";
 import { costFamilyKey } from "@/lib/content-dates";
 
@@ -133,7 +133,7 @@ export default async function OGImage({
             marginBottom: "20px",
           }}
         >
-          How Much Does a {categoryName}
+          How Much Does {aOrAn(categoryName)} {categoryName}
           <br />
           Cost in <span style={{ color: "#0D9488" }}>{stateName}</span>?
         </h1>

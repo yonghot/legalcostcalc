@@ -6,6 +6,12 @@ export function formatCurrency(amount: number): string {
   }).format(amount);
 }
 
+export function aOrAn(label: string, capitalize = false): string {
+  const word = /^[aeiou]/i.test(label.trim()) ? "an" : "a";
+  if (!capitalize) return word;
+  return word === "an" ? "An" : "A";
+}
+
 export function formatCurrencyRange(low: number, high: number): string {
   return `${formatCurrency(low)} – ${formatCurrency(high)}`;
 }

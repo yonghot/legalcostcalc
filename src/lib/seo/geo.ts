@@ -15,7 +15,7 @@
  * /[state]/[slug] page and the /embed/[state]/[slug] page (CODE-01
  * acceptance criterion: "Wire the same block into app/embed pages").
  */
-import { formatCurrency } from "@/lib/utils/format";
+import { aOrAn, formatCurrency } from "@/lib/utils/format";
 import type { CategoryInfo } from "@/lib/types/category";
 import type { StateInfo } from "@/lib/types/state";
 import type { CostRange, LegalCostData } from "@/lib/types";
@@ -288,7 +288,7 @@ export function buildAnswerBlock(entity: AnswerBlockEntity): AnswerBlock {
   const answer = fitAnswerWordRange(rawAnswer);
 
   return {
-    heading: `How much does a ${category.displayName.toLowerCase()} cost in ${state.name}?`,
+    heading: `How much does ${aOrAn(category.displayName)} ${category.displayName.toLowerCase()} cost in ${state.name}?`,
     answer,
     answerWordCount: countWords(answer),
     tableRows: buildTableRows(costs),

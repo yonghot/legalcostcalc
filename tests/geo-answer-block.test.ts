@@ -27,7 +27,7 @@ import { STATES, STATE_BY_SLUG } from "@/lib/constants/states";
 import { INDEXABLE_PAGES } from "@/lib/page-index";
 import { buildAnswerBlock } from "@/lib/seo/geo";
 import { AnswerBlock } from "@/components/seo/answer-block";
-import { formatCurrency } from "@/lib/utils/format";
+import { aOrAn, formatCurrency } from "@/lib/utils/format";
 import type { LegalCostData, Complexity } from "@/lib/types";
 import { costFamilyKey, getFamilyDate } from "@/lib/content-dates";
 
@@ -107,7 +107,7 @@ describe("buildAnswerBlock — full indexable-page matrix", () => {
 
       // Query-phrased H2.
       expect(block.heading.toLowerCase()).toBe(
-        `how much does a ${entry.category.displayName.toLowerCase()} cost in ${entry.state.name.toLowerCase()}?`,
+        `how much does ${aOrAn(entry.category.displayName)} ${entry.category.displayName.toLowerCase()} cost in ${entry.state.name.toLowerCase()}?`,
       );
 
       // 40-60 word answer paragraph.

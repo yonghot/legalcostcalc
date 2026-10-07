@@ -4,7 +4,7 @@ import { CostCalculator } from "@/components/calculator/cost-calculator";
 import { Disclaimer } from "@/components/shared/disclaimer";
 import { STATES, STATE_BY_SLUG } from "@/lib/constants/states";
 import { CATEGORIES, CATEGORY_MAP } from "@/lib/constants/categories";
-import { formatCurrency } from "@/lib/utils/format";
+import { aOrAn, formatCurrency } from "@/lib/utils/format";
 import { getCostForPage } from "@/lib/services/cost-service";
 import { CostDisplay } from "@/components/shared/cost-display";
 import { Card, CardContent } from "@/components/ui/card";
@@ -137,15 +137,15 @@ export default async function StateCategoryPage({ params }: PageProps) {
       ? dataDrivenFaq
       : [
           {
-            question: `How much does a ${categoryInfo.displayName.toLowerCase()} cost in ${stateInfo.name}?`,
+            question: `How much does ${aOrAn(categoryInfo.displayName)} ${categoryInfo.displayName.toLowerCase()} cost in ${stateInfo.name}?`,
             answer: `Cost data for ${categoryInfo.displayName.toLowerCase()} in ${stateInfo.name} is currently being collected.`,
           },
           {
-            question: `How much does a ${categoryInfo.displayName.toLowerCase()} lawyer charge per hour in ${stateInfo.name}?`,
+            question: `How much does ${aOrAn(categoryInfo.displayName)} ${categoryInfo.displayName.toLowerCase()} lawyer charge per hour in ${stateInfo.name}?`,
             answer: `Hourly rate data for ${stateInfo.name} is currently being collected.`,
           },
           {
-            question: `How long does a ${categoryInfo.displayName.toLowerCase()} take in ${stateInfo.name}?`,
+            question: `How long does ${aOrAn(categoryInfo.displayName)} ${categoryInfo.displayName.toLowerCase()} take in ${stateInfo.name}?`,
             answer: `Duration data for ${categoryInfo.displayName.toLowerCase()} in ${stateInfo.name} is currently being collected.`,
           },
         ]),
@@ -182,7 +182,7 @@ export default async function StateCategoryPage({ params }: PageProps) {
           BreadcrumbList (below) + SoftwareApplication + WebSite/SearchAction
           (root, via OrganizationSchema). */}
       <ArticleSchema
-        headline={`How Much Does a ${categoryInfo.displayName} Cost in ${stateInfo.name}?`}
+        headline={`How Much Does ${aOrAn(categoryInfo.displayName)} ${categoryInfo.displayName} Cost in ${stateInfo.name}?`}
         description={`${categoryInfo.displayName} cost estimates in ${stateInfo.name}, including attorney fees, court costs, and other expenses.`}
         url={canonicalUrl}
         dateModified={dateRecord?.date ?? null}
@@ -217,7 +217,7 @@ export default async function StateCategoryPage({ params }: PageProps) {
 
             <div className="flex flex-wrap items-center gap-3">
               <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-                How Much Does a {categoryInfo.displayName} Cost in {stateInfo.name}?
+                How Much Does {aOrAn(categoryInfo.displayName)} {categoryInfo.displayName} Cost in {stateInfo.name}?
               </h1>
               <UpdatedBadge record={dateRecord} />
             </div>
@@ -366,14 +366,13 @@ export default async function StateCategoryPage({ params }: PageProps) {
         allOtherStates={allOtherStates}
       />
 
-      {/* CODE-03 — "Embed this calculator" copy-to-clipboard panel. Placed
-          below the calculator/result area and existing monetization/link
-          modules (same LCP/ad-exclusion-zone rationale as K01 below). */}
+      {/* CODE-03 — "Embed this calculator" pointer to /embed. Placed below
+          the calculator/result area and existing monetization/link modules
+          (same LCP/ad-exclusion-zone rationale as K01 below). */}
       <section className="py-8">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <EmbedPanel
             embedPath={`/embed/${stateInfo.slug}/${categoryInfo.slug}-cost`}
-            canonicalPath={`/${stateInfo.slug}/${categoryInfo.slug}-cost`}
             label={`${stateInfo.name} ${categoryInfo.displayName} Cost Calculator`}
           />
         </div>

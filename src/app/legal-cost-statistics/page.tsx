@@ -136,13 +136,13 @@ export default function LegalCostStatisticsPage() {
               href={`${PAGE_PATH}/data.json`}
               className="inline-flex items-center rounded-md border border-teal-600 bg-white px-4 py-2 text-sm font-medium text-teal-700 hover:bg-teal-50"
             >
-              Download data.json
+              Download as JSON
             </a>
             <a
               href={`${PAGE_PATH}/data.csv`}
               className="inline-flex items-center rounded-md border border-teal-600 bg-white px-4 py-2 text-sm font-medium text-teal-700 hover:bg-teal-50"
             >
-              Download data.csv
+              Download as CSV
             </a>
           </div>
         </div>

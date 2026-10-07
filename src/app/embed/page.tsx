@@ -11,7 +11,7 @@ import { AdsenseLoader } from "@/components/ads/adsense-loader";
 export const metadata: Metadata = {
   title: "Embed the Legal Cost Calculator",
   description:
-    "Add the free LegalCostCalc cost calculator to your own website with a single iframe snippet. Includes attribution markup for SEO.",
+    "Add the free LegalCostCalc cost calculator to your own website with a single iframe snippet. Includes a source-attribution link.",
   alternates: { canonical: "/embed" },
 };
 
@@ -40,7 +40,7 @@ export default function EmbedIndexPage() {
           <p className="mt-3 text-lg text-slate-600">
             Add our free, interactive legal cost calculator to your own site. Copy the
             snippet below — it includes an attribution link that belongs in your page&apos;s
-            HTML (not inside the iframe) so search engines can credit the source.
+            HTML (not inside the iframe) so your readers can see where the figures come from.
           </p>
         </div>
       </section>
@@ -62,8 +62,8 @@ export default function EmbedIndexPage() {
               </li>
               <li>
                 The <code className="rounded bg-slate-100 px-1">&lt;a&gt;</code> attribution link
-                lives in <em>your</em> page HTML — this is what passes SEO value. A link inside
-                the iframe would not count.
+                lives in <em>your</em> page HTML, outside the iframe, so your readers can see
+                and follow it to the original page.
               </li>
               <li>
                 Swap the state and category in the URL to embed any of our{" "}

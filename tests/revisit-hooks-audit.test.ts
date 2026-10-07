@@ -13,15 +13,15 @@
  * No re-wiring was needed; this file is the audit evidence + regression
  * guard so that wiring can never silently regress.
  *
- * The second half covers the U-04 season/revisit badge added this wave
- * (src/components/shared/seasonal-badge.tsx): real source citation, no
- * fabricated stat, links to a real existing page, rendered on the homepage.
+ * The second half pins that the U-04 season/revisit badge stays removed: its
+ * "January is the busiest month" claim carried no source a reader could see
+ * (K4/K2), and "save your estimate now" was an urgency hook.
  */
 import { describe, it, expect, vi } from "vitest";
 import { createElement } from "react";
 import type { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import type { LegalCostData } from "@/lib/types";
 
@@ -49,7 +49,6 @@ vi.mock("next/link", async () => {
 
 import { CostResult } from "@/components/calculator/cost-result";
 import { ContinueBanner } from "@/components/shared/continue-banner";
-import { SeasonalBadge } from "@/components/shared/seasonal-badge";
 
 function readSource(relPath: string): string {
   return readFileSync(path.resolve(__dirname, "..", relPath), "utf8");
@@ -116,44 +115,15 @@ describe("U-04 audit — T16 ContinueBanner renders in the result area", () => {
   });
 });
 
-describe("U-04 — season/revisit badge (SeasonalBadge)", () => {
-  it("[grep] rendered on the homepage (src/app/page.tsx)", () => {
+describe("U-04 — the unsourced season/revisit badge stays removed", () => {
+  it("the badge component no longer exists and the homepage does not render it", () => {
+    expect(existsSync(path.resolve(__dirname, "..", "src/components/shared/seasonal-badge.tsx"))).toBe(false);
     const src = readSource("src/app/page.tsx");
-    expect(src).toMatch(/import\s*\{\s*SeasonalBadge\s*\}/);
-    expect(src).toMatch(/<SeasonalBadge\s*\/>/);
+    expect(src).not.toMatch(/SeasonalBadge/);
+    expect(src).not.toMatch(/busiest month/i);
   });
 
-  it("[render] renders the exact non-advisory season-hook copy, linking to a real existing page", () => {
-    const html = renderToStaticMarkup(createElement(SeasonalBadge, {}));
-    expect(html).toContain(
-      "January is the busiest month for divorce-related searches — save your estimate now",
-    );
-    expect(html).toContain('href="/divorce-cost-by-state"');
-  });
-
-  it("links to a route that actually exists in this repo (src/app/divorce-cost-by-state/page.tsx)", () => {
-    // Throws (test fails) if the file doesn't exist — confirms the "cite the
-    // guide/section" target is real, not a dead link.
+  it("the divorce hub the badge pointed at still exists", () => {
     expect(() => readSource("src/app/divorce-cost-by-state/page.tsx")).not.toThrow();
-  });
-
-  it("[no fabrication] the component source carries a real source citation and no fabricated statistic (no bare percentage figure) for the seasonality claim", () => {
-    const src = readSource("src/components/shared/seasonal-badge.tsx");
-    // Must cite at least one real https:// source in the code comment.
-    expect(src).toMatch(/https:\/\/\S+/);
-    // The user-facing copy itself must not assert a specific fabricated
-    // percentage/count (e.g. "32% increase") — only the qualitative
-    // "busiest month" framing both cited sources independently support.
-    const copyLine =
-      "January is the busiest month for divorce-related searches — save your estimate now";
-    expect(copyLine).not.toMatch(/%|\d+x\b/);
-  });
-
-  it("uses neutral, non-advisory phrasing (no advice verb)", () => {
-    const src = readSource("src/components/shared/seasonal-badge.tsx");
-    const copyLine =
-      "January is the busiest month for divorce-related searches — save your estimate now";
-    expect(copyLine).not.toMatch(/\b(should|must|need to|recommend)\b/i);
-    void src;
   });
 });

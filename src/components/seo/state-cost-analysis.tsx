@@ -195,7 +195,7 @@ export function StateCostAnalysis({
                       <td className="py-2 pr-4">{row.name}</td>
                       <td className="py-2 pr-4 font-mono">{usd(row.median)}</td>
                       <td className="py-2 font-mono">
-                        {row.isSelf ? "—" : `${delta > 0 ? "+" : "−"}${usd(Math.abs(delta))}`}
+                        {row.isSelf ? "—" : delta === 0 ? "level" : `${delta > 0 ? "+" : "−"}${usd(Math.abs(delta))}`}
                       </td>
                     </tr>
                   );

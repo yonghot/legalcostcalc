@@ -25,7 +25,7 @@
  * recommendation, no outcome prediction, no application of law to a situation.
  */
 
-import { formatCurrency } from "@/lib/utils/format";
+import { aOrAn, formatCurrency } from "@/lib/utils/format";
 import { ordinal, type StateCostContext } from "@/lib/seo/state-context";
 
 const usd = (value: number) => formatCurrency(Math.round(value));
@@ -71,7 +71,7 @@ export function buildStateFaq(ctx: StateCostContext, matterLabel: string): FaqEn
 
   /* 1 — the headline number, placed in the table rather than merely repeated. */
   entries.push({
-    question: `How much does a ${matterLabel} cost in ${stateName}?`,
+    question: `How much does ${aOrAn(matterLabel)} ${matterLabel} cost in ${stateName}?`,
     answer:
       ctx.direction === "at"
         ? `The median estimate is ${usd(moderate.median)} for a moderate-complexity matter, inside ${usd(
@@ -111,7 +111,7 @@ export function buildStateFaq(ctx: StateCostContext, matterLabel: string): FaqEn
           )} for a moderate one and ${usd(complex.hourlyMedian)} once it is contested.`
         : "";
     entries.push({
-      question: `How much does a ${matterLabel} lawyer charge per hour in ${stateName}?`,
+      question: `How much does ${aOrAn(matterLabel)} ${matterLabel} lawyer charge per hour in ${stateName}?`,
       answer:
         ctx.rankGap !== null && Math.abs(ctx.rankGap) >= 6
           ? `The moderate-tier band is ${usd(moderate.hourlyLow ?? 0)}–${usd(
@@ -148,7 +148,7 @@ export function buildStateFaq(ctx: StateCostContext, matterLabel: string): FaqEn
           )} a month.`
         : "";
     entries.push({
-      question: `How long does a ${matterLabel} take in ${stateName}?`,
+      question: `How long does ${aOrAn(matterLabel)} ${matterLabel} take in ${stateName}?`,
       answer: perMonth
         ? `The sources record ${moderate.duration} for a moderate-complexity matter${
             simple?.duration ? ` and ${simple.duration} for a simple one` : ""

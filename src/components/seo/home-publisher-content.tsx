@@ -54,25 +54,25 @@ export function HomePublisherContent() {
           <div className="mt-4 space-y-5 text-slate-600">
             <p className="leading-7">
               <strong className="text-slate-900">Example 1 — California divorce tiers.</strong>{" "}
-              The bundled dataset records a simple-tier median of {money(caSimple.median)}, a
+              Our cost figures record a simple-tier median of {money(caSimple.median)}, a
               moderate-tier range of {money(caModerate.low)} to {money(caModerate.high)} with a
               {" "}{money(caModerate.median)} median, and a complex-tier median of
-              {" "}{money(caComplex.median)}. The calculator reports the selected row; it does not
+              {" "}{money(caComplex.median)}. The calculator reports the selected tier; it does not
               average the three tiers. The distance between those medians illustrates why choosing
               a tier is a scenario comparison, not a diagnosis. It also explains why one national
               “average divorce price” would hide more information than it reveals.
             </p>
             <p className="leading-7">
               <strong className="text-slate-900">Example 2 — checking the hourly figure.</strong>{" "}
-              The California moderate row records a median hourly rate of
+              The California moderate-tier estimate records a median hourly rate of
               {" "}{caModerate.hourlyMedian ? money(caModerate.hourlyMedian) : "not available"}.
               {caImpliedHours
                 ? ` Dividing the ${money(caModerate.median)} total median by that rate gives roughly ${caImpliedHours} hours.`
-                : " The row does not support an implied-hours comparison."}
+                : " That estimate does not support an implied-hours comparison."}
               {" "}That division is a transparency check, not a forecast of billable hours, because
               the total range can also reflect non-hourly charges. For comparison, the Texas
-              moderate immigration row spans {money(txModerate.low)} to {money(txModerate.high)}.
-              Changing both jurisdiction and matter changes the source row itself; no claim is made
+              moderate immigration estimate spans {money(txModerate.low)} to {money(txModerate.high)}.
+              Changing both jurisdiction and matter changes the underlying estimate itself; no claim is made
               that one state or category is universally more expensive.
             </p>
           </div>
@@ -92,7 +92,7 @@ export function HomePublisherContent() {
             </p>
             <p>
               A result near the low or high edge is not evidence that a quote is fair or unfair. A
-              quote may cover work that the dataset does not, and a low initial retainer may not be
+              quote may cover work that our estimates do not, and a low initial retainer may not be
               the final bill. The most useful comparison is item by item: what work is included,
               which costs are advanced separately, how often invoices are issued, what happens if
               the scope changes, and whether unused funds are refundable under the agreement.
@@ -103,13 +103,13 @@ export function HomePublisherContent() {
         <div>
           <h3 className="text-xl font-semibold text-slate-900">Sources</h3>
           <p className="mt-3 leading-7 text-slate-600">
-            The dataset uses publicly available legal-cost research and official fee information.
+            Our cost figures use publicly available legal-cost research and official fee information.
             Core references include the{" "}
             <a className="underline hover:text-teal-700" href="https://www.clio.com/resources/legal-trends/compare-lawyer-rates/" target="_blank" rel="noopener noreferrer">Clio lawyer-rate comparison</a>,{" "}
             <a className="underline hover:text-teal-700" href="https://www.bls.gov/ooh/legal/lawyers.htm" target="_blank" rel="noopener noreferrer">U.S. Bureau of Labor Statistics lawyers profile</a>,{" "}
             <a className="underline hover:text-teal-700" href="https://www.uscourts.gov/court-programs/bankruptcy/bankruptcy-basics" target="_blank" rel="noopener noreferrer">U.S. Courts bankruptcy information</a>, and{" "}
             <a className="underline hover:text-teal-700" href="https://www.uscis.gov/forms/filing-fees" target="_blank" rel="noopener noreferrer">USCIS filing-fee information</a>.
-            Individual result pages show the references attached to their own data row. A later
+            Individual result pages show the references attached to their own estimates. A later
             official fee schedule or a provider’s written terms should take precedence over the
             figures shown here.
           </p>

@@ -21,6 +21,7 @@ export function checkDataFreshness(lastVerifiedAt: string): DataFreshnessResult 
   return {
     isStale: verifiedDate < oneYearAgo,
     formattedDate: verifiedDate.toLocaleDateString("en-US", {
+      timeZone: "UTC",
       year: "numeric",
       month: "long",
     }),

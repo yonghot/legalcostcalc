@@ -9,9 +9,10 @@ import { ClearMyData } from "@/components/shared/clear-my-data";
 import { FeedbackLink } from "@/components/shared/feedback-link";
 import { PublishedBy } from "@/components/shared/published-by";
 import { PUBLISHER } from "@/lib/constants/publisher";
+import { latestContentYear } from "@/lib/content-dates";
 
 export function Footer() {
-  const currentYear = new Date().getFullYear();
+  const currentYear = latestContentYear();
 
   return (
     <footer className="border-t border-slate-800 bg-slate-900 text-slate-300">

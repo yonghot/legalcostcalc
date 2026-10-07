@@ -1,6 +1,7 @@
 import { CategoryInfo, StateInfo } from "@/lib/types";
+import { latestContentYear } from "@/lib/content-dates";
 
-const CURRENT_YEAR = new Date().getFullYear();
+const CURRENT_YEAR = latestContentYear();
 
 export function buildSeoTitle(category: CategoryInfo, state: StateInfo): string {
   return category.seoTitleTemplate

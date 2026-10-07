@@ -105,7 +105,7 @@ export function classify(rel, hubNames) {
     return { kind: "template", route: `/${rel}`, include: true, state: parts[0], category: parts[1].slice(0, -"-cost".length) };
   }
   if (parts.length === 3 && parts[0] === "embed" && parts[2].endsWith("-cost")) {
-    return { kind: "embed-frame", route: `/${rel}`, include: false, state: parts[1], category: parts[2].slice(0, -"-cost".length), canonical: `/${parts[1]}/${parts[2]}` };
+    return { kind: "embed-frame", route: `/${rel}`, include: false, state: parts[1], category: parts[2].slice(0, -"-cost".length) };
   }
   return { kind: "unclassified", route: `/${rel}`, include: false, hubNames };
 }
@@ -212,19 +212,28 @@ export function scanBuiltHtml({ appDir, expect = DEFAULT_EXPECT, samples = SAMPL
       }
     }
 
-    if (info.kind !== "error") {
+    // Embed frames are noindex,nofollow; a canonical to another URL on a noindexed page sends Google conflicting signals.
+    if (info.kind === "embed-frame") {
+      const canonicals = tagsOf(html, "link", "rel", "canonical");
+      if (canonicals.length !== 0) add("canonical", route, `an embed frame carries ${canonicals.length} canonical link(s); it must carry none`);
+      if (!(noindex && tokens.includes("nofollow"))) add("robots", route, "an embed frame is not marked noindex,nofollow");
+    } else if (info.kind !== "error") {
       const canonicals = tagsOf(html, "link", "rel", "canonical");
       if (canonicals.length !== 1) {
         add("canonical", route, `expected exactly one canonical link, found ${canonicals.length}`);
       } else {
         const href = pathOf(attr(canonicals[0], "href") ?? "");
-        const want = info.kind === "embed-frame" ? info.canonical : route;
-        if (href !== want) add("canonical", route, `canonical points to ${href}, expected ${want}`);
+        if (href !== route) add("canonical", route, `canonical points to ${href}, expected ${route}`);
       }
     }
 
-    if (robotsTags.length > 1) add("robots", route, `${robotsTags.length} robots meta tags`);
-    if (tokens.includes("index") && tokens.includes("noindex")) add("robots", route, `robots tokens conflict: ${robotsContent.join(" | ")}`);
+    // Next injects its own <meta name="robots" content="noindex"> into the 404 page next to the layout's tag; the page is served with status 404.
+    if (route === "/_not-found" || route === "/404") {
+      if (!noindex) add("robots", route, "the 404 page is not marked noindex");
+    } else {
+      if (robotsTags.length > 1) add("robots", route, `${robotsTags.length} robots meta tags`);
+      if (tokens.includes("index") && tokens.includes("noindex")) add("robots", route, `robots tokens conflict: ${robotsContent.join(" | ")}`);
+    }
     if (info.kind === "template") {
       if (inSitemap && noindex) add("robots", route, "listed in the sitemap but marked noindex");
       if (!inSitemap && !(noindex && tokens.includes("follow"))) add("robots", route, "left out of the sitemap but not marked noindex,follow");

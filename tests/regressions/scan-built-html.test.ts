@@ -101,6 +101,10 @@ async function document(route: string, element: ReactNode | Promise<ReactNode>, 
 
 const canonical = (route: string) => `<link rel="canonical" href="${ORIGIN}${route === "/" ? "/" : route}"/>`;
 
+// What next build (18bf560) actually emits: embed frames carry no canonical; the 404 page gets Next's own noindex beside the layout's tag.
+const EMBED_ROBOTS = `<meta name="robots" content="noindex, nofollow, max-image-preview:large"/>`;
+const NOT_FOUND_ROBOTS = `<meta name="robots" content="noindex"/><meta name="robots" content="index, follow, max-image-preview:large"/>`;
+
 async function robotsTag(template: string): Promise<string> {
   const meta = await generateMetadata(params(slugOf(template)));
   const robots = meta.robots as { index?: boolean; follow?: boolean } | undefined;
@@ -135,9 +139,9 @@ beforeAll(async () => {
   write(
     good,
     "embed/california/divorce-cost.html",
-    await document(embedRoute, EmbedCalculatorPage(params({ state: "california", slug: "divorce-cost" })), canonical("/california/divorce-cost")),
+    await document(embedRoute, EmbedCalculatorPage(params({ state: "california", slug: "divorce-cost" })), EMBED_ROBOTS),
   );
-  write(good, "_not-found.html", await document("/texas/not-a-real-cost", NotFound(), ""));
+  write(good, "_not-found.html", await document("/texas/not-a-real-cost", NotFound(), NOT_FOUND_ROBOTS));
   const urls = sitemapRoutes.map((r) => `<url><loc>${ORIGIN}${r === "/" ? "" : r}</loc></url>`).join("");
   write(good, "sitemap.xml.body", `<?xml version="1.0" encoding="UTF-8"?><urlset>${urls}</urlset>`);
 });
@@ -215,6 +219,23 @@ describe("scan-built-html: positive controls (each defect is caught)", () => {
   it("a loader inside an embed frame", async () => {
     const r = await mutated((d) => edit(d, "embed/california/divorce-cost.html", (h) => h.replace("</body>", `${LOADER}</body>`)));
     expect(hit(r, "loader", "/embed/california/divorce-cost")).toBe(true);
+  });
+
+  it("a canonical link on an embed frame (noindex plus a cross-URL canonical is a conflicting signal)", async () => {
+    const r = await mutated((d) =>
+      edit(d, "embed/california/divorce-cost.html", (h) => h.replace("</head>", `${canonical("/california/divorce-cost")}</head>`)),
+    );
+    expect(hit(r, "canonical", "/embed/california/divorce-cost")).toBe(true);
+  });
+
+  it("an embed frame that is not noindex,nofollow", async () => {
+    const r = await mutated((d) => edit(d, "embed/california/divorce-cost.html", (h) => h.replace(EMBED_ROBOTS, "")));
+    expect(hit(r, "robots", "/embed/california/divorce-cost")).toBe(true);
+  });
+
+  it("a 404 page without noindex", async () => {
+    const r = await mutated((d) => edit(d, "_not-found.html", (h) => h.replace('<meta name="robots" content="noindex"/>', "")));
+    expect(hit(r, "robots", "/_not-found")).toBe(true);
   });
 
   it("a loader on the 404 page", async () => {

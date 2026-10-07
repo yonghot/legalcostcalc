@@ -6,6 +6,7 @@ import { DEFAULT_STATE_SLUG } from "@/lib/constants/costs";
 import { FOCUS_RING_DARK } from "@/lib/utils/styles";
 import { ManageConsentLink } from "@/components/consent/manage-consent-link";
 import { ClearMyData } from "@/components/shared/clear-my-data";
+import { FeedbackLink } from "@/components/shared/feedback-link";
 import { PublishedBy } from "@/components/shared/published-by";
 import { PUBLISHER } from "@/lib/constants/publisher";
 
@@ -103,6 +104,11 @@ export function Footer() {
                 <Link href="/contact" className={`text-sm text-slate-400 hover:text-teal-400 transition-colors ${FOCUS_RING_DARK} rounded-sm`}>
                   Contact
                 </Link>
+              </li>
+              <li>
+                <FeedbackLink
+                  className={`text-left text-sm text-slate-400 hover:text-teal-400 transition-colors ${FOCUS_RING_DARK} rounded-sm`}
+                />
               </li>
               <li>
                 <Link href="/embed" className={`text-sm text-slate-400 hover:text-teal-400 transition-colors ${FOCUS_RING_DARK} rounded-sm`}>

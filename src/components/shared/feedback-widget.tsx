@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { MessageSquare, X, ChevronDown } from "lucide-react";
 import { FOCUS_RING } from "@/lib/utils/styles";
+import { OPEN_FEEDBACK_EVENT } from "./feedback-events";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -43,6 +44,7 @@ export function FeedbackWidget() {
 
   // Refs for focus management
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const openerRef = useRef<HTMLElement | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const firstFocusableRef = useRef<HTMLSelectElement>(null);
 
@@ -56,8 +58,18 @@ export function FeedbackWidget() {
   // closePanel must be declared before the useEffect that references it
   const closePanel = useCallback(() => {
     setPanelState("idle");
-    // Return focus to the trigger button
-    requestAnimationFrame(() => triggerRef.current?.focus());
+    // Return focus to whatever opened the panel (the floating button or the footer link)
+    requestAnimationFrame(() => (openerRef.current ?? triggerRef.current)?.focus());
+  }, []);
+
+  useEffect(() => {
+    const onOpen = () => {
+      openerRef.current = document.activeElement as HTMLElement | null;
+      setStatusMsg("");
+      setPanelState((state) => (state === "idle" ? "open" : state));
+    };
+    window.addEventListener(OPEN_FEEDBACK_EVENT, onOpen);
+    return () => window.removeEventListener(OPEN_FEEDBACK_EVENT, onOpen);
   }, []);
 
   // Move focus into the panel when it opens
@@ -111,6 +123,7 @@ export function FeedbackWidget() {
   }, [isOpen, closePanel]);
 
   const openPanel = () => {
+    openerRef.current = triggerRef.current;
     setStatusMsg("");
     setPanelState("open");
   };
@@ -176,13 +189,18 @@ export function FeedbackWidget() {
 
   return (
     <>
-      {/* Floating action button / panel — fixed bottom-right, safe-area aware */}
+      {/* Floating action button / panel — fixed bottom-right, safe-area aware.
+          The button only exists from lg up (Auto-ads anchor and vignette zones sit at the bottom of
+          phones and tablets); the footer link opens the same panel everywhere. */}
       <div
         className={[
           "fixed bottom-6 right-6 z-40",
+          !isOpen && "hidden lg:block",
           "pb-[env(safe-area-inset-bottom,0px)]",
           "pr-[env(safe-area-inset-right,0px)]",
-        ].join(" ")}
+        ]
+          .filter(Boolean)
+          .join(" ")}
       >
         {!isOpen && (
           <button
@@ -192,14 +210,14 @@ export function FeedbackWidget() {
             aria-haspopup="dialog"
             aria-expanded={false}
             className={[
-              "flex items-center gap-2 rounded-full bg-teal-600 py-2.5 pl-3 pr-4",
+              "flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-full bg-teal-600 px-4",
               "text-sm font-semibold text-white shadow-md",
               "transition-colors hover:bg-teal-700",
               FOCUS_RING,
             ].join(" ")}
           >
             <MessageSquare className="h-4 w-4 shrink-0" aria-hidden="true" />
-            <span className="hidden sm:inline">Feedback</span>
+            <span>Feedback</span>
           </button>
         )}
 

@@ -52,6 +52,7 @@ vi.mock("next/link", async () => {
 });
 
 import HowLegalFeesWorkPage, { metadata } from "@/app/how-legal-fees-work/page";
+import { titleText } from "./regressions/helpers/title";
 import {
   GUIDE_UPDATED,
   GUIDE_FACTS,
@@ -197,7 +198,7 @@ describe("/how-legal-fees-work — rendered page (curl JS-off simulation)", () =
 
 describe("/how-legal-fees-work — metadata (tool/topic-intent title)", () => {
   it("buildMeta title mentions the guide topic and is not empty", () => {
-    const title = String(metadata.title ?? "");
+    const title = titleText(metadata.title);
     expect(title.length).toBeGreaterThan(10);
     expect(title).toMatch(/Legal Fees/i);
   });

@@ -1,13 +1,10 @@
 /**
- * seo.ts — T10 shared metadata helper: buildMeta() produces a Next.js
- * Metadata object with a title in the 50-60 char range (primary keyword in
- * the first 30 chars), a unique description, an explicit canonical, and OG
- * fields — used across every route (including dynamic ones) so canonical/
- * title conventions live in one place instead of being hand-rolled per page.
+ * seo.ts — shared metadata helper: buildMeta() produces a Next.js Metadata
+ * object with an absolute title (brand included, at most 60 characters), a
+ * unique description, an explicit canonical, and OG fields — used across every
+ * route (including dynamic ones) so canonical/title conventions live in one place.
  *
- * This module is distinct from src/lib/utils/seo.ts (existing FAQ-schema /
- * legacy title-template helpers used by [state]/[slug] before this wave) —
- * buildMeta() is additive and the migrated routes now call it directly.
+ * Distinct from src/lib/utils/seo.ts (FAQ-schema / legacy title-template helpers).
  *
  * CRITICAL: canonical/OG URLs always resolve against the canonical production
  * domain (NEXT_PUBLIC_APP_URL when set, else the hardcoded legalcostcalc.co
@@ -22,58 +19,23 @@ export const SITE_NAME = "LegalCostCalc";
 export const CANONICAL_ORIGIN =
   process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "https://legalcostcalc.co";
 
-const MIN_TITLE_LENGTH = 50;
 const MAX_TITLE_LENGTH = 60;
+const BRAND_SUFFIX = ` — ${SITE_NAME}`;
 
-/**
- * Build an SEO title within [50,60] chars with the primary keyword (assumed
- * to be the leading phrase / `keyword` arg) in the first 30 characters.
- *
- * `core` is the keyword-first phrase (e.g. "Divorce Cost in California") that
- * MUST appear verbatim at the start of the returned title, so it always
- * satisfies the "title matches H1 leading phrase" acceptance criterion.
- * `year` is the content year taken from a content-dates record, never the
- * clock. Progressively tries longer/shorter
- * padded suffixes until one lands in range; a final hard-truncate is a
- * safety net that should never trigger for real (state, category) pairs
- * (verified by tests/seo-meta.test.ts across the full page matrix).
- */
 export function fitTitle(core: string, year: number): string {
-  const suffixes = [
-    `: ${year} Attorney Fee Guide`,
-    `: ${year} Fee & Cost Guide`,
-    `: ${year} Legal Fee Guide`,
-    `: ${year} Cost Estimate Guide`,
-    ` (${year}) — ${SITE_NAME}`,
-    `: ${year} Estimate`,
-    ` (${year})`,
-    "",
+  const candidates = [
+    `${core} (${year})${BRAND_SUFFIX}`,
+    `${core}${BRAND_SUFFIX}`,
+    `${core} (${year})`,
+    core,
   ];
+  return candidates.find((c) => c.length <= MAX_TITLE_LENGTH) ?? core;
+}
 
-  let bestCandidate = core;
-  let bestDistance = Infinity;
-
-  for (const suffix of suffixes) {
-    const candidate = `${core}${suffix}`;
-    if (candidate.length >= MIN_TITLE_LENGTH && candidate.length <= MAX_TITLE_LENGTH) {
-      return candidate;
-    }
-    const distance =
-      candidate.length < MIN_TITLE_LENGTH
-        ? MIN_TITLE_LENGTH - candidate.length
-        : candidate.length - MAX_TITLE_LENGTH;
-    if (distance < bestDistance) {
-      bestDistance = distance;
-      bestCandidate = candidate;
-    }
-  }
-
-  // Safety net: pad short titles with a generic suffix, then hard-truncate
-  // anything still outside range. Should not trigger for the real dataset.
-  if (bestCandidate.length < MIN_TITLE_LENGTH) {
-    bestCandidate = `${bestCandidate} — Cost Data & Estimates`;
-  }
-  return bestCandidate.slice(0, MAX_TITLE_LENGTH);
+export function fixedTitle(text: string): string {
+  if (text.includes(SITE_NAME)) return text;
+  const branded = `${text}${BRAND_SUFFIX}`;
+  return branded.length <= MAX_TITLE_LENGTH ? branded : text;
 }
 
 export interface BuildMetaParams {
@@ -85,7 +47,7 @@ export interface BuildMetaParams {
   path: string;
   /** Content year for title padding (defaults to the latest year in content-dates). */
   year?: number;
-  /** Set true to fix the title verbatim (skip the fit algorithm) for short static pages. */
+  /** Set true for a hand-written title: used as written, brand appended only when it fits in 60 characters. */
   skipFit?: boolean;
   /**
    * robots override — e.g. { index: false, follow: true } for thin-gated
@@ -110,7 +72,7 @@ export function buildMeta({
   skipFit = false,
   robots,
 }: BuildMetaParams): Metadata {
-  const finalTitle = skipFit ? title : fitTitle(title, year ?? latestContentYear());
+  const finalTitle = skipFit ? fixedTitle(title) : fitTitle(title, year ?? latestContentYear());
   const canonicalUrl = `${CANONICAL_ORIGIN}${path}`;
 
   // K09 — Discover hygiene: every explicit robots override this helper emits
@@ -126,7 +88,7 @@ export function buildMeta({
     : undefined;
 
   return {
-    title: finalTitle,
+    title: { absolute: finalTitle },
     description,
     metadataBase: new URL(CANONICAL_ORIGIN),
     alternates: {

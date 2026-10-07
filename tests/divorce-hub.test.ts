@@ -60,6 +60,7 @@ import { HubLinksBar } from "@/components/seo/hub-links-bar";
 import { STATES } from "@/lib/constants/states";
 import { INDEXABLE_PAGES, getCostByComplexity } from "@/lib/page-index";
 import { formatCurrency } from "@/lib/utils/format";
+import { titleText } from "./regressions/helpers/title";
 
 const ADVICE_VERB_PATTERNS = [
   /you should/i,
@@ -136,14 +137,14 @@ describe("/divorce-cost-by-state — UPL-safe copy + disclaimer invariant", () =
 describe("/divorce-cost-by-state — tool-intent title (K07)", () => {
   it("generateMetadata returns a tool-intent title, not a pure 'what is' informational title", async () => {
     const meta = await generateMetadata();
-    const title = String(meta.title ?? "");
+    const title = titleText(meta.title);
     expect(title).toMatch(/Calculator/i);
     expect(title.toLowerCase().startsWith("what is")).toBe(false);
   });
 
   it("title leads with the primary keyword ('Divorce Cost')", async () => {
     const meta = await generateMetadata();
-    const title = String(meta.title ?? "");
+    const title = titleText(meta.title);
     expect(title.startsWith("Divorce Cost")).toBe(true);
   });
 });

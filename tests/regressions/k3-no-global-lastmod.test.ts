@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import "./helpers/render";
+import { titleText } from "./helpers/title";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import sitemap from "@/app/sitemap";
@@ -117,9 +118,9 @@ describe("K3: title and description year come from the record, not the clock", (
     const meta = await generateMetadata({ params: Promise.resolve({ state: "california", slug: "divorce-cost" }) });
     const generic = buildMeta({ title: "Divorce Cost by State", description: "d", path: "/divorce-cost-by-state" });
     return {
-      state: String(meta.title),
+      state: titleText(meta.title),
       description: String(meta.description),
-      generic: String(generic.title),
+      generic: titleText(generic.title),
     };
   };
 

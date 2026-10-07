@@ -16,9 +16,9 @@ export const CATEGORIES: CategoryInfo[] = [
           "An uncontested divorce in {state} is when both spouses agree on all terms (property, custody, support) and is significantly cheaper. A contested divorce involves disputes requiring court hearings and attorney negotiations, substantially increasing legal costs.",
       },
       {
-        questionTemplate: "Can I file for divorce without a lawyer in {state}?",
+        questionTemplate: "What does a self-represented (pro se) divorce cost in {state} compared with one handled by an attorney?",
         answerTemplate:
-          "Yes, you can file a pro se (self-represented) divorce in {state}, which reduces costs to court filing fees. Cases involving children, significant assets, or disputes are typically more complex and often involve legal representation. This information is for general awareness only and is not legal advice.",
+          "A self-represented (pro se) divorce in {state} reduces the cost to court filing fees and any document-preparation charge, because no attorney fees are billed. When an attorney is hired, attorney fees are added and rise with the number of disputed issues (property, custody, support); the estimates on this page rise from the simple tier to the complex tier. This information is for general awareness only and is not legal advice.",
       },
     ],
     costFormationNotes: [
@@ -68,7 +68,7 @@ export const CATEGORIES: CategoryInfo[] = [
       {
         questionTemplate: "What is the statute of limitations for personal injury in {state}?",
         answerTemplate:
-          "Each state sets its own statute of limitations for personal injury claims. Filing deadlines affect your ability to seek compensation and can impact legal costs. Consult the {state} state court website or an attorney for current deadlines. This is general information only, not legal advice.",
+          "Each state sets its own statute of limitations for personal injury claims, so the deadline that applies in {state} is set by {state} law. Filing deadlines affect the ability to seek compensation and can impact legal costs. This is general information only, not legal advice.",
       },
     ],
     costFormationNotes: [
@@ -91,9 +91,9 @@ export const CATEGORIES: CategoryInfo[] = [
           "Chapter 7 (liquidation) bankruptcy in {state} generally costs less in attorney fees since it is a shorter process. Chapter 13 (repayment plan) requires ongoing attorney involvement over 3-5 years, making it more expensive. Federal filing fees differ between the two chapters as well.",
       },
       {
-        questionTemplate: "Do I have to take a credit counseling course before filing bankruptcy in {state}?",
+        questionTemplate: "Which courses are required with a bankruptcy filing in {state}, and are they part of the attorney fee?",
         answerTemplate:
-          "Yes, federal law requires completing an approved credit counseling course within 180 days before filing and a debtor education course after filing. These courses typically cost $20-$50 each and are required in all states including {state}. This is general information, not legal advice.",
+          "Federal law requires an approved credit counseling course within 180 days before filing and a debtor education course after filing, in every state including {state}. The course fees are paid in addition to the attorney fee and the federal court filing fee. This is general information, not legal advice.",
       },
     ],
     costFormationNotes: [
@@ -111,9 +111,9 @@ export const CATEGORIES: CategoryInfo[] = [
     sortOrder: 5,
     faqTemplates: [
       {
-        questionTemplate: "Is a real estate attorney required for closing in {state}?",
+        questionTemplate: "How do attorney fees fit into real estate closing costs in {state}?",
         answerTemplate:
-          "Some states require an attorney to be present at closing, while others do not. Requirements vary in {state}. Even when not legally required, a real estate attorney can review contracts, resolve title issues, and protect your interests. Check {state} specific regulations for current requirements.",
+          "Attorney fees are one line within total closing costs in {state}, alongside title search and title insurance, appraisal, recording fees, and any survey. Some states require an attorney to be present at closing and others do not, so whether that line appears at all varies by state. Where an attorney is involved, a standard residential closing is often priced as a flat fee and a complicated one is billed hourly. This is general information, not legal advice.",
       },
       {
         questionTemplate: "What closing costs does a buyer typically pay in {state}?",
@@ -191,9 +191,9 @@ export const CATEGORIES: CategoryInfo[] = [
           "USCIS filing fees are set federally and apply regardless of state. Common fees include adjustment of status, naturalization, and work permit applications. These fees change periodically and can total hundreds to thousands of dollars on top of attorney fees. Check USCIS.gov for current fee schedules.",
       },
       {
-        questionTemplate: "Do I need an immigration lawyer for a green card application from {state}?",
+        questionTemplate: "What drives the attorney cost of a green card application from {state}?",
         answerTemplate:
-          "While not legally required, an immigration attorney can help navigate complex eligibility rules, prepare documentation, and respond to Requests for Evidence. Simple family-based petitions may not require an attorney, but employment-based, removal defense, and complex cases benefit from professional representation. This is general information, not legal advice.",
+          "Attorney cost for a green card application depends mainly on the type of case. A straightforward family-based petition with no complicating history is often billed as a flat fee, while employment-based petitions, waivers, and removal defense involve more attorney hours preparing evidence and responding to government requests, which is reflected in the moderate and complex figures on this page. USCIS filing fees are separate from attorney fees and are set federally, not by {state}. This is general information, not legal advice.",
       },
     ],
     costFormationNotes: [

@@ -173,7 +173,7 @@ describe("/how-legal-fees-work — rendered page (curl JS-off simulation)", () =
   it("renders AuthorByline and UpdatedBadge from the real GUIDE_UPDATED date (E-E-A-T, no fabricated credentials)", () => {
     expect(html).toContain("Published by");
     expect(html).toContain("Not reviewed by a licensed attorney");
-    expect(html).toContain("Updated July 2026");
+    expect(html).toContain("Updated October 2026");
     expect(html).not.toMatch(/J\.?D\.?,?\s*Esq\.?/); // no invented attorney credential
   });
 

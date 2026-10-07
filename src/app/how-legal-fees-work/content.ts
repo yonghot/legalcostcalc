@@ -2,8 +2,9 @@
 // U-02 (부속U §4/§5) — original editorial guide content. INFORMATIONAL ONLY:
 // explains how attorney fee structures and fee-regulation rules work in
 // general; makes no recommendation, prediction, or claim about any specific
-// case. Every fact below is grounded in a source in GUIDE_SOURCES, verified
-// via live web search on the date in GUIDE_UPDATED — no invented numbers,
+// case. Every fact below is grounded in a source in GUIDE_SOURCES, last checked
+// via live web search on 2026-07-18 (GUIDE_UPDATED is the last content change, not a
+// source check) — no invented numbers,
 // dates, or citations. Volatile figures (average hourly rate, state-specific
 // dollar/percentage thresholds) are framed as "verify at {official source}"
 // rather than stated as permanent facts — see GUIDE_VERIFY_NOTES.
@@ -11,6 +12,8 @@
 // Modeled on LaunchCostCalc's /how-to-start-an-llc guide (commit 2746a0a) per
 // 부속U §4 U-02: numbered GuideSection prose, a sourced GUIDE_FACTS "at a
 // glance" block, and a GUIDE_SOURCES citation list rendered on the page.
+
+import { HOURLY_RATE_BENCHMARK as RATE } from "@/lib/constants/benchmarks";
 
 export interface GuideSection {
   heading: string;
@@ -27,8 +30,16 @@ export interface GuideSource {
   url: string;
 }
 
-/** Date this content was authored/verified against the live sources below. */
-export const GUIDE_UPDATED = "2026-07-18";
+/** Date this page content last changed (its facts were last checked against the sources below on 2026-07-18). */
+export const GUIDE_UPDATED = "2026-10-08";
+
+export const GUIDE_LEAD =
+  "Legal fees depend on how the lawyer bills: hourly, flat, contingency, or a retainer against hourly work. " +
+  `The national average lawyer hourly rate was about ${RATE.national} in ${RATE.sourceLabel}, ranging by state from about ${RATE.lowest} (${RATE.lowestPlace}) to about ${RATE.highest} (${RATE.highestPlace}). ` +
+  "Treat that as a benchmark, not a quote for any case. General information only, not legal advice.";
+
+export const GUIDE_DESCRIPTION =
+  `Legal fees depend on how a lawyer bills. Clio's 2025 report puts the average hourly rate near ${RATE.national}; flat and contingency fees vary by matter. Not legal advice.`;
 
 export const GUIDE_FACTS: GuideFact[] = [
   {
@@ -221,7 +232,7 @@ export const GUIDE_SOURCES: GuideSource[] = [
  * Volatile items called out for verification — rendered as a callout on the
  * page (mirrors LaunchCostCalc's BOI-status callout pattern) and kept here
  * as the documented rationale for the "verify at {official source}" framing.
- * Never state these as permanent facts; they are dated to GUIDE_UPDATED.
+ * Never state these as permanent facts; their source check dates from 2026-07-18.
  */
 export const GUIDE_VERIFY_NOTES: string[] = [
   "The national average hourly rate (~$349) and the $196-$492 state range are from Clio's 2025 Legal Trends Report and change when Clio publishes its next report — verify the current figure at Clio's live rate table (clio.com/resources/legal-trends/compare-lawyer-rates) before relying on an exact number.",

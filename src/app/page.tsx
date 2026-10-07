@@ -31,6 +31,8 @@ import { POPULAR_STATE_CODES } from "@/lib/constants/popular";
 import { getFamilyDate } from "@/lib/content-dates";
 import { RecentCalculations } from "@/components/shared/recent-calculations";
 import { HomePublisherContent } from "@/components/seo/home-publisher-content";
+import { HomeAnswer } from "@/components/seo/home-answer";
+import { HOME_DESCRIPTION } from "@/lib/constants/benchmarks";
 import { AdsenseLoader } from "@/components/ads/adsense-loader";
 import { PopularPages } from "@/components/seo/popular-pages";
 import { topTrafficPages } from "@/lib/top-traffic";
@@ -74,8 +76,8 @@ export default function HomePage() {
           the still-supported rich-result set (Article here + WebSite/
           SearchAction via OrganizationSchema above). */}
       <ArticleSchema
-        headline="How Much Will Your Legal Matter Really Cost?"
-        description="Free legal cost calculator for all 50 US states. Get estimated costs for divorce, DUI, bankruptcy, personal injury, and more."
+        headline="How Much Do Legal Fees Really Cost?"
+        description={HOME_DESCRIPTION}
         url={CANONICAL_ORIGIN}
         dateModified={getFamilyDate("page:home")?.date ?? null}
       />
@@ -86,13 +88,10 @@ export default function HomePage() {
 
           <div className="mt-8 text-center">
             <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
-              How Much Will Your Legal Matter{" "}
+              How Much Do Legal Fees{" "}
               <span className="text-teal-600">Really</span> Cost?
             </h1>
-            <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-600">
-              Get free, data-driven cost estimates for legal matters across all 50 US states.
-              Compare attorney fees, court costs, and total expenses.
-            </p>
+            <HomeAnswer />
           </div>
 
           {/* Calculator */}

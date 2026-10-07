@@ -153,7 +153,7 @@ function buildAnswerParagraph(
   const opening = sentence(
     `${article} ${catLower} in ${state.name} costs on average ${formatCurrency(moderate.costRange.median)}, ` +
       `typically ${formatCurrency(moderate.costRange.low)}-${formatCurrency(moderate.costRange.high)} ` +
-      `for a moderate-complexity case, based on sourced attorney-fee and court-cost data.`,
+      `for a moderate-complexity case, a modeled estimate from published fee guides.`,
   );
   return `${opening}${feeClause}${duration}${feesClause}`;
 }

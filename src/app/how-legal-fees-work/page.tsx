@@ -12,6 +12,8 @@ import { getFamilyDate } from "@/lib/content-dates";
 import { DEFAULT_STATE_SLUG } from "@/lib/constants/costs";
 import {
   GUIDE_UPDATED,
+  GUIDE_LEAD,
+  GUIDE_DESCRIPTION,
   GUIDE_FACTS,
   GUIDE_SECTIONS,
   GUIDE_SOURCES,
@@ -21,8 +23,7 @@ import { AdsenseLoader } from "@/components/ads/adsense-loader";
 
 const PAGE_PATH = "/how-legal-fees-work";
 const TITLE = "How Legal Fees Work (2026): Hourly vs. Flat vs. Contingency";
-const DESCRIPTION =
-  "An informational 2026 guide to how attorney fees work: hourly billing, flat fees, contingency fees, retainers and trust accounts, the professional-conduct rules that govern them, and where fee disputes go — every rule and figure tied to an official source. Not legal advice.";
+const DESCRIPTION = GUIDE_DESCRIPTION;
 
 // U-02 (부속U §4/§5) — original editorial guide, INFORMATIONAL ONLY. Explains
 // fee structures and the professional-conduct rules that govern them; makes
@@ -138,11 +139,7 @@ export default function HowLegalFeesWorkPage() {
           <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
             How Legal Fees Work: Hourly vs. Flat vs. Contingency (2026)
           </h1>
-          <p className="mt-3 max-w-2xl text-lg text-slate-600">
-            Hourly billing, flat fees, contingency fees, and retainers explained —
-            plus the professional-conduct rules that govern how fees are set,
-            disclosed, and disputed. General information only, not legal advice.
-          </p>
+          <p className="mt-3 max-w-2xl text-lg text-slate-600">{GUIDE_LEAD}</p>
 
           <AuthorByline lastUpdated={GUIDE_UPDATED} basis={getFamilyDate("guide")?.basis} className="mt-6" />
         </div>

@@ -7,6 +7,7 @@ import { FeedbackWidget } from "@/components/shared/feedback-widget";
 import { WebVitalsReporter } from "@/components/shared/web-vitals-reporter";
 import { resolveAdsenseClient } from "@/lib/env";
 import { CONSENT_DEFAULT_SCRIPT } from "@/lib/consent/default-script";
+import { HOME_DESCRIPTION } from "@/lib/constants/benchmarks";
 import "./globals.css";
 
 const inter = Inter({
@@ -21,11 +22,10 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "LegalCostCalc — How Much Will Your Legal Matter Really Cost?",
+    default: "Legal Fees & Costs by State: Free Calculator — LegalCostCalc",
     template: "%s — LegalCostCalc",
   },
-  description:
-    "Free legal cost calculator for all 50 US states. Get estimated costs for divorce, DUI, bankruptcy, personal injury, and more. Estimates modeled from published national fee guides and rate surveys.",
+  description: HOME_DESCRIPTION,
   keywords: [
     "legal cost calculator",
     "lawyer cost",
@@ -53,9 +53,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "LegalCostCalc — How Much Will Your Legal Matter Really Cost?",
-    description:
-      "Free legal cost calculator for all 50 US states. Get estimated costs for divorce, DUI, bankruptcy, personal injury, and more.",
+    title: "Legal Fees & Costs by State: Free Calculator — LegalCostCalc",
+    description: HOME_DESCRIPTION,
   },
   robots: {
     index: true,

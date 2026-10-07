@@ -1,13 +1,13 @@
 {
   "cost:divorce": {
-    "date": "2026-10-07",
+    "date": "2026-10-08",
     "basis": "content-changed",
-    "evidence": "ddff296 removed the unsourced court filing fee range and the fee arithmetic derived from it; c51949a removed per-figure source attribution. Cost figures unchanged since a69a8aa (2026-04-05); source lists last changed in 4d8e536 (2026-07-01). 0bbc73e replaced 'recorded' wording with a modeled-estimate method note."
+    "evidence": "ddff296 removed the unsourced court filing fee range and the fee arithmetic derived from it; c51949a removed per-figure source attribution. Cost figures unchanged since a69a8aa (2026-04-05); source lists last changed in 4d8e536 (2026-07-01). 0bbc73e replaced 'recorded' wording with a modeled-estimate method note. Plan commit 29 (feat(k17): home and fees guide aligned to 'legal fees / legal costs' query intent) changed the lead answer sentence on every page of this family from 'based on sourced attorney-fee and court-cost data' to 'a modeled estimate from published fee guides'; the figures are unchanged."
   },
   "cost:dui": {
-    "date": "2026-10-07",
+    "date": "2026-10-08",
     "basis": "content-changed",
-    "evidence": "ddff296 removed the unsourced court filing fee range and the fee arithmetic derived from it; c51949a removed per-figure source attribution. Cost figures unchanged since a69a8aa (2026-04-05); source lists last changed in 4d8e536 (2026-07-01). 0bbc73e replaced 'recorded' wording with a modeled-estimate method note."
+    "evidence": "ddff296 removed the unsourced court filing fee range and the fee arithmetic derived from it; c51949a removed per-figure source attribution. Cost figures unchanged since a69a8aa (2026-04-05); source lists last changed in 4d8e536 (2026-07-01). 0bbc73e replaced 'recorded' wording with a modeled-estimate method note. Plan commit 29 (feat(k17): home and fees guide aligned to 'legal fees / legal costs' query intent) changed the lead answer sentence on every page of this family from 'based on sourced attorney-fee and court-cost data' to 'a modeled estimate from published fee guides'; the figures are unchanged."
   },
   "cost:personal-injury": {
     "date": "2026-10-07",
@@ -15,39 +15,39 @@
     "evidence": "c5c78ad rewrote the zero-hourly-rate text as contingency and case expenses; ddff296 removed the unsourced court filing fee range; c51949a removed per-figure source attribution; d97c9d3 aligned the contingency text with the numeric band. Cost figures unchanged since a69a8aa (2026-04-05); source lists last changed in 4d8e536 (2026-07-01). 0bbc73e replaced 'recorded' wording with a modeled-estimate method note."
   },
   "cost:bankruptcy": {
-    "date": "2026-10-07",
+    "date": "2026-10-08",
     "basis": "content-changed",
-    "evidence": "c51949a removed per-figure source attribution. Cost figures unchanged since a69a8aa (2026-04-05); source lists last changed in 4d8e536 (2026-07-01). 0bbc73e replaced 'recorded' wording with a modeled-estimate method note."
+    "evidence": "c51949a removed per-figure source attribution. Cost figures unchanged since a69a8aa (2026-04-05); source lists last changed in 4d8e536 (2026-07-01). 0bbc73e replaced 'recorded' wording with a modeled-estimate method note. Plan commit 29 (feat(k17): home and fees guide aligned to 'legal fees / legal costs' query intent) changed the lead answer sentence on every page of this family from 'based on sourced attorney-fee and court-cost data' to 'a modeled estimate from published fee guides'; the figures are unchanged."
   },
   "cost:real-estate": {
-    "date": "2026-10-07",
+    "date": "2026-10-08",
     "basis": "content-changed",
-    "evidence": "c51949a removed per-figure source attribution. Cost figures unchanged since a69a8aa (2026-04-05); source lists last changed in 4d8e536 (2026-07-01). 0bbc73e replaced 'recorded' wording with a modeled-estimate method note."
+    "evidence": "c51949a removed per-figure source attribution. Cost figures unchanged since a69a8aa (2026-04-05); source lists last changed in 4d8e536 (2026-07-01). 0bbc73e replaced 'recorded' wording with a modeled-estimate method note. Plan commit 29 (feat(k17): home and fees guide aligned to 'legal fees / legal costs' query intent) changed the lead answer sentence on every page of this family from 'based on sourced attorney-fee and court-cost data' to 'a modeled estimate from published fee guides'; the figures are unchanged."
   },
   "cost:estate-planning": {
-    "date": "2026-10-07",
+    "date": "2026-10-08",
     "basis": "content-changed",
-    "evidence": "c51949a removed per-figure source attribution. Cost figures unchanged since a69a8aa (2026-04-05); source lists last changed in 4d8e536 (2026-07-01). 0bbc73e replaced 'recorded' wording with a modeled-estimate method note."
+    "evidence": "c51949a removed per-figure source attribution. Cost figures unchanged since a69a8aa (2026-04-05); source lists last changed in 4d8e536 (2026-07-01). 0bbc73e replaced 'recorded' wording with a modeled-estimate method note. Plan commit 29 (feat(k17): home and fees guide aligned to 'legal fees / legal costs' query intent) changed the lead answer sentence on every page of this family from 'based on sourced attorney-fee and court-cost data' to 'a modeled estimate from published fee guides'; the figures are unchanged."
   },
   "cost:criminal-defense": {
-    "date": "2026-10-07",
+    "date": "2026-10-08",
     "basis": "content-changed",
-    "evidence": "ddff296 removed the unsourced court filing fee range and the fee arithmetic derived from it; c51949a removed per-figure source attribution. Cost figures unchanged since a69a8aa (2026-04-05); source lists last changed in 4d8e536 (2026-07-01). 0bbc73e replaced 'recorded' wording with a modeled-estimate method note."
+    "evidence": "ddff296 removed the unsourced court filing fee range and the fee arithmetic derived from it; c51949a removed per-figure source attribution. Cost figures unchanged since a69a8aa (2026-04-05); source lists last changed in 4d8e536 (2026-07-01). 0bbc73e replaced 'recorded' wording with a modeled-estimate method note. Plan commit 29 (feat(k17): home and fees guide aligned to 'legal fees / legal costs' query intent) changed the lead answer sentence on every page of this family from 'based on sourced attorney-fee and court-cost data' to 'a modeled estimate from published fee guides'; the figures are unchanged."
   },
   "cost:immigration": {
-    "date": "2026-10-07",
+    "date": "2026-10-08",
     "basis": "content-changed",
-    "evidence": "c51949a removed per-figure source attribution. Cost figures unchanged since a69a8aa (2026-04-05); fee lines and source lists last changed in 4d8e536 (2026-07-01). 0bbc73e replaced 'recorded' wording with a modeled-estimate method note."
+    "evidence": "c51949a removed per-figure source attribution. Cost figures unchanged since a69a8aa (2026-04-05); fee lines and source lists last changed in 4d8e536 (2026-07-01). 0bbc73e replaced 'recorded' wording with a modeled-estimate method note. Plan commit 29 (feat(k17): home and fees guide aligned to 'legal fees / legal costs' query intent) changed the lead answer sentence on every page of this family from 'based on sourced attorney-fee and court-cost data' to 'a modeled estimate from published fee guides'; the figures are unchanged."
   },
   "guide": {
-    "date": "2026-07-18",
+    "date": "2026-10-08",
     "basis": "content-changed",
-    "evidence": "b1951d8 authored the guide; its content has not changed since."
+    "evidence": "b1951d8 authored the guide. Plan commit 29 (feat(k17): home and fees guide aligned to 'legal fees / legal costs' query intent) rewrote the lead paragraph and the meta description to state the already cited Clio 2025 hourly-rate benchmark first; the key facts, sections and sources are unchanged and were last checked against their sources on 2026-07-18 (a re-check of the Clio page on 2026-10-08 was blocked by HTTP 403, so none is claimed)."
   },
   "page:home": {
-    "date": "2026-10-07",
+    "date": "2026-10-08",
     "basis": "content-changed",
-    "evidence": "The K3 visible-dates commit of 2026-10-07 removed the home page's claim that the bundled dataset was last verified on a given date; 287bad4 had last changed the home copy on 2026-08-31. 0bbc73e replaced the quarterly-refresh and recorded-row wording. 89c635a removed the sibling-tool block and 783b107 the unsourced seasonal banner and the 'bundled dataset' wording."
+    "evidence": "The K3 visible-dates commit of 2026-10-07 removed the home page's claim that the bundled dataset was last verified on a given date; 287bad4 had last changed the home copy on 2026-08-31. 0bbc73e replaced the quarterly-refresh and recorded-row wording. 89c635a removed the sibling-tool block and 783b107 the unsourced seasonal banner and the 'bundled dataset' wording. Plan commit 29 (feat(k17): home and fees guide aligned to 'legal fees / legal costs' query intent) replaced the hero sentence, H1, title and meta description with an answer that states the cited Clio 2025 hourly-rate benchmark and the category averages shown on the statistics page."
   },
   "page:compare": {
     "date": "2026-10-07",

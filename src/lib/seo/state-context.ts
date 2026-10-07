@@ -218,6 +218,8 @@ export interface StateCostContext {
   lowestPremium: { name: string; percent: number } | null;
   /** Dollars the median would have to move to change rank by one row. */
   rankSensitivity: { toPassAbove: number | null; toDropBelow: number | null };
+  /** Nearest strictly higher and strictly lower medians (ties excluded), and how many other states record exactly this median. */
+  rankEdges: { higher: PeerState | null; lower: PeerState | null; tied: number };
   /** Rows a +/-10% revision to this median could cross, upward and downward. */
   rowsWithinTenPercent: { up: number; down: number };
 }
@@ -573,6 +575,10 @@ export function buildStateCostContext(
     ).length,
   };
 
+  const byName = (a: SeedTierFigures, b: SeedTierFigures) => nameOf(a.stateCode).localeCompare(nameOf(b.stateCode));
+  const nearestHigher = moderatePeers.filter((row) => row.median > own.median).sort((a, b) => a.median - b.median || byName(a, b))[0];
+  const nearestLower = moderatePeers.filter((row) => row.median < own.median).sort((a, b) => b.median - a.median || byName(a, b))[0];
+
   const quartileIndex = Math.min(3, Math.floor((statesLower / moderatePeers.length) * 4));
 
   return {
@@ -642,6 +648,11 @@ export function buildStateCostContext(
       toDropBelow: belowRow ? own.median - belowRow.median : null,
     },
     rowsWithinTenPercent,
+    rankEdges: {
+      higher: nearestHigher ? { name: nameOf(nearestHigher.stateCode), median: nearestHigher.median } : null,
+      lower: nearestLower ? { name: nameOf(nearestLower.stateCode), median: nearestLower.median } : null,
+      tied: moderatePeers.filter((row) => row.stateCode !== stateCode && row.median === own.median).length,
+    },
     ...crossCategoryFacts(stateCode, categorySlug),
   };
 }
@@ -1203,24 +1214,27 @@ export function assumptionItems(ctx: StateCostContext, matterLabel: string): str
   const simple = ctx.tiers.simple;
   const complex = ctx.tiers.complex;
   const conditional: string[] = [];
+  const near = ctx.clusterPeers.length;
 
-  if (ctx.clusterPeers.length >= 4) {
+  if (near >= 4) {
     conditional.push(
-      `${ctx.clusterPeers.length} tracked states record a median within three percent of ${usd(
-        moderate.median,
-      )}, so a few hundred dollars of revision would re-order several places without changing what anyone pays.`,
+      `${near} tracked states record a median within three percent of ${usd(moderate.median)} — about ${usd(
+        moderate.median * 0.03,
+      )} either way — so a revision of that size could move ${ctx.stateName} past as many as ${near} places.`,
     );
-  } else if (ctx.clusterPeers.length === 0) {
+  } else if (near === 0) {
     conditional.push(
-      `Nothing else in our cost figures sits within three percent of ${usd(
+      `No other tracked state's median is within three percent of ${usd(
         moderate.median,
-      )} — a stable rank, but no neighbouring state to cross-check the figure against.`,
+      )}, so the rank would hold under a revision of that size, but there is no state that close to cross-check the figure against.`,
     );
   } else {
+    const names =
+      near === 1 ? ctx.clusterPeers[0]! : `${ctx.clusterPeers.slice(0, -1).join(", ")} and ${ctx.clusterPeers[near - 1]}`;
     conditional.push(
-      `${ctx.clusterPeers.join(" and ")} record medians within three percent of ${usd(
+      `${names} ${near === 1 ? "records a median" : "record medians"} within three percent of ${usd(
         moderate.median,
-      )}; outside that pair there is nothing close enough to corroborate it.`,
+      )}; no other state is close enough to corroborate it.`,
     );
   }
 
@@ -1228,9 +1242,9 @@ export function assumptionItems(ctx: StateCostContext, matterLabel: string): str
     conditional.push(
       `Rate and total disagree by ${Math.abs(ctx.rankGap)} places (${ordinal(
         ctx.hourlyRank!,
-      )} against ${ordinal(ctx.rank)}), so multiplying ${usd(
+      )} on rate against ${ordinal(ctx.rank)} on total), so the ${usd(
         moderate.hourlyMedian ?? 0,
-      )} by a guessed hour count will not reproduce ${usd(moderate.median)}.`,
+      )} rate alone is a poor guide to the ${usd(moderate.median)} total.`,
     );
   } else if (ctx.rankGap === 0) {
     conditional.push(
@@ -1248,7 +1262,9 @@ export function assumptionItems(ctx: StateCostContext, matterLabel: string): str
 
   if (ctx.overlapSimpleModerate && simple) {
     conditional.push(
-      `${usd(moderate.low)}–${usd(simple.high)} belongs to both bands; the filing separates them.`,
+      `${
+        moderate.low === simple.high ? usd(moderate.low) : `${usd(moderate.low)}–${usd(simple.high)}`
+      } belongs to both bands; the tier, not the figure, separates them.`,
     );
   } else if (simple) {
     conditional.push(
@@ -1286,31 +1302,48 @@ export function assumptionItems(ctx: StateCostContext, matterLabel: string): str
     conditional.push(
       `The ${moderate.hours} implied hours are arithmetic, not a timesheet: they treat all of ${usd(
         moderate.median,
-      )} as attorney time at ${usd(moderate.hourlyMedian ?? 0)}, when some is paralegal work and disbursements.`,
+      )} as attorney time at ${usd(moderate.hourlyMedian ?? 0)}, although a total can include costs other than attorney time.`,
     );
   } else if (moderate.hours) {
     conditional.push(
-      `${usd(moderate.median)} ÷ ${usd(moderate.hourlyMedian ?? 0)} = ${
+      `${usd(moderate.median)} ÷ ${usd(moderate.hourlyMedian ?? 0)} comes to about ${
         moderate.hours
-      } hours is a price, not a timesheet, where flat fees dominate ${aOrAn(matterLabel)} ${matterLabel}.`,
+      } hours — an arithmetic implication of the estimate for ${aOrAn(matterLabel)} ${matterLabel}, not a timesheet.`,
     );
   }
 
+  const { higher, lower, tied } = ctx.rankEdges;
+  const legalFees = `Legal fees change over time, and any change since these estimates were modeled is absent from the ${usd(
+    moderate.median,
+  )} median.`;
+  const rankItem =
+    ctx.rank > Math.round(ctx.rankedOutOf / 2)
+      ? legalFees
+      : higher
+        ? `A rise of ${usd(higher.median - moderate.median)} in the ${ctx.stateName} median, to the ${usd(
+            higher.median,
+          )} that ${higher.name} records, would move it up from ${ordinal(ctx.rank)}.`
+        : tied > 0
+          ? `${ctx.stateName} holds ${ordinal(ctx.rank)} with no state above it, but ${
+              tied === 1 ? "another state records" : `${tied} other states record`
+            } the same ${usd(moderate.median)}, so any fall in its figure would lower its rank.`
+          : lower
+            ? `${ctx.stateName} holds ${ordinal(ctx.rank)} with no state above it; a fall of more than ${usd(
+                moderate.median - lower.median,
+              )}, below the ${usd(lower.median)} that ${lower.name} records, would be needed to lower its rank.`
+            : legalFees;
+
   const universal = [
     ctx.quartile >= 3
-      ? `One band covers all of ${ctx.stateName}: a metropolitan quote over ${usd(
+      ? `The ${usd(moderate.low)}–${usd(moderate.high)} band is a single statewide estimate for ${
+          ctx.stateName
+        }, with no county-level figures behind it, so a quote above ${usd(
           moderate.high,
-        )} can still suit the county it came from.`
-      : `County rates sit on both sides of the statewide ${usd(moderate.low)}–${usd(
+        )} is a comparison with a model rather than a finding about any county.`
+      : `The ${usd(moderate.low)}–${usd(
           moderate.high,
-        )} band, so a quote outside it is not by itself evidence of anything.`,
-    ctx.rank <= Math.round(ctx.rankedOutOf / 2)
-      ? `A move of ${usd(
-          Math.max(1, ctx.rankSensitivity.toPassAbove ?? 1),
-        )} anywhere in the table re-ranks ${ctx.stateName}.`
-      : `Legal fees change over time, and any change since these estimates were modeled is absent from the ${usd(
-          moderate.median,
-        )} median.`,
+        )} band is one statewide estimate with no county breakdown behind it, so a quote outside it is not by itself evidence of anything.`,
+    rankItem,
   ];
 
   return [...conditional, ...universal];

@@ -1,7 +1,16 @@
 import { describe, expect, it } from "vitest";
 import { STATES } from "@/lib/constants/states";
 import { CATEGORIES } from "@/lib/constants/categories";
-import { getCategoryTierFigures, getModerateMedianCost, hasUniqueData } from "@/lib/page-index";
+import {
+  INDEXABLE_PAGES,
+  getCategoryTierFigures,
+  getModerateMedianCost,
+  getNationalAverage,
+  getNationalAverageStateCount,
+  hasUniqueData,
+} from "@/lib/page-index";
+import { buildAnswerBlock, buildBenchmarkSynthesis } from "@/lib/seo/geo";
+import { getCostForPage } from "@/lib/services/cost-service";
 import {
   buildStateCostContext,
   categoryMixSentence,
@@ -691,5 +700,51 @@ describe("K4-a: every other rank, tier and matter-type claim equals the computed
       return out;
     });
     expect(v).toEqual([]);
+  });
+});
+
+describe("K4-a: the answer paragraph and the benchmark sentence describe the figure they print", () => {
+  it("the opening of the answer paragraph calls the headline figure a median, never an average", async () => {
+    const out: string[] = [];
+    for (const page of INDEXABLE_PAGES) {
+      const costs = await getCostForPage(page.category.slug, page.state.code);
+      const moderate = costs.find((c) => c.complexity === "moderate");
+      const block = buildAnswerBlock({ category: page.category, state: page.state, costs, dateRecord: null });
+      if (!moderate) continue;
+      const figure = usd(moderate.costRange.median);
+      if (!block.answer.includes(figure)) out.push(`${page.path}: ${figure} missing from the answer paragraph`);
+      if (/\baverage\b/i.test(block.answer)) out.push(`${page.path}: answer paragraph says average for a median`);
+      if (moderate.hourlyRate.median > 0 && !new RegExp(`median cost of ${figure.replace("$", "\\$")}`).test(block.answer)) {
+        out.push(`${page.path}: opening does not call ${figure} the median cost`);
+      }
+    }
+    expect(out).toEqual([]);
+  });
+
+  it("the benchmark sentence states the strict direction, percentage and population against the average of the state medians", () => {
+    const out: string[] = [];
+    for (const page of INDEXABLE_PAGES) {
+      const list = rows(page.category.slug, "moderate");
+      const own = standing(list, page.state.code)!.value;
+      const mean = list.reduce((sum, r) => sum + r.value, 0) / list.length;
+      const text = buildBenchmarkSynthesis({
+        categoryDisplayName: page.category.displayName,
+        stateName: page.state.name,
+        localMedian: getModerateMedianCost(page.state.code, page.category.slug),
+        nationalAverage: getNationalAverage(page.category.slug),
+        stateCount: getNationalAverageStateCount(page.category.slug),
+      });
+      if (!text) {
+        out.push(`${page.path}: no benchmark sentence`);
+        continue;
+      }
+      const ratio = (own - mean) / mean;
+      const pct = Math.round(Math.abs(ratio) * 100);
+      const want = pct < 3 ? "in line with" : ratio > 0 ? `${pct}% above` : `${pct}% below`;
+      if (!text.includes(want)) out.push(`${page.path}: expected "${want}" in "${text}"`);
+      if (!text.includes(usd(mean))) out.push(`${page.path}: average ${usd(mean)} missing`);
+      if (!text.includes(`across ${list.length} states with estimates`)) out.push(`${page.path}: population ${list.length} missing`);
+    }
+    expect(out).toEqual([]);
   });
 });

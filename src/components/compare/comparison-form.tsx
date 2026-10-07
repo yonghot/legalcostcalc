@@ -16,6 +16,9 @@ import { ArrowLeftRight, BarChart3, MapPin } from "lucide-react";
 
 export type CompareMode = "states" | "categories";
 
+const STATE_LABELS: Record<string, string> = Object.fromEntries(STATES.map((s) => [s.code, s.name]));
+const CATEGORY_LABELS: Record<string, string> = Object.fromEntries(CATEGORIES.map((c) => [c.slug, c.displayName]));
+
 interface ComparisonFormProps {
   mode: CompareMode;
   onModeChange: (mode: CompareMode) => void;
@@ -74,7 +77,7 @@ export function ComparisonForm({
             <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 items-end">
               <div className="space-y-2">
                 <Label htmlFor="compare-state-1">State 1</Label>
-                <Select value={state1} onValueChange={(v) => onState1Change(v ?? "")}>
+                <Select items={STATE_LABELS} value={state1} onValueChange={(v) => onState1Change(v ?? "")}>
                   <SelectTrigger id="compare-state-1"><SelectValue placeholder="Select..." /></SelectTrigger>
                   <SelectContent>
                     {STATES.filter((s) => s.code !== state2).map((s) => (
@@ -90,7 +93,7 @@ export function ComparisonForm({
 
               <div className="space-y-2">
                 <Label htmlFor="compare-state-2">State 2</Label>
-                <Select value={state2} onValueChange={(v) => onState2Change(v ?? "")}>
+                <Select items={STATE_LABELS} value={state2} onValueChange={(v) => onState2Change(v ?? "")}>
                   <SelectTrigger id="compare-state-2"><SelectValue placeholder="Select..." /></SelectTrigger>
                   <SelectContent>
                     {STATES.filter((s) => s.code !== state1).map((s) => (
@@ -102,7 +105,7 @@ export function ComparisonForm({
 
               <div className="space-y-2">
                 <Label htmlFor="compare-category">Category</Label>
-                <Select value={category} onValueChange={(v) => onCategoryChange(v ?? "")}>
+                <Select items={CATEGORY_LABELS} value={category} onValueChange={(v) => onCategoryChange(v ?? "")}>
                   <SelectTrigger id="compare-category"><SelectValue placeholder="Select..." /></SelectTrigger>
                   <SelectContent>
                     {CATEGORIES.map((c) => (
@@ -124,7 +127,7 @@ export function ComparisonForm({
             <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 items-end">
               <div className="space-y-2">
                 <Label htmlFor="compare-state">State</Label>
-                <Select value={state1} onValueChange={(v) => onState1Change(v ?? "")}>
+                <Select items={STATE_LABELS} value={state1} onValueChange={(v) => onState1Change(v ?? "")}>
                   <SelectTrigger id="compare-state"><SelectValue placeholder="Select..." /></SelectTrigger>
                   <SelectContent>
                     {STATES.map((s) => (
@@ -136,7 +139,7 @@ export function ComparisonForm({
 
               <div className="space-y-2">
                 <Label htmlFor="compare-category-1">Category 1</Label>
-                <Select value={category} onValueChange={(v) => onCategoryChange(v ?? "")}>
+                <Select items={CATEGORY_LABELS} value={category} onValueChange={(v) => onCategoryChange(v ?? "")}>
                   <SelectTrigger id="compare-category-1"><SelectValue placeholder="Select..." /></SelectTrigger>
                   <SelectContent>
                     {CATEGORIES.filter((c) => c.slug !== category2).map((c) => (
@@ -152,7 +155,7 @@ export function ComparisonForm({
 
               <div className="space-y-2">
                 <Label htmlFor="compare-category-2">Category 2</Label>
-                <Select value={category2} onValueChange={(v) => onCategory2Change(v ?? "")}>
+                <Select items={CATEGORY_LABELS} value={category2} onValueChange={(v) => onCategory2Change(v ?? "")}>
                   <SelectTrigger id="compare-category-2"><SelectValue placeholder="Select..." /></SelectTrigger>
                   <SelectContent>
                     {CATEGORIES.filter((c) => c.slug !== category).map((c) => (

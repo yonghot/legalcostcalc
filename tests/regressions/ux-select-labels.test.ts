@@ -5,6 +5,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import "./helpers/render";
 import { CostCalculator } from "@/components/calculator/cost-calculator";
+import { ComparisonForm, type CompareMode } from "@/components/compare/comparison-form";
 import { CATEGORIES } from "@/lib/constants/categories";
 import { STATES } from "@/lib/constants/states";
 
@@ -53,6 +54,54 @@ describe("UX P0-2d: the selects show labels, not raw values", () => {
     expect(new Set(names).size).toBe(names.length);
     const categoryNames = CATEGORIES.map((c) => c.displayName);
     expect(new Set(categoryNames).size).toBe(categoryNames.length);
+  });
+});
+
+describe("UX P0-2d: the compare selects show labels, not raw values", () => {
+  const noop = () => {};
+  const form = (mode: CompareMode, values: { state1: string; state2: string; category: string; category2: string }) =>
+    renderToStaticMarkup(
+      createElement(ComparisonForm, {
+        mode,
+        onModeChange: noop,
+        onState1Change: noop,
+        onState2Change: noop,
+        onCategoryChange: noop,
+        onCategory2Change: noop,
+        onCompare: noop,
+        isFormValid: true,
+        loading: false,
+        ...values,
+      }),
+    );
+  const filled = { state1: "CA", state2: "TX", category: "divorce", category2: "dui" };
+  const empty = { state1: "", state2: "", category: "", category2: "" };
+
+  it("states mode: both state triggers and the category trigger show display names", () => {
+    const html = form("states", filled);
+    expect(triggerValue(html, "compare-state-1")).toBe("California");
+    expect(triggerValue(html, "compare-state-2")).toBe("Texas");
+    expect(triggerValue(html, "compare-category")).toBe("Divorce");
+  });
+
+  it("categories mode: the state trigger and both category triggers show display names", () => {
+    const html = form("categories", filled);
+    expect(triggerValue(html, "compare-state")).toBe("California");
+    expect(triggerValue(html, "compare-category-1")).toBe("Divorce");
+    expect(triggerValue(html, "compare-category-2")).toBe("DUI / DWI");
+  });
+
+  it("no compare trigger shows a category slug or a state code, in either mode", () => {
+    const raw = new Set([...CATEGORIES.map((c) => c.slug), ...STATES.map((s) => s.code)]);
+    const states = form("states", filled);
+    const categories = form("categories", filled);
+    for (const id of ["compare-state-1", "compare-state-2", "compare-category"]) expect(raw.has(triggerValue(states, id)), id).toBe(false);
+    for (const id of ["compare-state", "compare-category-1", "compare-category-2"]) expect(raw.has(triggerValue(categories, id)), id).toBe(false);
+  });
+
+  it("an empty selection keeps the placeholder", () => {
+    expect(triggerValue(form("states", empty), "compare-state-1")).toBe("Select...");
+    expect(triggerValue(form("categories", empty), "compare-category-2")).toBe("Select...");
   });
 });
 

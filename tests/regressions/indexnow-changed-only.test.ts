@@ -139,7 +139,7 @@ describe("IndexNow script run as the postbuild step", () => {
       env.INDEXNOW_BASELINE_FILE = baselineFile;
     }
     Object.assign(env, extra);
-    const result = spawnSync("node", [scriptPath, "postbuild"], { cwd: repoRoot, env, encoding: "utf8", timeout: 60_000 });
+    const result = spawnSync("node", [scriptPath, "postbuild"], { cwd: repoRoot, env: env as NodeJS.ProcessEnv, encoding: "utf8", timeout: 60_000 });
     return { status: result.status, out: `${result.stdout}${result.stderr}` };
   }
 

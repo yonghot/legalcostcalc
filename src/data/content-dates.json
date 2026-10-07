@@ -42,7 +42,7 @@
   "guide": {
     "date": "2026-10-08",
     "basis": "content-changed",
-    "evidence": "b1951d8 authored the guide. Plan commit 29 (feat(k17): home and fees guide aligned to 'legal fees / legal costs' query intent) rewrote the lead paragraph and the meta description to state the already cited Clio 2025 hourly-rate benchmark first; the key facts, sections and sources are unchanged and were last checked against their sources on 2026-07-18 (a re-check of the Clio page on 2026-10-08 was blocked by HTTP 403, so none is claimed). Plan commit 36 (data(k8): populate index policy from evidence) added a link from the contingency section to the settlement estimator."
+    "evidence": "b1951d8 authored the guide. Plan commit 29 (feat(k17): home and fees guide aligned to 'legal fees / legal costs' query intent) rewrote the lead paragraph and the meta description to state the already cited Clio 2025 hourly-rate benchmark first; the key facts, sections and sources are unchanged and were last checked against their sources on 2026-07-18 (a re-check of the Clio page on 2026-10-08 was blocked by HTTP 403, so none is claimed). Plan commit 36 (data(k8): populate index policy from evidence) added a link from the contingency section to the settlement estimator. 91f5ee2 (2026-10-08) replaced the sentence that said the legal cost statistics page compares hourly-rate data across all 50 states + DC with what that page shows (median estimated costs by matter type, downloadable data)."
   },
   "page:home": {
     "date": "2026-10-08",

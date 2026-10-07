@@ -157,7 +157,7 @@ export function TermsGateCheckbox({
         type="button"
         onClick={onAccept}
         disabled={!checked}
-        className={`mt-3 w-full rounded-md bg-teal-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto ${FOCUS_RING}`}
+        className={`mt-3 w-full rounded-md bg-teal-700 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto ${FOCUS_RING}`}
       >
         Continue
       </button>

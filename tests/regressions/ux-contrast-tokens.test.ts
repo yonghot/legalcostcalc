@@ -13,11 +13,6 @@ const ALLOW: Array<{ file: string; literal?: string; reason: string }> = [
   { file: "src/components/layout/footer.tsx", reason: "light text on the slate-900 footer: slate-400 is 6.4:1 there" },
   { file: "src/components/layout/header.tsx", reason: "logotype wordmark and logo tile are exempt from the contrast rule" },
   { file: "src/app/page.tsx", literal: "text-teal-600", reason: "H1 emphasis word at 48px bold: the 3:1 large-text threshold applies" },
-  {
-    file: "src/components/compliance/TermsGate.tsx",
-    literal: "mt-3 w-full rounded-md bg-teal-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto",
-    reason: "consent button is rebuilt by the clickwrap change (D1); it moves to teal-700 there",
-  },
 ];
 
 interface Violation {

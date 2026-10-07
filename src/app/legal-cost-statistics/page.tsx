@@ -9,7 +9,7 @@ import { DatasetSchema } from "@/components/seo/dataset-schema";
 import { buildStatisticsAggregate } from "@/lib/seo/statistics";
 import { buildMeta, CANONICAL_ORIGIN } from "@/lib/seo";
 import { getFamilyDate } from "@/lib/content-dates";
-import { formatCurrency } from "@/lib/utils/format";
+import { aOrAn, formatCurrency } from "@/lib/utils/format";
 import { AdsenseLoader } from "@/components/ads/adsense-loader";
 
 export const revalidate = 604800; // 7 days
@@ -23,7 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
     // the page IS the citable statistics asset.
     title: "Legal Cost Statistics by State",
     description:
-      "National averages, highest- and lowest-cost states, and cross-state legal cost comparisons across 8 matter types — free, sourced data with downloadable JSON/CSV feeds.",
+      "Average state median costs, highest- and lowest-cost states, and cross-state legal cost comparisons across 8 matter types — free, sourced data with downloadable JSON/CSV feeds.",
     path: PAGE_PATH,
   });
 }
@@ -49,9 +49,14 @@ export default function LegalCostStatisticsPage() {
           and the downloadable data.json/data.csv feeds. */}
       <DatasetSchema
         name="LegalCostCalc Legal Cost Statistics"
-        description="Aggregated median legal costs, highest- and lowest-cost states, and cross-state comparisons across 8 legal matter types in the United States."
+        description="Average of state median legal costs, highest- and lowest-cost states, and cross-state comparisons across 8 legal matter types in the United States."
         url={canonicalUrl}
         dateModified={DATE_RECORD?.date ?? null}
+        variableMeasured={categoryRows.map((row) => ({
+          name: `Average state median ${row.categoryDisplayName} cost`,
+          value: row.nationalAverage,
+          description: `Mean of the moderate-complexity state medians across ${row.stateCount} states.`,
+        }))}
         distributionUrls={[
           { url: `${canonicalUrl}/data.json`, encodingFormat: "application/json" },
           { url: `${canonicalUrl}/data.csv`, encodingFormat: "text/csv" },
@@ -84,9 +89,11 @@ export default function LegalCostStatisticsPage() {
               <span className="font-mono font-semibold text-teal-700">
                 {formatCurrency(headline.nationalAverage)}
               </span>{" "}
-              — the national median cost of a {headline.categoryDisplayName.toLowerCase()}, the most
-              expensive of the {categoryRows.length} legal matter types tracked, based on{" "}
-              {totalDataPoints} state-level estimates.
+              — the average of state median costs for {aOrAn(headline.categoryDisplayName)}{" "}
+              {headline.categoryDisplayName.toLowerCase()}, the most expensive of the{" "}
+              {categoryRows.length} legal matter types tracked. It averages the {headline.stateCount}{" "}
+              states with estimates for that matter type; the page covers {totalDataPoints} state-level
+              estimates in all.
             </p>
           )}
 
@@ -115,10 +122,12 @@ export default function LegalCostStatisticsPage() {
           <h2 className="mb-4 text-xl font-semibold text-slate-900">Median Cost by Matter Type</h2>
           <StatisticsTable rows={categoryRows} />
           <p className="mt-3 text-xs text-slate-400">
-            National averages and state comparisons are computed from LegalCostCalc&apos;s
-            moderate-complexity cost estimates (see each matter type&apos;s individual state pages for
-            the sources behind them). Figures are estimates modeled from published national fee guides
-            and rate surveys, shown as ranges, not quotes from firms in each state.
+            Each average is the mean of the moderate-complexity state median estimates for that
+            matter type, taken over the states counted in the &ldquo;States&rdquo; column. A state is
+            counted only when it has a sourced estimate that differs from every other state&apos;s
+            figure, so the count varies by matter type. See each matter type&apos;s individual state
+            pages for the sources behind the estimates. Figures are estimates modeled from published
+            national fee guides and rate surveys, shown as ranges, not quotes from firms in each state.
           </p>
         </div>
       </section>

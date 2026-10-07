@@ -22,7 +22,7 @@ import { formatCurrency } from "@/lib/utils/format";
 export interface CategoryStatRow {
   categorySlug: string;
   categoryDisplayName: string;
-  /** Real national average (mean of moderate-complexity medians across all indexable states), rounded. */
+  /** Average of the moderate-complexity state medians over the `stateCount` states below, rounded. */
   nationalAverage: number;
   /** Highest-cost indexable state for this category. */
   highestState: { code: string; name: string; slug: string; median: number };
@@ -117,8 +117,8 @@ export function buildStatisticsAggregate(): StatisticsAggregate {
 
   if (headline) {
     findings.push(
-      `${headline.categoryDisplayName} is the most expensive matter type nationally, with a median cost ` +
-        `of ${formatCurrency(headline.nationalAverage)} across ${headline.stateCount} states.`,
+      `${headline.categoryDisplayName} is the most expensive matter type, with an average state median cost ` +
+        `of ${formatCurrency(headline.nationalAverage)} across the ${headline.stateCount} states with estimates.`,
     );
   }
 
@@ -126,8 +126,8 @@ export function buildStatisticsAggregate(): StatisticsAggregate {
   const cheapest = categoryRows[categoryRows.length - 1];
   if (cheapest && cheapest.categorySlug !== headline?.categorySlug) {
     findings.push(
-      `${cheapest.categoryDisplayName} is the least expensive matter type nationally, with a median cost ` +
-        `of ${formatCurrency(cheapest.nationalAverage)} across ${cheapest.stateCount} states.`,
+      `${cheapest.categoryDisplayName} is the least expensive matter type, with an average state median cost ` +
+        `of ${formatCurrency(cheapest.nationalAverage)} across the ${cheapest.stateCount} states with estimates.`,
     );
   }
 

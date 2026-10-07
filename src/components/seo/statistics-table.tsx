@@ -19,7 +19,7 @@ export function StatisticsTable({ rows }: StatisticsTableProps) {
     <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
       <table className="min-w-full text-sm">
         <caption className="sr-only">
-          Median legal cost by matter type, with highest- and lowest-cost states
+          Average state median legal cost by matter type, with highest- and lowest-cost states
         </caption>
         <thead>
           <tr className="border-b border-slate-100 bg-slate-50">
@@ -33,7 +33,13 @@ export function StatisticsTable({ rows }: StatisticsTableProps) {
               scope="col"
               className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500"
             >
-              National Average
+              Average of State Medians
+            </th>
+            <th
+              scope="col"
+              className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500"
+            >
+              States
             </th>
             <th
               scope="col"
@@ -69,6 +75,7 @@ export function StatisticsTable({ rows }: StatisticsTableProps) {
               <td className="px-4 py-3 font-mono font-semibold text-slate-800">
                 {formatCurrency(row.nationalAverage)}
               </td>
+              <td className="px-4 py-3 font-mono text-slate-600">{row.stateCount}</td>
               <td className="px-4 py-3">
                 <Link
                   href={`/${row.highestState.slug}/${row.categorySlug}-cost`}

@@ -320,8 +320,9 @@ export function buildBenchmarkSynthesis(params: {
   stateName: string;
   localMedian: number | null | undefined;
   nationalAverage: number | null | undefined;
+  stateCount?: number;
 }): string | null {
-  const { categoryDisplayName, stateName, localMedian, nationalAverage } = params;
+  const { categoryDisplayName, stateName, localMedian, nationalAverage, stateCount } = params;
   if (!localMedian || localMedian <= 0 || !nationalAverage || nationalAverage <= 0) return null;
 
   const catLower = categoryDisplayName.toLowerCase();
@@ -329,25 +330,26 @@ export function buildBenchmarkSynthesis(params: {
   const pctAbs = Math.round(Math.abs(diffRatio) * 100);
   const nationalFormatted = formatCurrency(Math.round(nationalAverage));
   const localFormatted = formatCurrency(localMedian);
+  const population = stateCount ? `${stateCount} states with estimates` : "the states with estimates";
 
   // Within +/-3% is treated as "in line with" rather than forcing an
   // above/below claim on a difference too small to be meaningful.
   if (pctAbs < 3) {
     return (
       `At ${localFormatted}, the median ${catLower} cost in ${stateName} is in line with the ` +
-      `${nationalFormatted} national average across all 50 states and DC.`
+      `${nationalFormatted} average of state medians across ${population}.`
     );
   }
 
   if (diffRatio > 0) {
     return (
       `At ${localFormatted}, the median ${catLower} cost in ${stateName} runs ${pctAbs}% above the ` +
-      `${nationalFormatted} national average across all 50 states and DC.`
+      `${nationalFormatted} average of state medians across ${population}.`
     );
   }
 
   return (
     `At ${localFormatted}, the median ${catLower} cost in ${stateName} runs ${pctAbs}% below the ` +
-    `${nationalFormatted} national average across all 50 states and DC.`
+    `${nationalFormatted} average of state medians across ${population}.`
   );
 }

@@ -1,5 +1,11 @@
 import { publisherNode, safeJsonLd } from "@/lib/utils/json-ld";
 
+interface MeasuredVariable {
+  name: string;
+  value: number;
+  description: string;
+}
+
 interface DatasetSchemaProps {
   /** Dataset name, e.g. "LegalCostCalc Legal Cost Statistics". */
   name: string;
@@ -11,6 +17,8 @@ interface DatasetSchemaProps {
   dateModified: string | null;
   /** Absolute URLs of the machine-readable feed variants (data.json/data.csv). */
   distributionUrls: { url: string; encodingFormat: "application/json" | "text/csv" }[];
+  /** USD figures published on the page, so the structured data states the same numbers. */
+  variableMeasured?: MeasuredVariable[];
 }
 
 /**
@@ -32,6 +40,7 @@ export function DatasetSchema({
   url,
   dateModified,
   distributionUrls,
+  variableMeasured,
 }: DatasetSchemaProps) {
   const schema = {
     "@context": "https://schema.org",
@@ -40,6 +49,17 @@ export function DatasetSchema({
     description,
     url,
     ...(dateModified ? { dateModified } : {}),
+    ...(variableMeasured?.length
+      ? {
+          variableMeasured: variableMeasured.map((v) => ({
+            "@type": "PropertyValue",
+            name: v.name,
+            value: v.value,
+            unitText: "USD",
+            description: v.description,
+          })),
+        }
+      : {}),
     license: "https://creativecommons.org/licenses/by/4.0/",
     creator: publisherNode(),
     publisher: publisherNode(),

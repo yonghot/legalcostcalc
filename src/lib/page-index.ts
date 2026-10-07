@@ -91,31 +91,16 @@ function findRow(rows: SeedRow[], complexity: string): SeedRow | undefined {
 }
 
 /**
- * National-average moderate-complexity median cost per category, computed
- * once from the real dataset (never hardcoded) — the benchmark fact 4
- * compares each state's local median against.
+ * Categories that have at least one real moderate-complexity median — fact 4
+ * only needs a benchmark to exist. The published average itself is taken over
+ * the states that pass this gate (getNationalAverage below), so the gate cannot
+ * depend on it.
  */
-const NATIONAL_AVERAGE_BY_CATEGORY: Record<string, number> = (() => {
-  const sums = new Map<string, { total: number; count: number }>();
-  for (const row of SEED_ROWS) {
-    if (row.complexity !== "moderate") continue;
-    if (typeof row.cost_median !== "number" || row.cost_median <= 0) continue;
-    const entry = sums.get(row.category) ?? { total: 0, count: 0 };
-    entry.total += row.cost_median;
-    entry.count += 1;
-    sums.set(row.category, entry);
-  }
-  const out: Record<string, number> = {};
-  for (const [category, { total, count }] of sums) {
-    out[category] = count > 0 ? total / count : 0;
-  }
-  return out;
-})();
-
-export function getNationalAverage(categorySlug: string): number | null {
-  const avg = NATIONAL_AVERAGE_BY_CATEGORY[categorySlug];
-  return typeof avg === "number" && avg > 0 ? avg : null;
-}
+const CATEGORIES_WITH_BENCHMARK: ReadonlySet<string> = new Set(
+  SEED_ROWS.filter(
+    (r) => r.complexity === "moderate" && typeof r.cost_median === "number" && r.cost_median > 0,
+  ).map((r) => r.category),
+);
 
 /**
  * A row signature capturing every visible-to-the-user number/duration field.
@@ -204,11 +189,10 @@ function scoreFacts(stateCode: string, categorySlug: string) {
   // duplicate of another state's row (a duplicate contributes no genuine
   // comparison — it would render the identical sentence/number as a
   // sibling page, the near-duplicate-template anti-pattern).
-  const nationalAverage = getNationalAverage(categorySlug);
   const comparisonVsBenchmark = Boolean(
     moderateRow &&
       localAverage &&
-      nationalAverage !== null &&
+      CATEGORIES_WITH_BENCHMARK.has(categorySlug) &&
       !hasDuplicateSiblingSignature(stateCode, categorySlug, moderateRow),
   );
 
@@ -240,6 +224,32 @@ export const PAGE_INDEX: PageIndexEntry[] = STATES.flatMap((state) =>
 
 /** Only the pages that pass the information-gain gate — safe to index and link. */
 export const INDEXABLE_PAGES: PageIndexEntry[] = PAGE_INDEX.filter((p) => p.hasUniqueData);
+
+const INDEXABLE_MEDIANS_BY_CATEGORY: ReadonlyMap<string, number[]> = (() => {
+  const out = new Map<string, number[]>();
+  for (const page of INDEXABLE_PAGES) {
+    const median = getModerateMedianCost(page.state.code, page.category.slug);
+    if (median === null || !(median > 0)) continue;
+    out.set(page.category.slug, [...(out.get(page.category.slug) ?? []), median]);
+  }
+  return out;
+})();
+
+/**
+ * Average of the moderate-complexity state medians for a category, taken over
+ * the states that pass the information-gain gate (the same states the
+ * statistics page counts). One population everywhere, so the figure on state
+ * pages, the statistics page, its feeds and its JSON-LD cannot disagree.
+ */
+export function getNationalAverage(categorySlug: string): number | null {
+  const medians = INDEXABLE_MEDIANS_BY_CATEGORY.get(categorySlug);
+  if (!medians || medians.length === 0) return null;
+  return medians.reduce((sum, value) => sum + value, 0) / medians.length;
+}
+
+export function getNationalAverageStateCount(categorySlug: string): number {
+  return INDEXABLE_MEDIANS_BY_CATEGORY.get(categorySlug)?.length ?? 0;
+}
 
 /** Fast lookup: "STATE_CODE:category-slug" -> PageIndexEntry. */
 const PAGE_INDEX_MAP = new Map<string, PageIndexEntry>(

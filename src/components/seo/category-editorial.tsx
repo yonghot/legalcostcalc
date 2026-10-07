@@ -2,7 +2,7 @@ import { formatCurrency } from "@/lib/utils/format";
 import { buildBenchmarkSynthesis } from "@/lib/seo/geo";
 import { sumFeeRanges } from "@/lib/seo/state-faq";
 import { verifiedFeeForLine } from "@/lib/verified-fees";
-import { getNationalAverage } from "@/lib/page-index";
+import { getNationalAverage, getNationalAverageStateCount } from "@/lib/page-index";
 import type { CategoryInfo } from "@/lib/types/category";
 import type { StateInfo } from "@/lib/types/state";
 import type { LegalCostData } from "@/lib/types";
@@ -75,6 +75,7 @@ export function CategoryEditorial({
     stateName: stateInfo.name,
     localMedian: moderate?.costRange.median,
     nationalAverage: getNationalAverage(categoryInfo.slug),
+    stateCount: getNationalAverageStateCount(categoryInfo.slug),
   });
 
   // Nothing real to interpolate — render nothing rather than a thin/fabricated section.

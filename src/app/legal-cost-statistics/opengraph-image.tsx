@@ -94,13 +94,13 @@ export default function OGImage() {
               {formatCurrency(headline.nationalAverage)}
             </span>
             <span style={{ fontSize: "18px", color: "#64748B" }}>
-              median {headline.categoryDisplayName.toLowerCase()} cost — most expensive matter type
+              average state median {headline.categoryDisplayName.toLowerCase()} cost — most expensive matter type
             </span>
           </div>
         )}
 
         <p style={{ fontSize: "20px", color: "#475569", textAlign: "center" }}>
-          {categoryRows.length} matter types &middot; 50 states &amp; DC &middot; Sourced &amp; dated data
+          {categoryRows.length} matter types &middot; State-by-state estimates &middot; Sourced &amp; dated data
         </p>
         {asOfLabel && (
           <p style={{ fontSize: "16px", color: "#94A3B8", marginTop: "8px" }}>{asOfLabel}</p>

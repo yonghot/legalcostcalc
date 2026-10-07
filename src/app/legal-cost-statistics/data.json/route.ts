@@ -16,6 +16,8 @@ export async function GET() {
   const body = {
     dateUpdated: getFamilyDate("page:legal-cost-statistics")?.date ?? null,
     source: "https://legalcostcalc.co/legal-cost-statistics",
+    averageDefinition:
+      "nationalAverageMedianCost is the mean of the moderate-complexity median cost across the stateCount states listed for that category; only states with a sourced estimate that differs from every other state's figure are counted.",
     totalDataPoints: aggregate.totalDataPoints,
     findings: aggregate.findings,
     categories: aggregate.categoryRows.map((row) => ({

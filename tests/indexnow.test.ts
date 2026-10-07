@@ -13,6 +13,8 @@
  *     (deploy succeeds even when api.indexnow.org / the sitemap output is
  *     unreachable) — via INDEXNOW_SITEMAP_OVERRIDE pointing at a
  *     deliberately nonexistent path, so this never makes a real network call.
+ *   - every spawn pins INDEXNOW_ENDPOINT and INDEXNOW_BASELINE_URL to a closed
+ *     local port (K22), so no test can reach api.indexnow.org or the live site.
  */
 import { afterEach, describe, expect, it } from "vitest";
 import { spawnSync } from "node:child_process";
@@ -23,9 +25,15 @@ const repoRoot = path.resolve(__dirname, "..");
 const scriptPath = path.join(repoRoot, "scripts", "indexnow.mjs");
 
 /** Runs the script as a subprocess and returns combined stdout+stderr text. */
+const CLOSED_PORT = "http://127.0.0.1:9";
+
 function runScript(mode: string, env: Record<string, string | undefined>): string {
   const fullEnv: Record<string, string> = {};
-  for (const [k, v] of Object.entries({ ...process.env, ...env })) {
+  const pinned = {
+    INDEXNOW_ENDPOINT: `${CLOSED_PORT}/indexnow`,
+    INDEXNOW_BASELINE_URL: `${CLOSED_PORT}/sitemap.xml`,
+  };
+  for (const [k, v] of Object.entries({ ...process.env, ...pinned, ...env })) {
     if (v !== undefined) fullEnv[k] = v;
   }
   const result = spawnSync("node", [scriptPath, mode], {

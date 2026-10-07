@@ -8,6 +8,7 @@ import { Breadcrumbs } from "@/components/seo/breadcrumbs";
 import { HubLinks, type HubLinkRow } from "@/components/seo/hub-links";
 import { CATEGORIES, CATEGORY_MAP } from "@/lib/constants/categories";
 import { INDEXABLE_PAGES, getModerateMedianCost } from "@/lib/page-index";
+import { STATES } from "@/lib/constants/states";
 import { buildMeta } from "@/lib/seo";
 import { FOCUS_RING } from "@/lib/utils/styles";
 import { AdsenseLoader } from "@/components/ads/adsense-loader";
@@ -17,6 +18,10 @@ import { topTrafficPages } from "@/lib/top-traffic";
 
 interface PageProps {
   params: Promise<{ category: string }>;
+}
+
+function listedStateCount(categorySlug: string): number {
+  return INDEXABLE_PAGES.filter((p) => p.category.slug === categorySlug).length;
 }
 
 export async function generateStaticParams() {
@@ -33,7 +38,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   return buildMeta({
     title: `${categoryInfo.displayName} Cost by State`,
-    description: `Compare ${categoryInfo.displayName.toLowerCase()} costs across all 50 states and DC. Free, sourced, and dated cost estimates by state.`,
+    description: `Compare ${categoryInfo.displayName.toLowerCase()} costs across ${
+      listedStateCount(categoryInfo.slug) === STATES.length ? "all 50 states and DC" : `${listedStateCount(categoryInfo.slug)} states`
+    }. Free, sourced, and dated cost estimates by state.`,
     path: `/category/${categoryInfo.slug}`,
   });
 }
@@ -81,8 +88,8 @@ export default async function CategoryHubPage({ params }: PageProps) {
             {categoryInfo.displayName} Cost by State
           </h1>
           <p className="mt-3 text-lg text-slate-600">
-            Compare estimated {categoryInfo.displayName.toLowerCase()} costs across all 50 states
-            and the District of Columbia.
+            Compare estimated {categoryInfo.displayName.toLowerCase()} costs across{" "}
+            {rows.length === STATES.length ? "all 50 states and the District of Columbia" : `${rows.length} states`}.
           </p>
           <MethodNote scope="each state" />
         </div>

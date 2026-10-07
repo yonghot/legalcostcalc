@@ -26,6 +26,7 @@
  */
 
 import { useEffect } from "react";
+import { resolveGaId } from "@/lib/env";
 import { initConsent } from "./consent-config";
 
 function injectScript(src: string, attrs: Record<string, string> = {}) {
@@ -80,11 +81,7 @@ function loadScripts() {
   // effect-injected script is invisible to AdSense's site review and to Auto
   // ads. Consent Mode v2 defaults in the layout head still run first.
 
-  // GA measurement id: support both NEXT_PUBLIC_GA_ID and the newer
-  // NEXT_PUBLIC_GA_MEASUREMENT_ID name.
-  const gaId =
-    process.env.NEXT_PUBLIC_GA_ID ||
-    process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+  const gaId = resolveGaId();
 
   // Hostname/environment gate — see resolveGaLoadDecision() above. Kills
   // preview/localhost/mirror noise so every later GA4 metric is honest.

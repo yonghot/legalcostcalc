@@ -32,9 +32,6 @@ export interface MonetizationConfig {
   /** Which programmatic ad network to load (exactly one, never two). */
   adProvider: AdProvider;
 
-  /** AdSense client id (ca-pub-…). Null when unset. */
-  adSenseClientId: string | null;
-
   /** Ezoic: whether Ezoic is enabled. Script src/id come from env. */
   ezoicEnabled: boolean;
   ezoicScriptSrc: string | null;
@@ -157,7 +154,6 @@ export function getMonetizationConfig(): MonetizationConfig {
 
   return {
     adProvider,
-    adSenseClientId: readEnv(process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID),
     ezoicEnabled: readEnv(process.env.NEXT_PUBLIC_EZOIC_ENABLED) === "true",
     ezoicScriptSrc: readEnv(process.env.NEXT_PUBLIC_EZOIC_SCRIPT_SRC),
     raptiveSiteId: readEnv(process.env.NEXT_PUBLIC_RAPTIVE_SITE_ID),

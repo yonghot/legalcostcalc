@@ -13,3 +13,7 @@ export function resolveAdsenseClient(): string {
   const id = firstConfigured(process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID, PUBLIC_ADSENSE_CLIENT) as string;
   return id.startsWith("ca-") ? id : `ca-${id}`;
 }
+
+export function resolveGaId(): string | undefined {
+  return firstConfigured(process.env.NEXT_PUBLIC_GA_ID, process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID);
+}

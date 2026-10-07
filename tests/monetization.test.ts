@@ -18,6 +18,7 @@ import {
   getMonetizationConfig,
   VERTICAL_DEFAULT_CTA_TYPE,
 } from "@/lib/monetization";
+import { resolveAdsenseClient } from "@/lib/env";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -209,8 +210,8 @@ describe("getMonetizationConfig — all env vars unset", () => {
     expect(getMonetizationConfig().adProvider).toBe("adsense");
   });
 
-  it("adSenseClientId is null when unset", () => {
-    expect(getMonetizationConfig().adSenseClientId).toBeNull();
+  it("does not carry a second AdSense client id read (resolveAdsenseClient is the only one)", () => {
+    expect(getMonetizationConfig()).not.toHaveProperty("adSenseClientId");
   });
 
   it("ezoicEnabled is false when unset", () => {
@@ -307,9 +308,9 @@ describe("getMonetizationConfig — env vars set", () => {
     expect(getMonetizationConfig().adProvider).toBe("none");
   });
 
-  it("reads NEXT_PUBLIC_ADSENSE_CLIENT_ID", () => {
+  it("resolveAdsenseClient reads NEXT_PUBLIC_ADSENSE_CLIENT_ID", () => {
     cleanups.push(withEnv("NEXT_PUBLIC_ADSENSE_CLIENT_ID", "ca-pub-1234567890123456"));
-    expect(getMonetizationConfig().adSenseClientId).toBe("ca-pub-1234567890123456");
+    expect(resolveAdsenseClient()).toBe("ca-pub-1234567890123456");
   });
 
   it("reads NEXT_PUBLIC_EZOIC_ENABLED=true", () => {

@@ -1,14 +1,14 @@
 import type { NextConfig } from "next";
+import { resolveAdsenseClient, resolveGaId } from "./src/lib/env";
 
 // Google AdSense needs several Google/DoubleClick origins allowlisted in the CSP.
-// We only widen the policy when AdSense is actually configured, so the default
-// (no-AdSense) build keeps the tighter policy.
-const adsenseEnabled = Boolean(process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID);
+// The loader always renders with the resolved client id, so the origins follow it.
+const adsenseEnabled = Boolean(resolveAdsenseClient());
 
 // Google Analytics 4 (gtag.js) needs googletagmanager.com in script-src and
 // google-analytics.com in connect-src.  We only widen the policy when a GA
 // measurement ID is configured, mirroring the AdSense gating above.
-const gaEnabled = Boolean(process.env.NEXT_PUBLIC_GA_ID);
+const gaEnabled = Boolean(resolveGaId());
 
 const adScript = adsenseEnabled
   ? " https://pagead2.googlesyndication.com https://*.googlesyndication.com https://*.googleadservices.com https://adservice.google.com https://www.googletagservices.com https://*.google.com https://*.doubleclick.net https://*.adtrafficquality.google"

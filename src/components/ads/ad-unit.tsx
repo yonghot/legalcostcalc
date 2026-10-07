@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { isValidSlotId } from "@/lib/ad-slots";
+import { resolveAdsenseClient } from "@/lib/env";
 
 interface AdUnitProps {
   /** data-ad-slot value from your AdSense dashboard (per ad unit). */
@@ -26,9 +27,8 @@ declare global {
 }
 
 /**
- * A single AdSense display unit. Renders an inert labelled placeholder unless
- * NEXT_PUBLIC_ADSENSE_CLIENT_ID is set, so the app is safe to ship before
- * AdSense approval.
+ * A single AdSense display unit. Renders nothing unless a numeric slot id is
+ * configured; the client id comes from resolveAdsenseClient().
  *
  * CWV notes:
  *  - The live <ins> wrapper reserves vertical space (min-h) matching the
@@ -60,13 +60,7 @@ export function AdUnit({
   className,
   lazy = true,
 }: AdUnitProps) {
-  const rawClient = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
-  // Normalise to "ca-pub-…" form regardless of whether the env value includes the prefix.
-  const client = rawClient
-    ? rawClient.startsWith("ca-")
-      ? rawClient
-      : `ca-${rawClient}`
-    : null;
+  const client = resolveAdsenseClient();
 
   const pathname = usePathname();
   const insRef = useRef<HTMLModElement>(null);

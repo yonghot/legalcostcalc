@@ -47,7 +47,7 @@
   "page:home": {
     "date": "2026-10-07",
     "basis": "content-changed",
-    "evidence": "The K3 visible-dates commit of 2026-10-07 removed the home page's claim that the bundled dataset was last verified on a given date; 287bad4 had last changed the home copy on 2026-08-31. 0bbc73e replaced the quarterly-refresh and recorded-row wording."
+    "evidence": "The K3 visible-dates commit of 2026-10-07 removed the home page's claim that the bundled dataset was last verified on a given date; 287bad4 had last changed the home copy on 2026-08-31. 0bbc73e replaced the quarterly-refresh and recorded-row wording. 89c635a removed the sibling-tool block and 783b107 the unsourced seasonal banner and the 'bundled dataset' wording."
   },
   "page:compare": {
     "date": "2026-07-02",
@@ -62,7 +62,7 @@
   "page:legal-cost-statistics": {
     "date": "2026-10-07",
     "basis": "content-changed",
-    "evidence": "0bbc73e replaced 'real state-level data points' and 'verified, non-duplicate data' with the modeled-estimate method note; its figures derive from the cost seed, unchanged since 4d8e536 (2026-07-01); 7ee2264 created the page."
+    "evidence": "0bbc73e replaced 'real state-level data points' and 'verified, non-duplicate data' with the modeled-estimate method note; its figures derive from the cost seed, unchanged since 4d8e536 (2026-07-01); 7ee2264 created the page. 0bf52fd changed the averages to the counted states and added the population note, States column and download labels (783b107)."
   },
   "page:about": {
     "date": "2026-10-07",
@@ -70,8 +70,8 @@
     "evidence": "e81bd9b replaced the About publisher text. 0bbc73e replaced the quarterly-review promise and the methodology steps."
   },
   "page:embed": {
-    "date": "2026-07-01",
+    "date": "2026-10-07",
     "basis": "content-changed",
-    "evidence": "4d8e536 created the embed page; its content has not changed since."
+    "evidence": "783b107 replaced the embed page's SEO-value wording in the meta description and body; 4d8e536 created the page."
   }
 }

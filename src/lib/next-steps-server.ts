@@ -59,8 +59,8 @@ export function pageNextSteps(input: PageStepsInput): NextStep[] {
   steps.push({
     id: "category_hub",
     href: `/category/${categorySlug}`,
-    title: `See ${matter} cost in every state`,
-    hint: "Every state's estimate in one table.",
+    title: `Compare ${matter} cost across states`,
+    hint: "Estimates by state in one table.",
   });
 
   return steps;

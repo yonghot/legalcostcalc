@@ -22,7 +22,7 @@ export function nextStepsFor(categorySlug: string | undefined, categoryName: str
       id: "category_hub",
       href: `/category/${categorySlug}`,
       title: `Compare ${categoryName} cost across states`,
-      hint: "Every state's estimate in one table.",
+      hint: "Estimates by state in one table.",
     });
   }
   steps.push({

@@ -53,6 +53,16 @@ const PERSISTENCE_ALLOWED_FIELDS: readonly (keyof PersistedCostCalculatorFields)
   "complexity",
 ];
 
+const CATEGORY_LABELS: Record<string, string> = Object.fromEntries(
+  CATEGORIES.map((c) => [c.slug, c.displayName]),
+);
+const STATE_LABELS: Record<string, string> = Object.fromEntries(STATES.map((s) => [s.code, s.name]));
+const COMPLEXITY_LABELS: Record<string, string> = {
+  simple: "Simple",
+  moderate: "Moderate",
+  complex: "Complex",
+};
+
 export function CostCalculator({
   initialCategory,
   initialState,
@@ -231,6 +241,7 @@ export function CostCalculator({
             <div className="space-y-2">
               <Label htmlFor="category">Legal Category</Label>
               <Select
+                items={CATEGORY_LABELS}
                 value={category}
                 onValueChange={(v) => {
                   markInteracted();
@@ -253,6 +264,7 @@ export function CostCalculator({
             <div className="space-y-2">
               <Label htmlFor="state">State</Label>
               <Select
+                items={STATE_LABELS}
                 value={stateCode}
                 onValueChange={(v) => {
                   markInteracted();
@@ -275,6 +287,7 @@ export function CostCalculator({
             <div className="space-y-2">
               <Label htmlFor="complexity">Case Complexity</Label>
               <Select
+                items={COMPLEXITY_LABELS}
                 value={complexity}
                 onValueChange={(v) => {
                   markInteracted();

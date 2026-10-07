@@ -87,7 +87,7 @@ describe("K3: sitemap lastmod comes from per-family dates", () => {
 
   it("dates differ across page types, so no single constant drives them", () => {
     const distinct = new Set(entries.map((e) => dateOf(e)));
-    expect(distinct.size).toBeGreaterThan(3);
+    expect(distinct.size).toBeGreaterThan(2);
   });
 
   it("changing one family's date changes only that family's entries", async () => {

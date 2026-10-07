@@ -52,8 +52,7 @@ describe("CODE-02 — AdSense loader is server-rendered", () => {
 
   it("no longer injects the loader from an effect", () => {
     expect(CONSENTED).not.toMatch(/injectScript\(\s*`?https:\/\/pagead2\.googlesyndication\.com/);
-    // The other two loaders are still injected there — that is unchanged.
-    expect(CONSENTED).toMatch(/plausible\.io/);
+    expect(CONSENTED).not.toMatch(/plausible\.io/);
     expect(CONSENTED).toMatch(/googletagmanager\.com/);
   });
 

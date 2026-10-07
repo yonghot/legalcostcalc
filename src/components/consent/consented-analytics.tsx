@@ -3,8 +3,8 @@
 /**
  * ConsentedAnalytics
  *
- * Loads Plausible, Google AdSense and GA4 (gtag.js) scripts UNCONDITIONALLY
- * (env-guarded) on every page — they are NOT gated behind the cookie banner.
+ * Loads the GA4 (gtag.js) script UNCONDITIONALLY (env-guarded) on every page —
+ * it is NOT gated behind the cookie banner.
  * Whether personalized ads / analytics actually fire is governed by Google
  * Consent Mode v2 (defaults set inline in <head>, before any Google script).
  *
@@ -73,16 +73,8 @@ function resolveGaLoadDecision(): { shouldLoad: boolean; debugMode: boolean } {
   return { shouldLoad: debugEnabled, debugMode: debugEnabled };
 }
 
-/** Inject the third-party loaders (env-guarded, idempotent). */
+/** Inject the GA4 loader (env-guarded, idempotent). */
 function loadScripts() {
-  const plausibleDomain = process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN;
-  if (plausibleDomain) {
-    injectScript("https://plausible.io/js/script.js", {
-      defer: "",
-      "data-domain": plausibleDomain,
-    });
-  }
-
   // The AdSense loader is NOT injected here. The AdsenseLoader component
   // renders it into the server HTML of content pages (CODE-02): an
   // effect-injected script is invisible to AdSense's site review and to Auto

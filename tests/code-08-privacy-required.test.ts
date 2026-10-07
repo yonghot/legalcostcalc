@@ -45,7 +45,6 @@ describe("CODE-08 — privacy policy required elements", () => {
     for (const vendor of [
       "Google AdSense",
       "Google Analytics",
-      "Plausible",
       "Vercel",
       "Supabase",
     ]) {

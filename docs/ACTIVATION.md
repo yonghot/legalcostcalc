@@ -48,3 +48,12 @@ Sign-up with each program is the owner's step. Activation happens only after the
 | `NEXT_PUBLIC_EMAIL_CAPTURE` | monetization config | Marketing email form under the result. No new email collection is allowed. | HOLD |
 | `NEXT_PUBLIC_POSTAL_ADDRESS` | monetization config | Postal address shown with any email form. | HOLD |
 | `NEXT_PUBLIC_EMAIL_CAPTURE_ENABLED` | email results form | Transactional email-my-results form. | HOLD |
+
+## IndexNow
+
+| Name | Read by | Effect when set | Status |
+| --- | --- | --- | --- |
+| `INDEXNOW_KEY` | prebuild key file, postbuild submit | Prebuild writes public/{key}.txt. Postbuild, on a production build only, compares the new sitemap with the live production sitemap and submits only added, removed and re-dated URLs. Nothing is submitted when the comparison fails. The .env.example paragraph about it describes the older full-list behavior and is not edited here. | ON |
+| `INDEXNOW_PROD_ORIGIN` | postbuild submit | Test override of the sitemap origin. Leave unset. | DO NOT SET |
+| `INDEXNOW_ENDPOINT` | postbuild submit | Test override of the IndexNow endpoint. Leave unset. | DO NOT SET |
+| `INDEXNOW_DRY_RUN` | postbuild submit | Local check: prints the delta against the live sitemap and never posts. | READY |

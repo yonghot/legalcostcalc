@@ -4,9 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "node scripts/indexnow.mjs prebuild",
+    "prebuild": "node scripts/indexnow-key-file.mjs",
     "build": "next build",
-    "postbuild": "node scripts/indexnow.mjs postbuild",
+    "postbuild": "node scripts/indexnow.mjs",
     "start": "next start",
     "test": "vitest run",
     "lint": "eslint",

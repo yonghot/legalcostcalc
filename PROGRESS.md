@@ -1,5 +1,10 @@
 # PROGRESS.md — LegalCostCalc
 
+## 2026-10-08 — 적대 검토 후속 수정 (AppFarm 3 fixer, 커밋 561d440..HEAD 대상 findings)
+
+- 작업 트리 정리: 배치 1/2 의 미커밋 변경(셀렉트가 slug·주 코드 대신 표시 이름을 보이고 트리거·옵션이 44px)을 tests/regressions/ux-select-labels.test.ts 와 함께 커밋(HEAD 소스에서 7건 실패, 변경 후 9건 통과). 게이트 전에 작업 트리가 깨끗해야 하므로.
+- K19-D (IndexNow 공용 템플릿 이식): scripts/indexnow.mjs 를 AppFarm scripts/templates/indexnow-delta.mjs 와 바이트 동일하게 교체(sha256 89105d25ebb6…). 이전 29b0aab 맞춤 스크립트는 완전한 사이트맵 문서 검사·전체 마감 시간이 없어 잘린 200 응답을 작은 사이트로 읽고 거의 모든 URL을 "추가"로 재제출할 수 있었다. 키 파일(public/{key}.txt, 프로토콜상 라이브에서 200 이어야 하고 템플릿이 그 응답을 확인) 기록은 템플릿 밖의 scripts/indexnow-key-file.mjs 로 분리해 prebuild 에 남김 — 제거하면 다음 배포부터 /{key}.txt 가 404 가 된다. 맞춤 스크립트의 환경 변수(INDEXNOW_BASELINE_URL·INDEXNOW_BASELINE_FILE·INDEXNOW_SITEMAP_OVERRIDE)와 로그 문구는 삭제, 해당 단정은 템플릿 문구로 이전. tests/regressions/indexnow-delta.test.ts(템플릿 30건, 이전 스크립트에서 28건 실패 → 통과; "사이트맵 lastmod 가 빌드 시계를 따르지 않음" 포함), tests/indexnow.test.ts 와 indexnow-changed-only.test.ts 는 INDEXNOW_PROD_ORIGIN 을 닫힌 포트로 고정. 첫 배포는 수정된 URL과 사이트맵에서 빠진 URL을 변경분으로 정당하게 제출한다.
+
 ## 2026-10-08 — UX/CTA 배치 2/2 (AppFarm 3, 계약 K24·K26, 리더 결정 D2)
 
 - UX P0-3 (K26-2·K24·K9): 서버 렌더 "Next steps" 블록(`data-next-step="answer"`, 내부 앵커 3개, 외부 호스트 0)을 [state]/[slug] 의 단계 카드 바로 아래·계산기 위에, 홈의 계산기 아래(`home`, 위쪽 96px 여백으로 결과 뒤 광고 슬롯과 분리)에 추가했다. 이전 계획 커밋(9319069)의 블록은 약관 동의와 계산 뒤 클라이언트에서만 생겼다. 매터별 첫 항목: 측정 방문이 있는 다른 주(MA↔FL 등), 없으면 /compare; 개인상해는 합의금 순액 추정기. 클릭은 기존 `related_click` 의 `link_module=next_step`, `link_context=<placement>_<slot>`(경로만, 입력값 없음). 9319069 가 새로 만든 `next_step_click` 이벤트명은 폐기(포트폴리오 공통 지표 = link_module=next_step). "<Matter> Cost in Other States" 목록은 알파벳순 대신 측정 방문 주를 앞에 둔다. 이미 해결돼 있어 다시 하지 않은 것: 무관 자매 도메인 카드(89c635a, K9), 임베드 원시 코드 블록(현재 /embed 링크 한 줄). 테스트 tests/regressions/ux-next-steps.test.ts(HEAD 에서 9/10 실패). k24 테스트의 이벤트 기대값을 같은 이유로 정정(삭제 아님).

@@ -6,7 +6,7 @@ Redirect every command's output to a file and read the file; never pipe test or 
 1. npm exec -- eslint
 2. npm exec -- tsc --noEmit
 3. npm exec -- vitest run --reporter=dot
-   The IndexNow tests pin INDEXNOW_ENDPOINT and INDEXNOW_BASELINE_URL to the closed local port 127.0.0.1:9, so nothing is posted.
+   The IndexNow tests pin INDEXNOW_ENDPOINT and INDEXNOW_PROD_ORIGIN to the closed local port 127.0.0.1:9, so nothing is posted.
 4. npm run build, with VERCEL_ENV unset so the prebuild and postbuild IndexNow steps do nothing.
 5. node scripts/scan-built-html.mjs
    Reads the prerendered pages in .next/server/app and exits 1 on any of: ad loader on the wrong page class or on a noindexed

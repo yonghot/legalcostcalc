@@ -1,19 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { STATES } from "@/lib/constants/states";
 import { calculationBlocks, hoursSentence, type CalculationBlock } from "@/lib/seo/state-context";
 import {
+  NAME_RE,
   PAGES,
   collect,
   impliedHours,
   middle,
   money,
   monthsOf,
-  nameToCode,
   seedTable,
   tierRow,
   usd,
+  valueOfName,
   type Page,
-  type SeedRow,
 } from "./helpers/k4a-oracle";
 
 /*
@@ -110,13 +109,6 @@ describe("K4-a extension: hoursSentence states a cause only when the data has it
 });
 
 /* ------------------------------------------------------------------ calculationBlocks */
-
-const NAME_ALT = STATES.map((s) => s.name)
-  .sort((a, b) => b.length - a.length)
-  .map((n) => n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
-  .join("|");
-const NAME_RE = `(?<![A-Za-z])(${NAME_ALT})`;
-const valueOfName = (table: SeedRow[], name: string) => table.find((r) => r.code === nameToCode.get(name))?.median;
 
 function blockBody(blocks: CalculationBlock[], lead: RegExp): string | undefined {
   return blocks.find((b) => lead.test(b.lead))?.body;

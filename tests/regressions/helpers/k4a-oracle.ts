@@ -96,3 +96,10 @@ export function strictRank(table: { median: number }[], median: number): number 
 
 /** Every `$` amount in a sentence, as numbers, in order. */
 export const amounts = (text: string): number[] => [...text.matchAll(/\$[\d,]+/g)].map((m) => money(m[0]));
+
+const NAME_ALT = STATES.map((s) => s.name)
+  .sort((a, b) => b.length - a.length)
+  .map((n) => n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+  .join("|");
+export const NAME_RE = `(?<![A-Za-z])(${NAME_ALT})`;
+export const valueOfName = (table: SeedRow[], name: string) => table.find((r) => r.code === nameToCode.get(name))?.median;

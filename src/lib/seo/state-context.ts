@@ -907,15 +907,15 @@ export function escalationSentence(ctx: StateCostContext, matterLabel: string): 
   )}`;
 
   if (hoursMultiple >= 5) {
-    return `Moving from a simple to a complex ${matterLabel} multiplies the ${stateName} total by ${costMultiple}, and almost all of that is hours rather than price: ${arithmetic}, so the workload grows ${hoursMultiple}x while the rate grows only ${rateMultiple}x. Complexity here buys attorney time, not a premium hourly rate.`;
+    return `Moving from a simple to a complex ${matterLabel} multiplies the ${stateName} total by ${costMultiple}x, and most of that is hours rather than price: ${arithmetic}, so the workload grows ${hoursMultiple}x while the rate grows ${rateMultiple}x.`;
   }
   if (hoursMultiple >= 4.4) {
-    return `The ${costMultiple}x step from the simple to the complex tier breaks down as ${hoursMultiple}x the hours against ${rateMultiple}x the rate — ${arithmetic}. Hours dominate, but the rate contribution is large enough to notice.`;
+    return `The ${costMultiple}x step from the simple to the complex tier breaks down as ${hoursMultiple}x the hours against ${rateMultiple}x the rate — ${arithmetic}. Hours carry the larger part of the step, and the rate rises with them.`;
   }
   if (hoursMultiple >= 3.9) {
-    return `${stateName} records a ${costMultiple}x gap between its simple and complex ${matterLabel} medians. Decomposed, that is ${hoursMultiple}x more billed time and ${rateMultiple}x a higher rate: ${arithmetic}.`;
+    return `${stateName} records a ${costMultiple}x gap between its simple and complex ${matterLabel} medians. Decomposed, that is ${hoursMultiple}x the billed time at ${rateMultiple}x the rate: ${arithmetic}.`;
   }
-  return `The escalation is comparatively shallow on hours. A complex ${matterLabel} costs ${costMultiple}x a simple one in ${stateName}, but the implied workload only rises ${hoursMultiple}x — ${arithmetic} — meaning the senior-rate premium of ${rateMultiple}x carries an unusually large share of the increase.`;
+  return `A complex ${matterLabel} costs ${costMultiple}x a simple one in ${stateName}, and the implied workload rises under 3.9x — ${hoursMultiple}x, as ${arithmetic} — against a ${rateMultiple}x rise in the rate. Hours still carry the larger part of the increase.`;
 }
 
 /** How the state's rank moves as complexity rises — the strongest differentiator. */
@@ -1446,7 +1446,7 @@ export function premiumSentence(ctx: StateCostContext): string | null {
 
   const describe = (entry: { name: string; percent: number }) =>
     entry.percent === 0
-      ? `${entry.name} sits on its own midpoint`
+      ? `${entry.name} sits within a percent of its own midpoint`
       : entry.percent > 0
         ? `${entry.name} runs ${entry.percent}% above its own midpoint`
         : `${entry.name} runs ${Math.abs(entry.percent)}% below its own midpoint`;
@@ -1465,13 +1465,20 @@ export function premiumSentence(ctx: StateCostContext): string | null {
       highestPremium,
     )} while ${describe(lowestPremium)} — a ${spread}-point spread between the extremes.`;
   }
+  const closing =
+    highestPremium.percent > 0 && lowestPremium.percent < 0
+      ? ` A single "${stateName} is expensive" or "${stateName} is inexpensive" claim would be wrong for at least one of the matter types tracked here.`
+      : lowestPremium.percent > 0
+        ? " Every tracked matter type runs above its own midpoint here, so the difference is one of degree."
+        : highestPremium.percent < 0
+          ? " Every tracked matter type runs below its own midpoint here, so the difference is one of degree."
+          : "";
   return `The spread across practice areas is wide. ${describe(
     highestPremium,
   )[0]!.toUpperCase()}${describe(highestPremium).slice(1)}, while ${describe(
     lowestPremium,
-  )} — ${spread} percentage points apart. A single "${stateName} is expensive" or "${stateName} is inexpensive" claim would be wrong for at least one of the matter types tracked here.`;
+  )} — ${spread} percentage points apart.${closing}`;
 }
-
 
 /**
  * The rate ranking is a separate table from the cost ranking, with a different
@@ -1979,23 +1986,25 @@ export function extraCalculations(ctx: StateCostContext, matterLabel: string): C
         moderate.hourlyMedian,
       )}; ${usd(moderate.high)} is ${highHours}. Over the ${
         moderate.duration
-      } estimated for a moderate ${matterLabel}, that is ${Math.round(
+      } assumed for a moderate ${matterLabel}, that is ${Math.round(
         lowHours / moderate.durationMonths,
-      )} to ${Math.round(highHours / moderate.durationMonths)} hours a month — the difference between an occasional file review and continuous work.`,
+      )} to ${Math.round(highHours / moderate.durationMonths)} hours a month.`,
     });
   }
 
   if (simple && complex && simple.median > 0 && simple.hours && complex.hours) {
     const count = Math.round((complex.median / simple.median) * 10) / 10;
+    const factor = Math.round((complex.hours / simple.hours) * 10) / 10;
+    const rateRises = (complex.hourlyMedian ?? 0) > (simple.hourlyMedian ?? 0);
     out.push({
       lead: "Contested against simple.",
       body: `At ${ctx.stateName}'s own estimates, ${usd(
         complex.median,
       )} buys ${count} matters at the ${usd(simple.median)} simple median — or, counted in time, ${
         complex.hours
-      } implied hours against ${simple.hours}, a factor of ${
-        Math.round((complex.hours / simple.hours) * 10) / 10
-      } — the two ratios differing because the rate rises with the tier.`,
+      } implied hours against ${simple.hours}, a factor of ${factor}${
+        count !== factor && rateRises ? " — the two ratios differing because the rate rises with the tier" : ""
+      }.`,
     });
   }
 

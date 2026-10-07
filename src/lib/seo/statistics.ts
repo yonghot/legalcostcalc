@@ -97,6 +97,10 @@ function buildCategoryRow(categorySlug: string, categoryDisplayName: string): Ca
   };
 }
 
+export function widestSpreadRow(rows: readonly CategoryStatRow[]): CategoryStatRow | undefined {
+  return [...rows].sort((a, b) => b.highVsLowPercent - a.highVsLowPercent)[0];
+}
+
 /**
  * Builds the full statistics aggregate: one row per category (only real,
  * indexable data contributes), a headline (most expensive category
@@ -132,7 +136,7 @@ export function buildStatisticsAggregate(): StatisticsAggregate {
   }
 
   // Largest high-vs-low state spread across categories (biggest state-to-state swing).
-  const biggestSpread = [...categoryRows].sort((a, b) => b.highVsLowPercent - a.highVsLowPercent)[0];
+  const biggestSpread = widestSpreadRow(categoryRows);
   if (biggestSpread) {
     findings.push(
       `${biggestSpread.categoryDisplayName} costs ${biggestSpread.highVsLowPercent}% more in ` +

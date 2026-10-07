@@ -194,6 +194,15 @@ describe("/how-legal-fees-work — rendered page (curl JS-off simulation)", () =
     expect(html).toMatch(/href="\/"/);
     expect(html).toContain('href="/california/divorce-cost"');
   });
+
+  it("describes the statistics page by what it shows: median cost by matter type, not per-state hourly rates (K4)", () => {
+    const text = html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+    expect(text).not.toMatch(/hourly-rate data across all 50 states/i);
+    expect(text).toMatch(/legal cost statistics page compares median estimated costs by matter type/);
+    const stats = readFileSync(path.join(process.cwd(), "src", "app", "legal-cost-statistics", "page.tsx"), "utf8");
+    expect(stats).toContain("Median Cost by Matter Type");
+    expect(stats).not.toMatch(/hourly/i);
+  });
 });
 
 describe("/how-legal-fees-work — metadata (tool/topic-intent title)", () => {

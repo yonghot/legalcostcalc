@@ -95,11 +95,12 @@ const IN_CONTEXT_LINKS: Record<string, ReactNode> = {
   ),
   "What a lawyer's hour actually costs, state by state": (
     <p className="mt-3 text-sm text-slate-600">
-      Compare hourly-rate data across all 50 states + DC in the{" "}
+      The{" "}
       <Link href="/legal-cost-statistics" className={inContextLinkClass}>
         legal cost statistics
       </Link>{" "}
-      page, sourced from the same dataset used throughout this site.
+      page compares median estimated costs by matter type, built from the same estimates used
+      throughout this site, with the data available to download.
     </p>
   ),
 };

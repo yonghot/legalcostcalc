@@ -15,6 +15,8 @@ import { formatCurrency } from "@/lib/utils/format";
 import { useCompareCosts } from "@/lib/hooks/use-compare-costs";
 import { FOCUS_RING } from "@/lib/utils/styles";
 import { AffiliateCTA } from "@/components/shared/affiliate-cta";
+import { getActivePartners } from "@/lib/constants/affiliates";
+import { isSafeUrl } from "@/lib/utils/sanitize";
 import { useTermsGate, TermsGateInline } from "@/components/compliance/TermsGate";
 import { trackEvent } from "@/lib/analytics";
 import { shouldFireCalculatorComplete } from "@/lib/utils/calc-funnel";
@@ -213,9 +215,11 @@ export function CompareTool({ children }: { children?: ReactNode }) {
         )}
         </div>
 
-        <div className="mt-8">
-          <AffiliateCTA categorySlug={category || undefined} />
-        </div>
+        {getActivePartners(category || undefined, isSafeUrl).length > 0 && (
+          <div className="mt-8">
+            <AffiliateCTA categorySlug={category || undefined} />
+          </div>
+        )}
 
         {children}
 

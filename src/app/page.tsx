@@ -22,7 +22,7 @@ import {
   Globe,
   type LucideIcon,
 } from "lucide-react";
-import { AffiliateCTA } from "@/components/shared/affiliate-cta";
+import { AffiliateSection } from "@/components/shared/affiliate-section";
 import { OrganizationSchema } from "@/components/seo/organization-schema";
 import { SoftwareApplicationSchema } from "@/components/seo/software-application-schema";
 import { ArticleSchema } from "@/components/seo/article-schema";
@@ -262,11 +262,7 @@ export default function HomePage() {
       </section>
 
       {/* Affiliate CTAs */}
-      <section className="py-16">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <AffiliateCTA />
-        </div>
-      </section>
+      <AffiliateSection className="py-16" />
 
       <section className="py-8">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

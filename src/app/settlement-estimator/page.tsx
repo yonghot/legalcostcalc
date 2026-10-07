@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Disclaimer, DisclaimerNote } from "@/components/shared/disclaimer";
 import { SettlementEstimatorForm } from "@/components/calculator/settlement-estimator-form";
 import { AffiliateCTA } from "@/components/shared/affiliate-cta";
+import { getActivePartners } from "@/lib/constants/affiliates";
+import { isSafeUrl } from "@/lib/utils/sanitize";
 import { BreadcrumbSchema } from "@/components/seo/breadcrumb-schema";
 import { Breadcrumbs } from "@/components/seo/breadcrumbs";
 import { FOCUS_RING } from "@/lib/utils/styles";
@@ -106,9 +108,11 @@ export default function SettlementEstimatorPage() {
         </div>
 
         {/* Affiliate CTA (env-gated) */}
-        <div className="mt-10">
-          <AffiliateCTA categorySlug="personal-injury" />
-        </div>
+        {getActivePartners("personal-injury", isSafeUrl).length > 0 && (
+          <div className="mt-10">
+            <AffiliateCTA categorySlug="personal-injury" />
+          </div>
+        )}
 
         {/* Site-level bottom disclaimer */}
         <div className="mt-10">

@@ -10,7 +10,7 @@ import { getCostForPage } from "@/lib/services/cost-service";
 import { CostDisplay } from "@/components/shared/cost-display";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { AffiliateCTA } from "@/components/shared/affiliate-cta";
+import { AffiliateSection } from "@/components/shared/affiliate-section";
 import { BreadcrumbSchema } from "@/components/seo/breadcrumb-schema";
 import { SoftwareApplicationSchema } from "@/components/seo/software-application-schema";
 import { ArticleSchema } from "@/components/seo/article-schema";
@@ -375,11 +375,7 @@ export default async function StateCategoryPage({ params }: PageProps) {
       </section>
 
       {/* Affiliate CTAs */}
-      <section className="py-8">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <AffiliateCTA categorySlug={categoryInfo.slug} stateName={stateInfo.name} />
-        </div>
-      </section>
+      <AffiliateSection className="py-8" categorySlug={categoryInfo.slug} stateName={stateInfo.name} />
 
       {/* T07 — hub links: exactly the 2nd of 3 automated link types per spoke
           (breadcrumb parent is #1 above; sibling cross-links via RelatedLinks

@@ -6,6 +6,14 @@ export function formatCurrency(amount: number): string {
   }).format(amount);
 }
 
+export function hostLabel(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return url;
+  }
+}
+
 export function aOrAn(label: string, capitalize = false): string {
   const word = /^[aeiou]/i.test(label.trim()) ? "an" : "a";
   if (!capitalize) return word;

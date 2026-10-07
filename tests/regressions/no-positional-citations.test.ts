@@ -103,7 +103,8 @@ describe("K4: no inline source attribution decided by array position", () => {
       );
       expect(html, category).not.toMatch(/Primary source/i);
       expect(html, category).toContain("Data Sources");
-      expect(html, category).toContain("Source 1");
+      expect(html, category).not.toMatch(/Source \d/);
+      expect(html, category).toMatch(/Data Sources: [a-z0-9-]+(\.[a-z0-9-]+)+/);
     }
   });
 

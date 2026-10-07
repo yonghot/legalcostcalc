@@ -5,7 +5,7 @@ import { Separator } from "@/components/ui/separator";
 import { CostDisplay } from "@/components/shared/cost-display";
 import { ResultDisclaimer } from "@/components/compliance/ResultDisclaimer";
 import { LegalCostData } from "@/lib/types";
-import { formatCurrency } from "@/lib/utils/format";
+import { formatCurrency, hostLabel } from "@/lib/utils/format";
 import { isSafeUrl } from "@/lib/utils/sanitize";
 import { costFamilyKey, dateLabel, getFamilyDate, isOlderThanOneYear } from "@/lib/content-dates";
 import { Clock, DollarSign, FileText, ExternalLink, Percent } from "lucide-react";
@@ -181,7 +181,7 @@ export const CostResult = memo(function CostResult({
                     onClick={() => handleSourceClick(source)}
                     className={`inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-1 text-xs text-slate-600 hover:bg-slate-200 transition-colors ${FOCUS_RING}`}
                   >
-                    Source {i + 1}
+                    {hostLabel(source)}
                     <ExternalLink className="h-3 w-3" aria-hidden="true" />
                   </a>
                 ))}

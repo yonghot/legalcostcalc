@@ -35,7 +35,7 @@ function violations(src: string): Violation[] {
       const rights = QUOTES.map((q) => text.indexOf(q, at + 1)).filter((i) => i >= 0);
       const right = rights.length ? Math.min(...rights) : text.length;
       const literal = text.slice(left + 1, right).trim();
-      const tokens = literal.match(CLASS_TOKEN) ?? [];
+      const tokens: string[] = literal.match(CLASS_TOKEN) ?? [];
       const icon = tokens.some((t) => /^h-\d/.test(t)) && tokens.some((t) => /^w-\d/.test(t));
       const add = (rule: string) => found.push({ rule, line: index + 1, literal });
       const token = m[2];

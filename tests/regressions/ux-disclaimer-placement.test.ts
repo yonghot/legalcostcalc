@@ -31,6 +31,7 @@ const COST: LegalCostData = {
   complexity: "moderate",
   costRange: { low: 2000, median: 4400, high: 9000 },
   hourlyRate: { low: 250, median: 350, high: 450 },
+  contingencyFee: null,
   typicalDuration: "4-6 months",
   commonFees: ["Court filing fee", "Credit counseling course"],
   sources: ["https://example.com/a", "https://example.com/b"],

@@ -13,6 +13,7 @@ const COST: LegalCostData = {
   complexity: "moderate",
   costRange: { low: 1500, median: 3200, high: 6000 },
   hourlyRate: { low: 200, median: 300, high: 400 },
+  contingencyFee: null,
   typicalDuration: "4-6 months",
   commonFees: ["Court filing fee"],
   sources: ["https://www.uscourts.gov/services-forms/fees", "https://www.nolo.com/legal-encyclopedia/bankruptcy-cost"],

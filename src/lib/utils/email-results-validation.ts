@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+z.config({ jitless: true });
+
 export const EmailResultsSchema = z.object({
   email: z.string().trim().toLowerCase().email().max(254),
   calcType: z.string().trim().min(1).max(100),

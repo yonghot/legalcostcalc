@@ -141,6 +141,8 @@ export interface StateCostContext {
   rankGap: number | null;
   /** Median implied hours across peer states at the moderate tier. */
   peerMedianHours: number | null;
+  /** Median of the peers' moderate-tier median hourly rates. */
+  peerMedianRate: number | null;
   /** Median band width (high - low) across peer states, in dollars. */
   peerMedianBandWidth: number;
   /** Facts for each tier that exists, keyed by complexity. */
@@ -591,6 +593,7 @@ export function buildStateCostContext(
     ratedOutOf: rated.length,
     rankGap: hourlyRank === null ? null : rank - hourlyRank,
     peerMedianHours: peerHours.length ? median(peerHours) : null,
+    peerMedianRate: rated.length ? median(rated.map((row) => row.hourlyMedian!)) : null,
     peerMedianBandWidth: median(moderatePeers.map((row) => Math.max(0, row.high - row.low))),
     tiers,
     tierRankShift:
@@ -859,13 +862,17 @@ export function hoursSentence(ctx: StateCostContext, matterLabel: string): strin
         : hours < peerMedianHours
           ? ` The peer median is ${peerMedianHours} hours: ${stateName} reaches its total in ${
               peerMedianHours - hours
-            } fewer implied ${hourWord(peerMedianHours - hours)}, because the rate rather than the workload carries more of it.`
+            } fewer implied ${hourWord(peerMedianHours - hours)}${
+              ctx.peerMedianRate !== null && moderate.hourlyMedian > ctx.peerMedianRate
+                ? `, because the rate rather than the workload carries more of it: ${usd(moderate.hourlyMedian)} an hour against a ${usd(ctx.peerMedianRate)} peer median.`
+                : "."
+            }`
           : ` That rounds to the same ${peerMedianHours} hours as the peer median, so on workload ${stateName} is indistinguishable from the middle of the table at this precision.`;
 
   if (hours >= 45) {
     return `Divide the ${usd(moderate.median)} median by the ${usd(
       moderate.hourlyMedian,
-    )} median rate and the implied workload is about ${hours} billable hours — more than a full working week of attorney time, which is why ${matterLabel} engagements at this level are normally staged against a retainer rather than invoiced once.${comparison}`;
+    )} median rate and the implied workload is about ${hours} billable hours — more than a full working week of attorney time.${comparison}`;
   }
   if (hours >= 25) {
     return `The ${usd(moderate.median)} median divided by the ${usd(
@@ -877,9 +884,9 @@ export function hoursSentence(ctx: StateCostContext, matterLabel: string): strin
       moderate.median,
     )} median represents about ${hours} hours of attorney time — a matter measured in days of work, not weeks.${comparison}`;
   }
-  return `The ${usd(moderate.median)} median covers only about ${hours} hours at the ${usd(
+  return `The ${usd(moderate.median)} median covers only about ${hours} ${hourWord(hours)} at the ${usd(
     moderate.hourlyMedian,
-  )} median rate, which is short enough that flat-fee and limited-scope arrangements, rather than an hourly meter, tend to describe how the work is actually billed.${comparison}`;
+  )} median rate, so a single added hour moves the total by ${Math.round((moderate.hourlyMedian / moderate.median) * 100)}%.${comparison}`;
 }
 
 /**

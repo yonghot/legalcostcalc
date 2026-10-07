@@ -883,7 +883,7 @@ export function hoursSentence(ctx: StateCostContext, matterLabel: string): strin
   if (hours >= 45) {
     return `Divide the ${usd(moderate.median)} median by the ${usd(
       moderate.hourlyMedian,
-    )} median rate and the implied workload is about ${hours} billable hours — more than a full working week of attorney time.${comparison}`;
+    )} median rate and the implied workload is about ${hours} billable hours — more than a full working week of attorney time on ${aOrAn(matterLabel)} ${matterLabel}.${comparison}`;
   }
   if (hours >= 25) {
     return `The ${usd(moderate.median)} median divided by the ${usd(

@@ -1,4 +1,5 @@
 import { readFileSync, readdirSync, statSync } from "node:fs";
+import costs from "@/data/seed/costs.json";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { join } from "node:path";
@@ -9,6 +10,7 @@ import AboutPage from "@/app/about/page";
 import StatisticsPage from "@/app/legal-cost-statistics/page";
 import GuidePage from "@/app/how-legal-fees-work/page";
 import ComparePage from "@/app/compare/page";
+import DivorceCostByStatePage from "@/app/divorce-cost-by-state/page";
 import CategoryHubPage from "@/app/category/[category]/page";
 import StateHubPage from "@/app/[state]/page";
 import StateCategoryPage from "@/app/[state]/[slug]/page";
@@ -38,6 +40,10 @@ const UNSUPPORTED: Array<[string, RegExp]> = [
   ["authoritative", /\bauthoritative\b/i],
   ["official fee schedules as the basis", /(?:compiled from|\buse|\busing|based on|drawn from)[^.]{0,90}\bofficial fee (?:schedules?|information)\b/i],
   ["commitment to accuracy", /commitment to accuracy/i],
+  ["typical court filing fees", /typical court filing fees?/i],
+  ["bar association resources", /bar association (?:resources|surveys)/i],
+  ["public legal-cost surveys", /public legal-cost surveys/i],
+  ["exact filing-fee figures", /exact filing[- ]fee/i],
 ];
 
 function expectClean(label: string, content: string) {
@@ -56,6 +62,7 @@ describe("K3/K4: pages describe the figures as modeled estimates, never as recor
     ["/legal-cost-statistics", () => renderPage(StatisticsPage)],
     ["/how-legal-fees-work", () => renderPage(GuidePage)],
     ["/compare", async () => renderToStaticMarkup(createElement(ComparePage))],
+    ["/divorce-cost-by-state", () => renderPage(DivorceCostByStatePage)],
     ["/category/divorce", () => renderPage(CategoryHubPage, { category: "divorce" })],
     ["/california", () => renderPage(StateHubPage, { state: "california" })],
   ];
@@ -84,6 +91,8 @@ describe("K3/K4: pages describe the figures as modeled estimates, never as recor
       "compiled from publicly available legal-cost research and official fee schedules",
       "Our cost figures use publicly available legal-cost research and official fee information.",
       "Our methodology, reference sources, and commitment to accuracy.",
+      "attorney hourly rates, typical court filing fees, mediation costs, and case-duration data compiled from public legal-cost surveys and bar association resources",
+      "Select your state above for exact filing-fee and hourly-rate figures.",
     ]) {
       expect(UNSUPPORTED.some(([, pattern]) => pattern.test(claim)), claim).toBe(true);
     }
@@ -141,6 +150,20 @@ describe("K3/K4: a short plain-language method note replaces the claims", () => 
     expect(html).toMatch(METHOD_NOTE);
     expect(html).toMatch(NOT_QUOTES);
     expect(html).not.toMatch(/refreshed|reviewed and updated|we (?:review|update)/i);
+  });
+
+  it("the divorce hub says its figures are modeled and names exactly the sources the divorce rows cite", async () => {
+    const html = text(await renderPage(DivorceCostByStatePage));
+    expect(html).toMatch(METHOD_NOTE);
+    expect(html).toMatch(NOT_QUOTES);
+    const hosts = new Set(
+      (costs as Array<{ category: string; sources?: string[] }>)
+        .filter((row) => row.category === "divorce")
+        .flatMap((row) => row.sources ?? [])
+        .map((url) => new URL(url).hostname.replace(/^www\./, "")),
+    );
+    expect([...hosts].sort()).toEqual(["bls.gov", "clio.com", "legalzoom.com", "nolo.com"]);
+    for (const name of ["Nolo", "LegalZoom", "Clio", "Bureau of Labor Statistics"]) expect(html, name).toContain(name);
   });
 
   it("the home page and About page promise no update cadence", async () => {

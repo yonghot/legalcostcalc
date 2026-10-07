@@ -92,11 +92,12 @@ export default function DivorceCostByStatePage() {
             How these estimates are built
           </h2>
           <p className="text-sm leading-relaxed text-slate-600">
-            Each state&apos;s figures below are drawn from the same sourced dataset used
-            throughout LegalCostCalc: attorney hourly rates, typical court filing fees,
-            mediation costs, and case-duration data compiled from public legal-cost
-            surveys and bar association resources (see each state page&apos;s &ldquo;Data
-            Sources&rdquo; list for citations). The{" "}
+            Each state&apos;s figures below are estimates modeled from published national
+            fee guides and rate surveys, not quotes from firms in that state. For divorce,
+            the sources cited on every state page are the Nolo and LegalZoom guides to what
+            a divorce costs, Clio&apos;s lawyer-rate comparison and the U.S. Bureau of Labor
+            Statistics page on lawyers (see the &ldquo;Sources&rdquo; list on each state
+            page). The{" "}
             <strong className="font-medium text-slate-800">uncontested</strong> figure
             reflects the &ldquo;simple&rdquo; complexity tier — spouses in agreement on
             property division, custody, and support, typically resolved through document
@@ -118,9 +119,9 @@ export default function DivorceCostByStatePage() {
           </h2>
           <DivorceHubTable rows={rows} />
           <p className="mt-3 text-xs text-slate-600">
-            Figures shown are median estimated total costs (attorney fees + court costs)
-            for each complexity tier. See an individual state page for the full range,
-            hourly rates, typical duration, and cited sources.
+            Figures shown are median estimated total costs for each complexity tier. See
+            an individual state page for the full range, hourly rate, assumed duration,
+            and cited sources.
           </p>
         </div>
       </section>
@@ -148,10 +149,11 @@ export default function DivorceCostByStatePage() {
                 Why do divorce costs vary so much by state?
               </h3>
               <p className="mt-1 text-sm text-slate-600">
-                Court filing fees, average attorney hourly rates, and mandatory steps
-                (e.g., parenting classes or mediation requirements) differ by state and
-                county, which is why the typical range shifts state to state. Select your
-                state above for exact filing-fee and hourly-rate figures.
+                In practice, attorney hourly rates, court filing fees, and required steps
+                (e.g., parenting classes or mediation) differ by state and county. The
+                figures here are modeled from national guides and rate surveys, so they show
+                each state&apos;s modeled range and hourly rate rather than a count of its
+                local court fees. Open a state page for its range, hourly rate, and sources.
               </p>
             </div>
             <div>

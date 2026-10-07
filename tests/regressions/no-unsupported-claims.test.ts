@@ -13,6 +13,7 @@ import CategoryHubPage from "@/app/category/[category]/page";
 import StateHubPage from "@/app/[state]/page";
 import StateCategoryPage from "@/app/[state]/[slug]/page";
 import { metadata } from "@/app/layout";
+import { metadata as aboutMetadata } from "@/app/about/page";
 import { CATEGORIES } from "@/lib/constants/categories";
 import { STATES } from "@/lib/constants/states";
 
@@ -34,6 +35,9 @@ const UNSUPPORTED: Array<[string, RegExp]> = [
   ["reported quotes", /reported quotes/i],
   ["verification date", /verification date/i],
   ["last verification", /last verification/i],
+  ["authoritative", /\bauthoritative\b/i],
+  ["official fee schedules as the basis", /(?:compiled from|\buse|\busing|based on|drawn from)[^.]{0,90}\bofficial fee (?:schedules?|information)\b/i],
+  ["commitment to accuracy", /commitment to accuracy/i],
 ];
 
 function expectClean(label: string, content: string) {
@@ -70,6 +74,26 @@ describe("K3/K4: pages describe the figures as modeled estimates, never as recor
     expect(String(metadata.description)).not.toMatch(/based on real data/i);
   });
 
+  it("the About metadata (description, Open Graph, Twitter) makes no unsupported claim", () => {
+    expectClean("about metadata", JSON.stringify(aboutMetadata));
+  });
+
+  it("the claim matchers catch the earlier trust wording and leave the precedence sentence alone", () => {
+    for (const claim of [
+      "Authoritative References",
+      "compiled from publicly available legal-cost research and official fee schedules",
+      "Our cost figures use publicly available legal-cost research and official fee information.",
+      "Our methodology, reference sources, and commitment to accuracy.",
+    ]) {
+      expect(UNSUPPORTED.some(([, pattern]) => pattern.test(claim)), claim).toBe(true);
+    }
+    expect(
+      UNSUPPORTED.some(([, pattern]) =>
+        pattern.test("A later official fee schedule or a provider's written terms should take precedence over the figures shown here."),
+      ),
+    ).toBe(false);
+  });
+
   it("image-card text in opengraph-image routes makes no unsupported claim", () => {
     const files: string[] = [];
     const walk = (dir: string) => {
@@ -85,6 +109,7 @@ describe("K3/K4: pages describe the figures as modeled estimates, never as recor
       const source = readFileSync(file, "utf8");
       expect(source, file).not.toMatch(/source-verified/i);
       expect(source, file).not.toMatch(/\breal data\b/i);
+      expect(source, file).not.toMatch(/commitment to accuracy|["']Accuracy["']/);
     }
   });
 

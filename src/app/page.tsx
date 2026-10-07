@@ -130,7 +130,7 @@ export default function HomePage() {
                 <Shield className="h-5 w-5 text-teal-600" aria-hidden="true" />
               </div>
               <div>
-                <h3 className="font-semibold text-slate-900">Authoritative References</h3>
+                <h3 className="font-semibold text-slate-900">Reference Sources</h3>
                 <p className="mt-1 text-sm text-slate-600">
                   Estimates modeled from publicly available legal-cost research, such as national fee guides and rate surveys.
                 </p>
@@ -322,8 +322,8 @@ export default function HomePage() {
                 Are the cost estimates on LegalCostCalc accurate?
               </dt>
               <dd className="mt-2 text-sm text-slate-600">
-                Our estimates are illustrative ranges compiled from publicly available
-                legal-cost research and official fee schedules. They are intended as a
+                Our estimates are illustrative ranges modeled from published national
+                fee guides and rate surveys. They are intended as a
                 starting reference; actual costs may vary based on individual circumstances.
                 This tool provides general information, not legal advice.
               </dd>

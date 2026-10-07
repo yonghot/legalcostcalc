@@ -80,7 +80,7 @@ export default function OGImage() {
             marginTop: "40px",
           }}
         >
-          {["Data Sources", "Methodology", "Accuracy", "Transparency"].map((item) => (
+          {["Data Sources", "Methodology", "Corrections", "Transparency"].map((item) => (
             <div
               key={item}
               style={{

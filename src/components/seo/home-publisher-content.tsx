@@ -103,7 +103,7 @@ export function HomePublisherContent() {
         <div>
           <h3 className="text-xl font-semibold text-slate-900">Sources</h3>
           <p className="mt-3 leading-7 text-slate-600">
-            Our cost figures use publicly available legal-cost research and official fee information.
+            Our cost figures are modeled from published fee guides and rate surveys.
             Core references include the{" "}
             <a className="underline hover:text-teal-700" href="https://www.clio.com/resources/legal-trends/compare-lawyer-rates/" target="_blank" rel="noopener noreferrer">Clio lawyer-rate comparison</a>,{" "}
             <a className="underline hover:text-teal-700" href="https://www.bls.gov/ooh/legal/lawyers.htm" target="_blank" rel="noopener noreferrer">U.S. Bureau of Labor Statistics lawyers profile</a>,{" "}

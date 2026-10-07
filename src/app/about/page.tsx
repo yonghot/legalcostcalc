@@ -13,7 +13,7 @@ import { AdsenseLoader } from "@/components/ads/adsense-loader";
 export const metadata: Metadata = buildMeta({
   title: "About LegalCostCalc: Our Data Sources & Methodology",
   description:
-    "Learn how LegalCostCalc provides transparent legal cost estimates across all 50 US states. Our methodology, reference sources, and commitment to accuracy.",
+    "Learn how LegalCostCalc provides transparent legal cost estimates across all 50 US states. Our methodology, reference sources, and how to request a correction.",
   path: "/about",
   skipFit: true,
 });
@@ -98,8 +98,8 @@ export default function AboutPage() {
                   <h2 className="text-xl font-semibold text-slate-900">Our Data Sources</h2>
                 </div>
                 <p className="mt-3 text-slate-600">
-                  Our cost estimates are illustrative estimates compiled from publicly
-                  available legal-cost research and official fee schedules. Key reference
+                  Our cost estimates are illustrative estimates modeled from published
+                  national fee guides and rate surveys. Key reference
                   sources include:
                 </p>
                 <ul className="mt-3 space-y-2 text-sm text-slate-600">

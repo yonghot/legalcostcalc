@@ -40,6 +40,12 @@ async function csp(): Promise<string> {
   return catchAll!.headers.find((h) => h.key === "Content-Security-Policy")!.value;
 }
 
+async function headerSnapshot(): Promise<string> {
+  vi.resetModules();
+  const config = (await import("../../next.config")).default;
+  return JSON.stringify(await config.headers!());
+}
+
 describe("K15: resolveGaId", () => {
   it.each(BLANK_VALUES)("is undefined when both names are %j", async (blank) => {
     stub("NEXT_PUBLIC_GA_ID", blank);
@@ -111,24 +117,25 @@ describe("K15: ad unit client id", () => {
   });
 });
 
-describe("K15: next.config gates on the same resolvers", () => {
-  it.each(GA_ENV_NAMES)("allows googletagmanager in script-src when only %s is set", async (name) => {
+describe("K15 / K13-R: next.config no longer depends on the resolvers", () => {
+  it.each(GA_ENV_NAMES)("emits the same headers when only %s is set", async (name) => {
+    for (const other of GA_ENV_NAMES) stub(other, "");
+    const without = await headerSnapshot();
     for (const other of GA_ENV_NAMES) stub(other, other === name ? " G-CCCC333333 " : "");
-    const policy = await csp();
-    expect(policy).toMatch(/script-src [^;]*https:\/\/www\.googletagmanager\.com/);
-    expect(policy).toMatch(/connect-src [^;]*https:\/\/www\.google-analytics\.com/);
+    expect(await headerSnapshot()).toBe(without);
   });
 
-  it("does not widen the GA origins when both GA names are blank", async () => {
+  it("lists no Google origin when both GA names are blank", async () => {
     for (const name of GA_ENV_NAMES) stub(name, " ");
     expect(await csp()).not.toContain("googletagmanager.com");
   });
 
-  it.each(["", " ", "ca-pub-0000000000000000"])("allows the ad origins for NEXT_PUBLIC_ADSENSE_CLIENT_ID=%j", async (value) => {
+  it.each(["", " ", "ca-pub-0000000000000000"])("emits the same headers for NEXT_PUBLIC_ADSENSE_CLIENT_ID=%j", async (value) => {
+    stub("NEXT_PUBLIC_ADSENSE_CLIENT_ID", undefined);
+    const without = await headerSnapshot();
     stub("NEXT_PUBLIC_ADSENSE_CLIENT_ID", value);
-    const policy = await csp();
-    expect(policy).toContain("https://*.googlesyndication.com");
-    expect(policy).toContain("https://*.adtrafficquality.google");
+    expect(await headerSnapshot()).toBe(without);
+    expect(await csp()).not.toContain("googlesyndication.com");
   });
 });
 

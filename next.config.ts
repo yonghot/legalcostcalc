@@ -1,37 +1,10 @@
 import type { NextConfig } from "next";
-import { resolveAdsenseClient, resolveGaId } from "./src/lib/env";
 
-// Google AdSense needs several Google/DoubleClick origins allowlisted in the CSP.
-// The loader always renders with the resolved client id, so the origins follow it.
-const adsenseEnabled = Boolean(resolveAdsenseClient());
+// K13-R: literal constants only (no env branch, no fetch directives); a nonce policy would make every ad page dynamic.
+const PAGE_CSP = "object-src 'none'; base-uri 'none'; frame-ancestors 'none'";
+const EMBED_CSP = "object-src 'none'; base-uri 'none'; frame-ancestors *";
 
-// Google Analytics 4 (gtag.js) needs googletagmanager.com in script-src and
-// google-analytics.com in connect-src.  We only widen the policy when a GA
-// measurement ID is configured, mirroring the AdSense gating above.
-const gaEnabled = Boolean(resolveGaId());
-
-const adScript = adsenseEnabled
-  ? " https://pagead2.googlesyndication.com https://*.googlesyndication.com https://*.googleadservices.com https://adservice.google.com https://www.googletagservices.com https://*.google.com https://*.doubleclick.net https://*.adtrafficquality.google"
-  : "";
-const adFrame = adsenseEnabled
-  ? "https://*.googlesyndication.com https://*.doubleclick.net https://*.google.com https://*.adtrafficquality.google"
-  : "";
-const adImg = adsenseEnabled
-  ? " https://*.googlesyndication.com https://*.doubleclick.net https://*.google.com https://*.gstatic.com https://*.adtrafficquality.google"
-  : "";
-const adConnect = adsenseEnabled
-  ? " https://pagead2.googlesyndication.com https://*.googlesyndication.com https://*.google.com https://*.doubleclick.net https://*.adtrafficquality.google"
-  : "";
-
-// GA4 / gtag.js CSP additions (only when NEXT_PUBLIC_GA_ID is set).
-const gaScript = gaEnabled
-  ? " https://www.googletagmanager.com"
-  : "";
-const gaConnect = gaEnabled
-  ? " https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com"
-  : "";
-
-const securityHeaders = [
+const commonHeaders = [
   {
     key: "X-DNS-Prefetch-Control",
     value: "on",
@@ -39,10 +12,6 @@ const securityHeaders = [
   {
     key: "Strict-Transport-Security",
     value: "max-age=63072000; includeSubDomains; preload",
-  },
-  {
-    key: "X-Frame-Options",
-    value: "SAMEORIGIN",
   },
   {
     key: "X-Content-Type-Options",
@@ -56,22 +25,15 @@ const securityHeaders = [
     key: "Permissions-Policy",
     value: "camera=(), microphone=(), geolocation=(), interest-cohort=()",
   },
-  {
-    key: "Content-Security-Policy",
-    value: [
-      "default-src 'self'",
-      `script-src 'self' 'unsafe-inline'${adScript}${gaScript}`,
-      "style-src 'self' 'unsafe-inline'",
-      `img-src 'self' data:${adImg}`,
-      "font-src 'self' https://fonts.gstatic.com",
-      `connect-src 'self' https://*.supabase.co${adConnect}${gaConnect}`,
-      ...(adFrame ? [`frame-src ${adFrame}`] : []),
-      "frame-ancestors 'none'",
-      "base-uri 'self'",
-      "form-action 'self'",
-    ].join("; "),
-  },
 ];
+
+const pageHeaders = [
+  ...commonHeaders,
+  { key: "X-Frame-Options", value: "DENY" },
+  { key: "Content-Security-Policy", value: PAGE_CSP },
+];
+
+const embedHeaders = [...commonHeaders, { key: "Content-Security-Policy", value: EMBED_CSP }];
 
 const nextConfig: NextConfig = {
   // Cap static-page-generation workers.
@@ -88,36 +50,15 @@ const nextConfig: NextConfig = {
     return [{ source: "/favicon.ico", destination: "/icon" }];
   },
   async headers() {
-    // /embed/* must be loadable inside third-party iframes, so it overrides the
-    // global X-Frame-Options / frame-ancestors lockdown. Everything else keeps
-    // the strict no-framing policy. We list the embed rule FIRST and exclude
-    // /embed from the catch-all so the relaxed framing policy wins for embeds.
-    const embedSecurityHeaders = securityHeaders.map((h) => {
-      if (h.key === "X-Frame-Options") {
-        // Drop the legacy header for embeds (allow framing anywhere).
-        return { key: "X-Frame-Options", value: "ALLOWALL" };
-      }
-      if (h.key === "Content-Security-Policy") {
-        return {
-          key: "Content-Security-Policy",
-          value: h.value.replace(
-            "frame-ancestors 'none'",
-            "frame-ancestors *",
-          ),
-        };
-      }
-      return h;
-    });
-
+    // Every path must match exactly one rule: Next merges all matching rules and cannot drop a header.
     return [
       {
-        source: "/embed/:path*",
-        headers: embedSecurityHeaders,
+        source: "/embed/:path+",
+        headers: embedHeaders,
       },
       {
-        // Catch-all for every non-embed route.
-        source: "/((?!embed).*)",
-        headers: securityHeaders,
+        source: "/:path((?!embed/).*)",
+        headers: pageHeaders,
       },
     ];
   },

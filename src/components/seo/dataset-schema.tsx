@@ -1,3 +1,4 @@
+import { DATA_LICENSE } from "@/lib/constants/data-license";
 import { publisherNode, safeJsonLd } from "@/lib/utils/json-ld";
 
 interface MeasuredVariable {
@@ -60,7 +61,7 @@ export function DatasetSchema({
           })),
         }
       : {}),
-    license: "https://creativecommons.org/licenses/by/4.0/",
+    license: DATA_LICENSE.url,
     creator: publisherNode(),
     publisher: publisherNode(),
     distribution: distributionUrls.map((d) => ({

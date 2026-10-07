@@ -9,6 +9,7 @@ import { Disclaimer, DisclaimerNote } from "@/components/shared/disclaimer";
 import { FOCUS_RING } from "@/lib/utils/styles";
 import { PublishedBy } from "@/components/shared/published-by";
 import { PUBLISHER } from "@/lib/constants/publisher";
+import { DATA_LICENSE } from "@/lib/constants/data-license";
 import { AdsenseLoader } from "@/components/ads/adsense-loader";
 import { buildMeta } from "@/lib/seo";
 
@@ -21,7 +22,7 @@ export const metadata: Metadata = buildMeta({
   withOgImage: true,
 });
 
-const EFFECTIVE_DATE = "October 7, 2026";
+const EFFECTIVE_DATE = "October 8, 2026";
 
 // Shared className for in-page anchor links (WCAG 2.4.7 AA focus-visible requirement)
 const linkCls = `text-teal-700 underline rounded-sm ${FOCUS_RING}`;
@@ -167,9 +168,35 @@ export default function TermsPage() {
                 layout, and compiled cost datasets — is owned by or licensed
                 to LegalCostCalc and is protected by United States and
                 international intellectual property laws. You may view and
-                print content for your personal, non-commercial use. You may
-                not reproduce, distribute, scrape, or commercially exploit any
+                print content for your personal, non-commercial use. Except
+                for the licensed material described next, you may not
+                reproduce, distribute, scrape, or commercially exploit any
                 content without our prior written permission.
+              </p>
+              <p className="mt-3 leading-relaxed">
+                <strong>Licensed material.</strong> The statistics feeds at{" "}
+                <code>/legal-cost-statistics/data.json</code> and{" "}
+                <code>/legal-cost-statistics/data.csv</code>, and the
+                calculator pages under <code>/embed</code> that the Embed page
+                offers for use on other sites, are made available under the{" "}
+                {DATA_LICENSE.name} license (
+                <a href={DATA_LICENSE.url} className={linkCls}>
+                  {DATA_LICENSE.shortName}
+                </a>
+                ). You may copy, redistribute, and adapt that material for any
+                purpose, including commercial use, if you give credit to
+                LegalCostCalc, published by {PUBLISHER.name}, link to the page
+                it came from, link to the license, and say whether you made
+                changes. Credit must not suggest that we endorse your use. No
+                other text, design, layout, or cost data on the Site is
+                licensed under {DATA_LICENSE.shortName}; the paragraph above
+                continues to apply to everything else. The figures are
+                estimates for general information, not quotes or legal advice;
+                see the{" "}
+                <a href="#disclaimer" className={linkCls}>
+                  disclaimer
+                </a>
+                .
               </p>
             </section>
 

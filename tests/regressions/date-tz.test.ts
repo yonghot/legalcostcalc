@@ -1,6 +1,6 @@
 // Date/timezone hydration guard (React #418: server renders in UTC, visitors do not). Template from
 // D:\ClaudeCode\AppFarm\scripts\templates. Copy to tests/regressions/date-tz.test.ts and edit ONLY the CONFIG block.
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeAll, describe, expect, it } from "vitest";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { checkDataFreshness } from "@/lib/utils/data-freshness";
@@ -74,11 +74,16 @@ describe("date/timezone hydration guard", () => {
     process.env.TZ = originalTz;
   });
 
-  it("every displayed date format names a timeZone and a locale; no wall-clock year in rendered code", () => {
+  // File I/O runs in a hook so a loaded full run cannot time out the assertion itself.
+  let hits: Hit[] = [];
+  beforeAll(() => {
     const files = [...new Set(CONFIG.sourceDirs.flatMap((d) => walk(path.join(CONFIG.repoRoot, d))))];
-    const hits = files
+    hits = files
       .flatMap((f) => scanSource(path.relative(CONFIG.repoRoot, f).replace(/\\/g, "/"), readFileSync(f, "utf8")))
       .filter((h) => !(h.file in CONFIG.allow));
+  });
+
+  it("every displayed date format names a timeZone and a locale; no wall-clock year in rendered code", () => {
     expect(hits).toEqual([]);
   });
 

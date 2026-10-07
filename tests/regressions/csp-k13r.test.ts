@@ -1,7 +1,7 @@
 // K13-R header contract (contracts.md K13-R (7) a/b/c). Template from D:\ClaudeCode\AppFarm\scripts\templates.
 // Copy to tests/regressions/csp-k13r.test.ts and edit ONLY the CONFIG block. Same matcher as scripts/lib/k13r.mjs.
-// Template commit 3b91f80 (D:\ClaudeCode\AppFarm\scripts).
-import { describe, expect, it, vi } from "vitest";
+// Template commit 9de0807 (D:\ClaudeCode\AppFarm\scripts).
+import { beforeAll, describe, expect, it, vi } from "vitest";
 import { closeSync, existsSync, openSync, readFileSync, readSync, readdirSync, unlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -138,15 +138,25 @@ describe("K13-R (b): no second CSP source", () => {
     }
   });
 
-  it("no source file renders a meta CSP (http-equiv / httpEquiv)", () => {
+  let sourceOffenders: string[] = [];
+  beforeAll(() => {
     const files = CONFIG.sourceDirs.flatMap((d) => walk(path.join(CONFIG.repoRoot, d), /\.(t|j)sx?$|\.mdx?$/));
-    const offenders = files.filter((f) => /http-?equiv\s*=\s*\{?\s*["'`]content-security-policy/i.test(readFileSync(f, "utf8")));
-    expect(offenders).toEqual([]);
+    sourceOffenders = files.filter((f) => /http-?equiv\s*=\s*\{?\s*["'`]content-security-policy/i.test(readFileSync(f, "utf8")));
+  });
+
+  it("no source file renders a meta CSP (http-equiv / httpEquiv)", () => {
+    expect(sourceOffenders).toEqual([]);
+  });
+
+  // The I/O-heavy scan of the prerender tree runs in a hook so a loaded full run cannot time out the assertion itself.
+  let prerenderOffenders: string[] = [];
+  beforeAll(() => {
+    const html = walk(path.join(CONFIG.repoRoot, CONFIG.prerenderDir), /\.html$/);
+    prerenderOffenders = html.filter((f) => hasMetaCsp(readHead(f)));
   });
 
   it("no prerendered HTML carries a meta CSP (skipped files: none when the build output is absent)", () => {
-    const html = walk(path.join(CONFIG.repoRoot, CONFIG.prerenderDir), /\.html$/);
-    expect(html.filter((f) => hasMetaCsp(readHead(f)))).toEqual([]);
+    expect(prerenderOffenders).toEqual([]);
   });
 });
 

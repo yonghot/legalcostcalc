@@ -62,8 +62,14 @@ const AI_ENGINE_HOSTS: Record<string, string> = {
   "gemini.google.com": "gemini",
   "bard.google.com": "gemini",
   "copilot.microsoft.com": "copilot",
-  "bing.com": "copilot",
 };
+
+// Browsers send cross-origin referrers as origin only, so a bare bing.com host is ordinary search, never Copilot.
+function isBingCopilotSurface(referrerUrl: URL): boolean {
+  const host = referrerUrl.hostname.toLowerCase();
+  if (!(host === "bing.com" || host.endsWith(".bing.com"))) return false;
+  return /^\/(chat|search\/ai)(\/|$)/.test(referrerUrl.pathname);
+}
 
 /** Known directory/aggregator and community/social referrer hostnames (CODE-07). */
 const DIRECTORY_COMMUNITY_HOSTS: Record<string, string> = {
@@ -162,6 +168,8 @@ export function classifyReferralSource(
 
   const aiMatch = matchHost(referrerUrl.hostname, AI_ENGINE_HOSTS);
   if (aiMatch) return { kind: "ai", source: aiMatch };
+
+  if (isBingCopilotSurface(referrerUrl)) return { kind: "ai", source: "copilot" };
 
   if (isAiOverviewPattern(referrerUrl)) {
     return { kind: "ai", source: "ai-overview" };

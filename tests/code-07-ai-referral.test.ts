@@ -58,9 +58,17 @@ describe("classifyReferralSource: AI engine referrers", () => {
     });
   });
 
-  it("classifies bing.com (Copilot surface) as ai/copilot", async () => {
+  it("classifies a bing.com search referrer as ordinary search, not Copilot", async () => {
     const { classifyReferralSource } = await import("@/lib/analytics");
     expect(classifyReferralSource("https://www.bing.com/search?q=x")).toEqual({
+      kind: null,
+      source: null,
+    });
+  });
+
+  it("classifies the bing.com/chat Copilot surface as ai/copilot", async () => {
+    const { classifyReferralSource } = await import("@/lib/analytics");
+    expect(classifyReferralSource("https://www.bing.com/chat")).toEqual({
       kind: "ai",
       source: "copilot",
     });

@@ -2,42 +2,42 @@
   "cost:divorce": {
     "date": "2026-10-07",
     "basis": "content-changed",
-    "evidence": "ddff296 removed the unsourced court filing fee range and the fee arithmetic derived from it; c51949a removed per-figure source attribution. Cost figures unchanged since a69a8aa (2026-04-05); source lists last changed in 4d8e536 (2026-07-01)."
+    "evidence": "ddff296 removed the unsourced court filing fee range and the fee arithmetic derived from it; c51949a removed per-figure source attribution. Cost figures unchanged since a69a8aa (2026-04-05); source lists last changed in 4d8e536 (2026-07-01). 0bbc73e replaced 'recorded' wording with a modeled-estimate method note."
   },
   "cost:dui": {
     "date": "2026-10-07",
     "basis": "content-changed",
-    "evidence": "ddff296 removed the unsourced court filing fee range and the fee arithmetic derived from it; c51949a removed per-figure source attribution. Cost figures unchanged since a69a8aa (2026-04-05); source lists last changed in 4d8e536 (2026-07-01)."
+    "evidence": "ddff296 removed the unsourced court filing fee range and the fee arithmetic derived from it; c51949a removed per-figure source attribution. Cost figures unchanged since a69a8aa (2026-04-05); source lists last changed in 4d8e536 (2026-07-01). 0bbc73e replaced 'recorded' wording with a modeled-estimate method note."
   },
   "cost:personal-injury": {
     "date": "2026-10-07",
     "basis": "content-changed",
-    "evidence": "c5c78ad rewrote the zero-hourly-rate text as contingency and case expenses; ddff296 removed the unsourced court filing fee range; c51949a removed per-figure source attribution; d97c9d3 aligned the contingency text with the numeric band. Cost figures unchanged since a69a8aa (2026-04-05); source lists last changed in 4d8e536 (2026-07-01)."
+    "evidence": "c5c78ad rewrote the zero-hourly-rate text as contingency and case expenses; ddff296 removed the unsourced court filing fee range; c51949a removed per-figure source attribution; d97c9d3 aligned the contingency text with the numeric band. Cost figures unchanged since a69a8aa (2026-04-05); source lists last changed in 4d8e536 (2026-07-01). 0bbc73e replaced 'recorded' wording with a modeled-estimate method note."
   },
   "cost:bankruptcy": {
     "date": "2026-10-07",
     "basis": "content-changed",
-    "evidence": "c51949a removed per-figure source attribution. Cost figures unchanged since a69a8aa (2026-04-05); source lists last changed in 4d8e536 (2026-07-01)."
+    "evidence": "c51949a removed per-figure source attribution. Cost figures unchanged since a69a8aa (2026-04-05); source lists last changed in 4d8e536 (2026-07-01). 0bbc73e replaced 'recorded' wording with a modeled-estimate method note."
   },
   "cost:real-estate": {
     "date": "2026-10-07",
     "basis": "content-changed",
-    "evidence": "c51949a removed per-figure source attribution. Cost figures unchanged since a69a8aa (2026-04-05); source lists last changed in 4d8e536 (2026-07-01)."
+    "evidence": "c51949a removed per-figure source attribution. Cost figures unchanged since a69a8aa (2026-04-05); source lists last changed in 4d8e536 (2026-07-01). 0bbc73e replaced 'recorded' wording with a modeled-estimate method note."
   },
   "cost:estate-planning": {
     "date": "2026-10-07",
     "basis": "content-changed",
-    "evidence": "c51949a removed per-figure source attribution. Cost figures unchanged since a69a8aa (2026-04-05); source lists last changed in 4d8e536 (2026-07-01)."
+    "evidence": "c51949a removed per-figure source attribution. Cost figures unchanged since a69a8aa (2026-04-05); source lists last changed in 4d8e536 (2026-07-01). 0bbc73e replaced 'recorded' wording with a modeled-estimate method note."
   },
   "cost:criminal-defense": {
     "date": "2026-10-07",
     "basis": "content-changed",
-    "evidence": "ddff296 removed the unsourced court filing fee range and the fee arithmetic derived from it; c51949a removed per-figure source attribution. Cost figures unchanged since a69a8aa (2026-04-05); source lists last changed in 4d8e536 (2026-07-01)."
+    "evidence": "ddff296 removed the unsourced court filing fee range and the fee arithmetic derived from it; c51949a removed per-figure source attribution. Cost figures unchanged since a69a8aa (2026-04-05); source lists last changed in 4d8e536 (2026-07-01). 0bbc73e replaced 'recorded' wording with a modeled-estimate method note."
   },
   "cost:immigration": {
     "date": "2026-10-07",
     "basis": "content-changed",
-    "evidence": "c51949a removed per-figure source attribution. Cost figures unchanged since a69a8aa (2026-04-05); fee lines and source lists last changed in 4d8e536 (2026-07-01)."
+    "evidence": "c51949a removed per-figure source attribution. Cost figures unchanged since a69a8aa (2026-04-05); fee lines and source lists last changed in 4d8e536 (2026-07-01). 0bbc73e replaced 'recorded' wording with a modeled-estimate method note."
   },
   "guide": {
     "date": "2026-07-18",
@@ -47,7 +47,7 @@
   "page:home": {
     "date": "2026-10-07",
     "basis": "content-changed",
-    "evidence": "The K3 visible-dates commit of 2026-10-07 removed the home page's claim that the bundled dataset was last verified on a given date; 287bad4 had last changed the home copy on 2026-08-31."
+    "evidence": "The K3 visible-dates commit of 2026-10-07 removed the home page's claim that the bundled dataset was last verified on a given date; 287bad4 had last changed the home copy on 2026-08-31. 0bbc73e replaced the quarterly-refresh and recorded-row wording."
   },
   "page:compare": {
     "date": "2026-07-02",
@@ -60,14 +60,14 @@
     "evidence": "3f5b224 last changed the divorce hub copy."
   },
   "page:legal-cost-statistics": {
-    "date": "2026-07-04",
+    "date": "2026-10-07",
     "basis": "content-changed",
-    "evidence": "7ee2264 created the statistics page; its figures derive from the cost seed, unchanged since 4d8e536 (2026-07-01)."
+    "evidence": "0bbc73e replaced 'real state-level data points' and 'verified, non-duplicate data' with the modeled-estimate method note; its figures derive from the cost seed, unchanged since 4d8e536 (2026-07-01); 7ee2264 created the page."
   },
   "page:about": {
     "date": "2026-10-07",
     "basis": "content-changed",
-    "evidence": "e81bd9b replaced the About publisher text."
+    "evidence": "e81bd9b replaced the About publisher text. 0bbc73e replaced the quarterly-review promise and the methodology steps."
   },
   "page:embed": {
     "date": "2026-07-01",

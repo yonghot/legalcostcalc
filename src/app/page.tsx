@@ -25,7 +25,6 @@ import { AffiliateCTA } from "@/components/shared/affiliate-cta";
 import { OrganizationSchema } from "@/components/seo/organization-schema";
 import { SoftwareApplicationSchema } from "@/components/seo/software-application-schema";
 import { ArticleSchema } from "@/components/seo/article-schema";
-import { RelatedCalculators } from "@/components/seo/related-calculators";
 import { CANONICAL_ORIGIN } from "@/lib/seo";
 import { FOCUS_RING } from "@/lib/utils/styles";
 import { POPULAR_STATE_CODES } from "@/lib/constants/popular";
@@ -236,9 +235,6 @@ export default function HomePage() {
           <AffiliateCTA />
         </div>
       </section>
-
-      {/* Cross-link module — sibling cost-calculator network. */}
-      <RelatedCalculators />
 
       {/* FAQ Section */}
       <section className="border-t border-slate-100 py-16">

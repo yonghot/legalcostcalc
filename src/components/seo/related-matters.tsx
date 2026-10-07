@@ -23,9 +23,8 @@ function handleRelatedClick(linkUrl: string) {
 }
 
 /**
- * T06 — RelatedCalculators-at-the-result-moment module. INTERNAL sibling
- * links only (never the cross-SITE module, which stays
- * src/components/seo/related-calculators.tsx / link_type:'crosslink').
+ * T06 — related-matters-at-the-result-moment module. INTERNAL sibling
+ * links only (no links to other domains).
  *
  * Renders ONLY when the caller has a user-driven result (mounted inside
  * CostResult, which itself only renders once `results` is set by a real

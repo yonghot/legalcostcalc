@@ -3,9 +3,8 @@
  * assertion, covering the template-generated internal-link modules on the
  * /[state]/[slug] spoke page: breadcrumb (2), hub-links-bar (2), and
  * RelatedLinks (7 sibling categories + N sibling states + 1 "view all
- * states" hub link). Cross-SITE links (RelatedCalculators, a different
- * domain) are intentionally excluded — the spec's cap targets
- * template-generated INTERNAL links.
+ * states" hub link). The spec's cap targets template-generated INTERNAL
+ * links; the page carries no cross-site link block.
  */
 import { describe, expect, it } from "vitest";
 import { CATEGORIES } from "@/lib/constants/categories";

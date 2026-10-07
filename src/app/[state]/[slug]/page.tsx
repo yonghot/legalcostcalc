@@ -15,7 +15,6 @@ import { SoftwareApplicationSchema } from "@/components/seo/software-application
 import { ArticleSchema } from "@/components/seo/article-schema";
 import { CostDetailsSection } from "@/components/seo/cost-details-section";
 import { RelatedLinks } from "@/components/seo/related-links";
-import { RelatedCalculators } from "@/components/seo/related-calculators";
 import { AuthorByline } from "@/components/shared/author-byline";
 import { UpdatedBadge } from "@/components/shared/updated-badge";
 import { buildMeta, CANONICAL_ORIGIN } from "@/lib/seo";
@@ -367,9 +366,6 @@ export default async function StateCategoryPage({ params }: PageProps) {
         allOtherStates={allOtherStates}
       />
 
-      {/* Cross-link module — sibling cost-calculator network. */}
-      <RelatedCalculators />
-
       {/* CODE-03 — "Embed this calculator" copy-to-clipboard panel. Placed
           below the calculator/result area and existing monetization/link
           modules (same LCP/ad-exclusion-zone rationale as K01 below). */}
@@ -417,7 +413,7 @@ export default async function StateCategoryPage({ params }: PageProps) {
       />
 
       {/* T13: the standalone in-content <AdProvider> that previously rendered
-          here (after RelatedCalculators) was removed for the same "exactly
+          here (after the related-links block) was removed for the same "exactly
           ONE programmatic unit per page" reason as above — ResultMonetization's
           DisplaySlot (inside CostResult, below the result block) is the page's
           single ad slot. */}

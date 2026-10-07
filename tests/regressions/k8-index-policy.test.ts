@@ -2,12 +2,14 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { renderPage } from "./helpers/render";
-import { INDEXABLE_PAGES, PAGE_INDEX, hasUniqueData } from "@/lib/page-index";
+import { INDEXABLE_PAGES, PAGE_INDEX } from "@/lib/page-index";
 import { INDEXED_PAGES, createIndexPolicy, isIndexable } from "@/lib/index-policy";
 import policyData from "@/data/index-policy.json";
 import evidence from "@/data/k8-evidence.json";
 import sitemap from "@/app/sitemap";
-import { generateMetadata } from "@/app/[state]/[slug]/page";
+import StateCategoryPage, { generateMetadata } from "@/app/[state]/[slug]/page";
+import StateHubPage from "@/app/[state]/page";
+import CategoryHubPage from "@/app/category/[category]/page";
 import { CATEGORIES } from "@/lib/constants/categories";
 import { STATES } from "@/lib/constants/states";
 
@@ -85,28 +87,111 @@ describe("K8: createIndexPolicy semantics", () => {
   });
 });
 
-describe("K8: shipped policy leaves live behavior unchanged", () => {
-  it("ships keep null with empty lists", () => {
-    expect(policyData).toEqual({ keep: null, noindex: [], exceptions: [] });
+const DIVORCE_EXCEPTIONS = ["/new-york/divorce-cost", "/california/divorce-cost"];
+const EVIDENCE_PATHS = evidence.paths.map((p) => p.path);
+const KEPT = new Set([...EVIDENCE_PATHS, ...DIVORCE_EXCEPTIONS]);
+
+describe("K8: shipped policy keeps traffic-earning and sourced pages, noindexes the rest", () => {
+  it("keeps the 39 evidence paths, the two divorce exceptions and lists nothing else", () => {
+    expect(new Set(policyData.keep)).toEqual(new Set(EVIDENCE_PATHS));
+    expect(policyData.keep).toHaveLength(39);
+    expect(policyData.exceptions).toEqual(DIVORCE_EXCEPTIONS);
+    expect(policyData.noindex).toEqual([]);
   });
 
-  it("isIndexable equals hasUniqueData for every state and category", () => {
-    for (const state of STATES) {
-      for (const category of CATEGORIES) {
-        expect(isIndexable(state.code, category.slug), `${state.code}/${category.slug}`).toBe(
-          hasUniqueData(state.code, category.slug),
-        );
+  it("counts: 369 pass the information-gain gate, 41 stay indexable, 328 become noindex,follow", () => {
+    expect(INDEXABLE_PAGES).toHaveLength(369);
+    expect(INDEXED_PAGES).toHaveLength(41);
+    const dropped = INDEXABLE_PAGES.filter((p) => !isIndexable(p.state.code, p.category.slug));
+    expect(dropped).toHaveLength(328);
+    expect(INDEXED_PAGES.map((p) => p.path).sort()).toEqual([...KEPT].sort());
+  });
+
+  it("isIndexable is true exactly for the kept paths, for all 408 pairs", () => {
+    for (const entry of PAGE_INDEX) {
+      expect(isIndexable(entry.state.code, entry.category.slug), entry.path).toBe(KEPT.has(entry.path));
+    }
+  });
+
+  it("every kept path is a real page that passes the gate, so no kept page is dropped silently", () => {
+    for (const path of KEPT) {
+      const entry = PAGE_INDEX.find((p) => p.path === path);
+      expect(entry, path).toBeDefined();
+      expect(entry!.hasUniqueData, path).toBe(true);
+    }
+  });
+
+  it("the sitemap lists the 41 kept template pages and every hub, guide and tool page unchanged", () => {
+    const urls = sitemap().map((e) => e.url);
+    expect(templatePaths(urls)).toEqual(KEPT);
+    const nonTemplate = urls.filter((u) => !/^\/[a-z-]+\/[a-z-]+-cost$/.test(new URL(u).pathname));
+    expect(nonTemplate).toHaveLength(8 + STATES.length + CATEGORIES.length);
+    expect(urls).toHaveLength(8 + STATES.length + CATEGORIES.length + 41);
+  });
+
+  it("robots meta is index for kept pages and noindex,follow for every other page, 408 pages", async () => {
+    for (const entry of PAGE_INDEX) {
+      const meta = await generateMetadata({ params: Promise.resolve(slugParams(entry)) });
+      if (KEPT.has(entry.path)) {
+        expect(robotsAllowIndex(meta.robots), entry.path).toBe(true);
+      } else {
+        expect(meta.robots, entry.path).toMatchObject({ index: false, follow: true });
       }
     }
   });
 
-  it("INDEXED_PAGES holds the same paths as INDEXABLE_PAGES, while hubs keep reading INDEXABLE_PAGES", () => {
-    expect(INDEXED_PAGES.map((p) => p.path)).toEqual(INDEXABLE_PAGES.map((p) => p.path));
+  it("the sitemap, the robots meta and the gate-passing set agree page by page", async () => {
+    const inSitemap = templatePaths(sitemap().map((e) => e.url));
+    for (const entry of INDEXABLE_PAGES) {
+      const meta = await generateMetadata({ params: Promise.resolve(slugParams(entry)) });
+      expect(robotsAllowIndex(meta.robots), entry.path).toBe(inSitemap.has(entry.path));
+    }
+  });
+});
+
+const NOINDEXED_SAMPLE = [
+  "/texas/divorce-cost",
+  "/texas/personal-injury-cost",
+  "/new-york/dui-cost",
+  "/ohio/estate-planning-cost",
+  "/wyoming/immigration-cost",
+  "/illinois/real-estate-cost",
+];
+const KEPT_SAMPLE = [
+  "/massachusetts/bankruptcy-cost",
+  "/california/divorce-cost",
+  "/new-york/divorce-cost",
+  "/oregon/criminal-defense-cost",
+];
+const LOADER = '<script id="adsense-loader"';
+
+describe("K8: rendered pages under the shipped policy", () => {
+  it.each(NOINDEXED_SAMPLE)("%s stays reachable, has no ad loader, and its hubs still link it", async (path) => {
+    const entry = PAGE_INDEX.find((p) => p.path === path)!;
+    expect(entry.hasUniqueData, path).toBe(true);
+    expect(KEPT.has(path), path).toBe(false);
+    const html = await renderPage(StateCategoryPage as never, slugParams(entry) as never);
+    expect(html).toContain("<h1");
+    expect(html).not.toContain(LOADER);
+    expect(html).not.toContain("adsbygoogle.js");
+    const stateHub = await renderPage(StateHubPage as never, { state: entry.state.slug } as never);
+    expect(stateHub).toContain(`href="${path}"`);
+    const categoryHub = await renderPage(CategoryHubPage as never, { category: entry.category.slug } as never);
+    expect(categoryHub).toContain(`href="${path}"`);
   });
 
-  it("the sitemap lists exactly the indexable template pages", () => {
-    const paths = templatePaths(sitemap().map((e) => e.url));
-    expect(paths).toEqual(new Set(INDEXABLE_PAGES.map((p) => p.path)));
+  it.each(KEPT_SAMPLE)("%s keeps exactly one ad loader", async (path) => {
+    const entry = PAGE_INDEX.find((p) => p.path === path)!;
+    const html = await renderPage(StateCategoryPage as never, slugParams(entry) as never);
+    expect(html.split(LOADER).length - 1).toBe(1);
+  });
+
+  it.each(KEPT_SAMPLE)("%s links to other matter pages only when those are kept", async (path) => {
+    const entry = PAGE_INDEX.find((p) => p.path === path)!;
+    const html = await renderPage(StateCategoryPage as never, slugParams(entry) as never);
+    const linked = [...html.matchAll(/<a\b[^>]*\bhref="(\/[a-z-]+\/[a-z-]+-cost)"/g)].map((m) => m[1]);
+    expect(linked.length).toBeGreaterThan(0);
+    for (const href of linked) expect(KEPT.has(href), `${path} -> ${href}`).toBe(true);
   });
 });
 
@@ -182,10 +267,10 @@ describe("K8: sitemap, robots meta and hubs agree under an injected policy", () 
     expect(noindexed.robots).toMatchObject({ index: false, follow: true });
   });
 
-  it("with the shipped policy robots meta and sitemap still agree for all 408 pages", async () => {
+  it("with the shipped policy robots meta follows isIndexable for all 408 pages", async () => {
     for (const entry of PAGE_INDEX) {
       const meta = await generateMetadata({ params: Promise.resolve(slugParams(entry)) });
-      expect(robotsAllowIndex(meta.robots), entry.path).toBe(entry.hasUniqueData);
+      expect(robotsAllowIndex(meta.robots), entry.path).toBe(isIndexable(entry.state.code, entry.category.slug));
     }
   });
 

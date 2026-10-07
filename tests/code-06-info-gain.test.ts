@@ -27,6 +27,7 @@ import sitemap from "@/app/sitemap";
 import { PAGE_INDEX, INDEXABLE_PAGES, getNationalAverage, getModerateMedianCost } from "@/lib/page-index";
 import { buildBenchmarkSynthesis } from "@/lib/seo/geo";
 import { CATEGORIES } from "@/lib/constants/categories";
+import { isIndexable } from "@/lib/index-policy";
 
 describe("CODE-06: 4-fact information-gain gate", () => {
   it("every PAGE_INDEX entry scores 0-4 facts and hasUniqueData is exactly factCount >= 4", () => {
@@ -58,12 +59,12 @@ describe("CODE-06: 4-fact information-gain gate", () => {
     }
   });
 
-  it("every passing page IS present in sitemap.xml", () => {
+  it("every passing page the K8 index policy keeps IS in sitemap.xml and every one it drops is not", () => {
     const sitemapEntries = sitemap();
     const sitemapUrls = new Set(sitemapEntries.map((e) => e.url));
     for (const entry of INDEXABLE_PAGES) {
       const url = `https://legalcostcalc.co${entry.path}`;
-      expect(sitemapUrls.has(url)).toBe(true);
+      expect(sitemapUrls.has(url), entry.path).toBe(isIndexable(entry.state.code, entry.category.slug));
     }
   });
 

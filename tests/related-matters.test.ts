@@ -21,17 +21,18 @@ import { describe, expect, it } from "vitest";
 import { CATEGORIES } from "@/lib/constants/categories";
 import { STATES } from "@/lib/constants/states";
 import { INDEXABLE_PAGES } from "@/lib/page-index";
-import { isIndexable } from "@/lib/index-policy";
+import { INDEXED_PAGES, isIndexable } from "@/lib/index-policy";
 
 const MAX_LINKS = 5;
 const MIN_LINKS = 3;
 
 /** Mirrors the selection logic in src/components/seo/related-matters.tsx. */
 function computeRelatedMatterLinks(stateCode: string, categorySlug: string) {
-  return CATEGORIES.filter((c) => c.slug !== categorySlug && isIndexable(stateCode, c.slug)).slice(
+  const candidates = CATEGORIES.filter((c) => c.slug !== categorySlug && isIndexable(stateCode, c.slug)).slice(
     0,
     MAX_LINKS,
   );
+  return candidates.length < MIN_LINKS ? [] : candidates;
 }
 
 describe("RelatedMatters (T06): link resolution", () => {
@@ -73,28 +74,22 @@ describe("RelatedMatters (T06): link resolution", () => {
   });
 
   it("never drops below the MIN_LINKS floor for any page — RelatedMatters would render null instead of a thin 1-2 item module", () => {
-    // CODE-06 strengthened hasUniqueData: a small number of (state,category)
-    // pairs now fail the 4-fact information-gain gate (structurally
-    // duplicate sibling rows — see page-index.test.ts), so not every page
-    // has 7 real sibling candidates anymore. The invariant that actually
-    // matters (and that RelatedMatters' own MIN_LINKS check enforces) is
-    // that no page ever ends up with a 1-2 item module — it's either >=3
-    // or the component renders nothing at all.
-    let atMax = 0;
-    let belowMax = 0;
+    // Under the K8 index policy a module links only matters the policy keeps, so most
+    // pages have fewer than MIN_LINKS kept siblings and render nothing. Expected counts
+    // are derived independently from the kept pages.
+    let withModule = 0;
     for (const state of STATES) {
       for (const cat of CATEGORIES) {
         const candidates = computeRelatedMatterLinks(state.code, cat.slug);
         expect(candidates.length).toBeLessThanOrEqual(MAX_LINKS);
-        if (candidates.length > 0) {
-          expect(candidates.length).toBeGreaterThanOrEqual(MIN_LINKS);
-        }
-        if (candidates.length === MAX_LINKS) atMax++;
-        else belowMax++;
+        const keptSiblings = INDEXED_PAGES.filter(
+          (p) => p.state.code === state.code && p.category.slug !== cat.slug,
+        ).length;
+        const expected = keptSiblings >= MIN_LINKS ? Math.min(MAX_LINKS, keptSiblings) : 0;
+        expect(candidates.length, `${state.slug}/${cat.slug}`).toBe(expected);
+        if (candidates.length > 0) withModule++;
       }
     }
-    // Sanity: the overwhelming majority of pages still get the full 5-link
-    // module — only the CODE-06-excluded siblings reduce the count.
-    expect(atMax).toBeGreaterThan(belowMax);
+    expect(withModule).toBeGreaterThan(0);
   });
 });

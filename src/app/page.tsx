@@ -225,7 +225,7 @@ export default function HomePage() {
             {popularStates.map((state) => (
               <Link
                 key={state.code}
-                href={`/${state.slug}/divorce-cost`}
+                href={`/${state.slug}`}
                 className={`rounded-lg border border-slate-200 bg-white p-3 text-center text-sm font-medium text-slate-700 transition-all hover:border-teal-200 hover:text-teal-700 hover:shadow-sm ${FOCUS_RING}`}
               >
                 {state.name}
@@ -245,7 +245,7 @@ export default function HomePage() {
                 ).map((state) => (
                   <Link
                     key={state.code}
-                    href={`/${state.slug}/divorce-cost`}
+                    href={`/${state.slug}`}
                     className={`rounded-lg border border-slate-200 bg-white p-3 text-center text-sm font-medium text-slate-700 transition-all hover:border-teal-200 hover:text-teal-700 hover:shadow-sm ${FOCUS_RING}`}
                   >
                     {state.name}

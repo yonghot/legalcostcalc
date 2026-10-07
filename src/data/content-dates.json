@@ -42,12 +42,12 @@
   "guide": {
     "date": "2026-10-08",
     "basis": "content-changed",
-    "evidence": "b1951d8 authored the guide. Plan commit 29 (feat(k17): home and fees guide aligned to 'legal fees / legal costs' query intent) rewrote the lead paragraph and the meta description to state the already cited Clio 2025 hourly-rate benchmark first; the key facts, sections and sources are unchanged and were last checked against their sources on 2026-07-18 (a re-check of the Clio page on 2026-10-08 was blocked by HTTP 403, so none is claimed)."
+    "evidence": "b1951d8 authored the guide. Plan commit 29 (feat(k17): home and fees guide aligned to 'legal fees / legal costs' query intent) rewrote the lead paragraph and the meta description to state the already cited Clio 2025 hourly-rate benchmark first; the key facts, sections and sources are unchanged and were last checked against their sources on 2026-07-18 (a re-check of the Clio page on 2026-10-08 was blocked by HTTP 403, so none is claimed). Plan commit 36 (data(k8): populate index policy from evidence) added a link from the contingency section to the settlement estimator."
   },
   "page:home": {
     "date": "2026-10-08",
     "basis": "content-changed",
-    "evidence": "The K3 visible-dates commit of 2026-10-07 removed the home page's claim that the bundled dataset was last verified on a given date; 287bad4 had last changed the home copy on 2026-08-31. 0bbc73e replaced the quarterly-refresh and recorded-row wording. 89c635a removed the sibling-tool block and 783b107 the unsourced seasonal banner and the 'bundled dataset' wording. Plan commit 29 (feat(k17): home and fees guide aligned to 'legal fees / legal costs' query intent) replaced the hero sentence, H1, title and meta description with an answer that states the cited Clio 2025 hourly-rate benchmark and the category averages shown on the statistics page."
+    "evidence": "The K3 visible-dates commit of 2026-10-07 removed the home page's claim that the bundled dataset was last verified on a given date; 287bad4 had last changed the home copy on 2026-08-31. 0bbc73e replaced the quarterly-refresh and recorded-row wording. 89c635a removed the sibling-tool block and 783b107 the unsourced seasonal banner and the 'bundled dataset' wording. Plan commit 29 (feat(k17): home and fees guide aligned to 'legal fees / legal costs' query intent) replaced the hero sentence, H1, title and meta description with an answer that states the cited Clio 2025 hourly-rate benchmark and the category averages shown on the statistics page. Plan commit 36 (data(k8): populate index policy from evidence) pointed the Popular States grid at the state hubs instead of at each state's divorce page, because the index policy now keeps most of those pages out of the index."
   },
   "page:compare": {
     "date": "2026-10-07",

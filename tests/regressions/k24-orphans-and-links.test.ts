@@ -22,6 +22,7 @@ import { HubLinksBar } from "@/components/seo/hub-links-bar";
 import { RelatedLinks } from "@/components/seo/related-links";
 import { Breadcrumbs } from "@/components/seo/breadcrumbs";
 import { CATEGORIES } from "@/lib/constants/categories";
+import { DEFAULT_STATE_SLUG } from "@/lib/constants/costs";
 import { STATES } from "@/lib/constants/states";
 import { INDEXABLE_PAGES } from "@/lib/page-index";
 import { INDEXED_PAGES, isIndexable } from "@/lib/index-policy";
@@ -168,7 +169,7 @@ describe("K26: next steps right after the result", () => {
 });
 
 describe("K24: settlement estimator is a linked, listed page", () => {
-  const pi = INDEXED_PAGES.find((p) => p.category.slug === "personal-injury")!;
+  const pi = INDEXABLE_PAGES.find((p) => p.category.slug === "personal-injury")!;
 
   it("every personal-injury hub bar links to it and other matters do not", () => {
     const bar = (categorySlug: string, categoryName: string) =>
@@ -190,6 +191,28 @@ describe("K24: settlement estimator is a linked, listed page", () => {
     const record = getFamilyDate("page:settlement-estimator");
     expect(record?.basis).toBe("content-changed");
     expect(entry!.lastModified).toBe(record!.date);
+  });
+});
+
+describe("K24 with the K8 index policy: hubs stay reachable and noindexed pages get no bulk links", () => {
+  const TEMPLATE_HREF = /^\/[a-z-]+\/[a-z-]+-cost$/;
+
+  it("home links every state hub, so a state without a kept matter page is not an orphan", async () => {
+    const hrefs = hrefsIn(await renderPage(HomePage));
+    for (const state of STATES) expect(hrefs.has(`/${state.slug}`), state.slug).toBe(true);
+  });
+
+  it("home links matter pages only where the index policy keeps them, apart from the eight category cards", async () => {
+    const hrefs = [...hrefsIn(await renderPage(HomePage))].filter((h) => TEMPLATE_HREF.test(h));
+    const kept = new Set(INDEXED_PAGES.map((p) => p.path));
+    const cards = new Set(CATEGORIES.map((c) => `/${DEFAULT_STATE_SLUG}/${c.slug}-cost`));
+    const strays = hrefs.filter((h) => !kept.has(h) && !cards.has(h));
+    expect(strays).toEqual([]);
+  });
+
+  it("the fees guide links the settlement estimator from its own body", async () => {
+    const hrefs = hrefsIn(await renderPage(GuidePage as never));
+    expect(hrefs.has("/settlement-estimator")).toBe(true);
   });
 });
 
@@ -220,7 +243,7 @@ describe("K24: no listed page lacks an inbound content link", () => {
     addFrom("/embed", await renderPage(EmbedIndexPage as never));
     addFrom("/settlement-estimator", await renderPage(SettlementEstimatorPage as never));
 
-    const onePerCategory = CATEGORIES.map((c) => INDEXED_PAGES.find((p) => p.category.slug === c.slug)!);
+    const onePerCategory = CATEGORIES.flatMap((c) => INDEXED_PAGES.find((p) => p.category.slug === c.slug) ?? []);
     for (const page of onePerCategory) {
       addFrom(page.path, await renderPage(StateCategoryPage, { state: page.state.slug, slug: `${page.category.slug}-cost` }));
     }

@@ -85,7 +85,12 @@ const IN_CONTEXT_LINKS: Record<string, ReactNode> = {
       <Link href="/california/personal-injury-cost" className={inContextLinkClass}>
         California personal injury cost
       </Link>{" "}
-      — no hourly rate, just a percentage of any recovery.
+      — no hourly rate, just a percentage of any recovery. To see what a settlement could net after
+      that percentage and case expenses, use the{" "}
+      <Link href="/settlement-estimator" className={inContextLinkClass}>
+        settlement estimator
+      </Link>
+      .
     </p>
   ),
   "What a lawyer's hour actually costs, state by state": (

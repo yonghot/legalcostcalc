@@ -37,6 +37,8 @@ import { HOME_DESCRIPTION } from "@/lib/constants/benchmarks";
 import { AdsenseLoader } from "@/components/ads/adsense-loader";
 import { PopularPages } from "@/components/seo/popular-pages";
 import { topTrafficPages } from "@/lib/top-traffic";
+import { NextSteps } from "@/components/calculator/next-steps";
+import { homeNextSteps } from "@/lib/next-steps-server";
 
 export const metadata: Metadata = {
   alternates: {
@@ -102,6 +104,8 @@ export default function HomePage() {
 
           {/* T16 — Recent calculations (client-only, renders nothing when empty) */}
           <RecentCalculations />
+
+          <NextSteps steps={homeNextSteps()} placement="home" className="mt-24" />
         </div>
       </section>
 

@@ -135,7 +135,7 @@ describe("K26: next steps right after the result", () => {
     expect(nextStepsFor("divorce", "Divorce").length).toBe(2);
   });
 
-  it("each click emits next_step_click with the step id and target, and nothing derived from inputs", async () => {
+  it("each click emits related_click for the next_step module with the step slot and target, and nothing derived from inputs", async () => {
     const calls: unknown[][] = [];
     vi.stubGlobal("window", {
       localStorage: { getItem: () => null },
@@ -159,11 +159,12 @@ describe("K26: next steps right after the result", () => {
     for (const link of links) link.onClick();
     expect(calls).toHaveLength(3);
     const steps = calls.map((c) => c[2] as Record<string, unknown>);
-    for (const [, name] of calls as Array<[string, string]>) expect(name).toBe("next_step_click");
-    expect(steps.map((s) => s.step).sort()).toEqual(["compare_states", "guide", "settlement_estimator"]);
+    for (const [, name] of calls as Array<[string, string]>) expect(name).toBe("related_click");
+    for (const s of steps) expect(s.link_module).toBe("next_step");
+    expect(steps.map((s) => s.link_context).sort()).toEqual(["result_category_hub", "result_guide", "result_settlement_estimator"]);
     expect(steps.map((s) => s.link_url).sort()).toEqual(links.map((l) => l.href).sort());
     for (const s of steps) {
-      expect(Object.keys(s).sort()).toEqual(["link_url", "site", "step"]);
+      expect(Object.keys(s).sort()).toEqual(["link_context", "link_module", "link_url", "site"]);
     }
   });
 });

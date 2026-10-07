@@ -39,6 +39,9 @@ import { buildAnswerBlock } from "@/lib/seo/geo";
 import { buildStateCostContext } from "@/lib/seo/state-context";
 import { buildStateFaq } from "@/lib/seo/state-faq";
 import { AdsenseLoader } from "@/components/ads/adsense-loader";
+import { NextSteps } from "@/components/calculator/next-steps";
+import { pageNextSteps } from "@/lib/next-steps-server";
+import { rankStatesByTraffic } from "@/lib/top-traffic";
 
 interface PageProps {
   params: Promise<{ state: string; slug: string }>;
@@ -162,8 +165,9 @@ export default async function StateCategoryPage({ params }: PageProps) {
   const otherCategories = CATEGORIES.filter(
     (c) => c.slug !== categoryInfo.slug && isIndexable(stateInfo.code, c.slug),
   );
-  const allOtherStates = STATES.filter(
-    (s) => s.code !== stateInfo.code && isIndexable(s.code, categoryInfo.slug),
+  const allOtherStates = rankStatesByTraffic(
+    STATES.filter((s) => s.code !== stateInfo.code && isIndexable(s.code, categoryInfo.slug)),
+    categoryInfo.slug,
   );
   const hubStateCount = INDEXABLE_PAGES.filter((p) => p.category.slug === categoryInfo.slug).length;
 
@@ -178,6 +182,16 @@ export default async function StateCategoryPage({ params }: PageProps) {
   });
 
   const canonicalUrl = `${CANONICAL_ORIGIN}/${stateInfo.slug}/${categoryInfo.slug}-cost`;
+
+  const nextSteps = pageNextSteps({
+    stateSlug: stateInfo.slug,
+    stateName: stateInfo.name,
+    categorySlug: categoryInfo.slug,
+    categoryName: categoryInfo.displayName,
+    moderateMedian: moderateCost?.costRange.median,
+    moderateLow: moderateCost?.costRange.low,
+    moderateHigh: moderateCost?.costRange.high,
+  });
 
   return (
     <div>
@@ -312,6 +326,8 @@ export default async function StateCategoryPage({ params }: PageProps) {
               <p className="text-xs text-slate-400">{dateLabel(dateRecord)}</p>
             </div>
           )}
+
+          <NextSteps steps={nextSteps} placement="answer" className="mt-8" />
         </div>
       </section>
 

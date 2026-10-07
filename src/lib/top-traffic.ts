@@ -39,3 +39,12 @@ export function topTrafficPages(options: { categorySlug?: string; limit?: number
     .sort((a, b) => b.views - a.views || a.path.localeCompare(b.path))
     .slice(0, limit);
 }
+
+export function rankStatesByTraffic<T extends { slug: string }>(states: readonly T[], categorySlug: string): T[] {
+  const views = new Map(topTrafficPages({ categorySlug, limit: Number.MAX_SAFE_INTEGER }).map((p) => [p.path, p.views]));
+  const viewsOf = (s: T) => views.get(`/${s.slug}/${categorySlug}-cost`) ?? 0;
+  return states
+    .map((state, index) => ({ state, index }))
+    .sort((a, b) => viewsOf(b.state) - viewsOf(a.state) || a.index - b.index)
+    .map((e) => e.state);
+}

@@ -1575,9 +1575,11 @@ export function calculationBlocks(ctx: StateCostContext, matterLabel: string): C
         lead: "Simple tier.",
         body: `${usd(simple.median)} ÷ ${usd(simple.hourlyMedian)} = about ${
           simple.hours
-        } hours, spread over ${simple.duration} at roughly ${usd(
+        } hours, spread over the assumed ${simple.duration} at roughly ${usd(
           simple.median / simple.durationMonths,
-        )} a month. The ${usd(moneyGap)} step to the moderate tier is ${hourGap} more ${hourWord(hourGap)} at that rate.`,
+        )} a month. The ${usd(moneyGap)} step to the moderate tier raises the implied hours from ${simple.hours} to ${
+          moderate.hours
+        }, ${hourGap} more, at the moderate tier's own ${usd(moderate.hourlyMedian!)} rate.`,
       });
     } else {
       blocks.push({
@@ -1596,32 +1598,27 @@ export function calculationBlocks(ctx: StateCostContext, matterLabel: string): C
     const addedHours = complex.hours - moderate.hours;
     const workEffect = addedHours * moderate.hourlyMedian;
     const rateEffect = complex.hours * (complex.hourlyMedian - moderate.hourlyMedian);
-    const workShare = Math.round((workEffect / (workEffect + rateEffect)) * 100);
+    const parts = workEffect + rateEffect;
+    const workShare = Math.round((workEffect / parts) * 100);
+    const priceShare = 100 - workShare;
     const gap = complex.median - moderate.median;
+    const opening = `${usd(moderate.median)} to ${usd(complex.median)} is a ${usd(gap)} step`;
+    const workText = `${addedHours} more ${addedHours === 1 ? "hour" : "hours"} at ${usd(moderate.hourlyMedian)} is ${usd(workEffect)}`;
+    const priceText = `${usd(complex.hourlyMedian)} across ${complex.hours} hours adds ${usd(rateEffect)}`;
+    const rounding =
+      parts === gap ? "" : ` (the two parts come to ${usd(parts)} because the hours are rounded to whole numbers)`;
     blocks.push({
       lead: "Work against price.",
       body:
         addedHours <= 0
-          ? `${usd(moderate.median)} to ${usd(complex.median)} is a ${usd(
-              gap,
-            )} step carried by price, not work: the implied hours ${
+          ? `${opening} carried by price, not work: the implied hours ${
               addedHours === 0 ? `stay at ${complex.hours}` : `fall from ${moderate.hours} to ${complex.hours}`
             }, while the rate moves from ${usd(moderate.hourlyMedian)} to ${usd(complex.hourlyMedian)}.`
           : workShare >= 60
-          ? `${usd(moderate.median)} to ${usd(complex.median)} is a ${usd(
-              gap,
-            )} step, mostly work: ${addedHours} more ${addedHours === 1 ? "hour" : "hours"} at ${usd(
-              moderate.hourlyMedian,
-            )} is ${usd(workEffect)}, while moving to ${usd(complex.hourlyMedian)} across ${
-              complex.hours
-            } hours adds ${usd(rateEffect)}. Work carries ${workShare}%.`
-          : `${usd(moderate.median)} to ${usd(complex.median)} is a ${usd(
-              gap,
-            )} step weighted toward price: ${addedHours} more ${addedHours === 1 ? "hour" : "hours"} at ${usd(
-              moderate.hourlyMedian,
-            )} is ${usd(workEffect)}, but ${usd(complex.hourlyMedian)} across ${
-              complex.hours
-            } hours adds ${usd(rateEffect)} — ${100 - workShare}% of it.`,
+            ? `${opening}, mostly work: ${workText}, while moving to ${priceText}. Work carries ${workShare}%${rounding}.`
+            : priceShare >= 60
+              ? `${opening} weighted toward price: ${workText}, but ${priceText}. Price carries ${priceShare}%${rounding}.`
+              : `${opening} split between work and price: ${workText}, and ${priceText}. Work carries ${workShare}% and price ${priceShare}%${rounding}.`,
     });
   }
 
@@ -1633,6 +1630,12 @@ export function calculationBlocks(ctx: StateCostContext, matterLabel: string): C
     const overAbove = above.median - moderate.median;
     const underBelow = moderate.median - below.median;
     const worst = Math.max(overAbove, underBelow);
+    const errorTail =
+      worst === 0
+        ? ""
+        : worst < Math.max(50, moderate.median * 0.01)
+          ? `, against at most ${usd(worst)} for the two neighbours`
+          : `, ${Math.round(nationalError / worst)}x the larger neighbour error`;
     blocks.push({
       lead: "Borrowing the wrong figure.",
       body:
@@ -1643,9 +1646,7 @@ export function calculationBlocks(ctx: StateCostContext, matterLabel: string): C
               overAbove === 0 ? "matches it exactly" : `is ${usd(overAbove)} heavy`
             } — but the ${usd(
               ctx.peerMedian,
-            )} table midpoint is out by ${usd(nationalError)}, ${Math.round(
-              nationalError / Math.max(1, worst),
-            )}x the neighbour error.`
+            )} table midpoint is out by ${usd(nationalError)}${errorTail}.`
           : `Budgeting from ${below.name} (${usd(below.median)}) ${
               underBelow === 0 ? `gives the same figure as ${ctx.stateName}` : `lands ${usd(underBelow)} under ${ctx.stateName}`
             }; from ${above.name} (${usd(above.median)}), ${

@@ -141,9 +141,12 @@ export function buildStateFaq(ctx: StateCostContext, matterLabel: string): FaqEn
       moderate.durationMonths && moderate.durationMonths > 0
         ? Math.round(moderate.median / moderate.durationMonths)
         : null;
+    const nationalNote = `${
+      simple?.duration ? "national figures" : "a national figure"
+    } for this matter and complexity, not specific to ${stateName}`;
     const complexClause =
       complex?.duration && complex.durationMonths
-        ? ` A complex matter is estimated at ${complex.duration}, and at ${usd(
+        ? ` A complex matter is assumed at ${complex.duration}, and at ${usd(
             complex.median,
           )} that works out to about ${usd(
             complex.median / complex.durationMonths,
@@ -152,14 +155,14 @@ export function buildStateFaq(ctx: StateCostContext, matterLabel: string): FaqEn
     entries.push({
       question: `How long does ${aOrAn(matterLabel)} ${matterLabel} take in ${stateName}?`,
       answer: perMonth
-        ? `The sources record ${moderate.duration} for a moderate-complexity matter${
+        ? `The estimate assumes ${moderate.duration} for a moderate-complexity matter${
             simple?.duration ? ` and ${simple.duration} for a simple one` : ""
-          }. Spread across that timeline, the ${usd(moderate.median)} median is roughly ${usd(
+          } — ${nationalNote}. Spread across that timeline, the ${usd(moderate.median)} median is roughly ${usd(
             perMonth,
           )} a month of elapsed time.${complexClause}`
-        : `The sources record ${moderate.duration} for a moderate-complexity matter${
+        : `The estimate assumes ${moderate.duration} for a moderate-complexity matter${
             simple?.duration ? ` and ${simple.duration} for a simple one` : ""
-          }.${complexClause}`,
+          } — ${nationalNote}.${complexClause}`,
     });
   }
 
@@ -194,9 +197,9 @@ export function buildStateFaq(ctx: StateCostContext, matterLabel: string): FaqEn
               )} at the complex tier — the premium ${stateName} carries is concentrated in straightforward matters.`
             : `Yes: ${usd(simple.median)} at the simple tier, ${usd(
                 moderate.median,
-              )} at moderate and ${usd(complex.median)} at complex, a ${
+              )} at moderate and ${usd(complex.median)} at complex, a span of ${
                 ctx.costMultiple ?? 0
-              }x span. ${stateName} holds a similar position at every tier — ${ordinal(
+              }x. ${stateName} holds a similar position at every tier — ${ordinal(
                 simple.rank,
               )}, ${ordinal(moderate.rank ?? ctx.rank)} and ${ordinal(complex.rank)} of ${
                 ctx.rankedOutOf

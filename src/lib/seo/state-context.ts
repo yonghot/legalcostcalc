@@ -1035,13 +1035,14 @@ export function tempoSentence(ctx: StateCostContext, matterLabel: string): strin
   if (!moderate.durationMonths || moderate.durationMonths <= 0 || !moderate.duration) return null;
   const perMonth = Math.round(moderate.median / moderate.durationMonths);
   const complex = ctx.tiers.complex;
+  const { stateName } = ctx;
 
   if (complex?.durationMonths && complex.durationMonths > 0) {
     const complexPerMonth = Math.round(complex.median / complex.durationMonths);
     if (complexPerMonth > perMonth * 1.1) {
-      return `Spread across the ${moderate.duration} the sources record for a moderate matter, the ${usd(
+      return `The estimate assumes ${moderate.duration} for a moderate ${matterLabel} — a national duration for this matter and complexity, not one specific to ${stateName} — and across it the ${usd(
         moderate.median,
-      )} median works out to roughly ${usd(perMonth)} a month. A complex ${matterLabel} runs longer, at ${
+      )} median works out to roughly ${usd(perMonth)} a month. A complex ${matterLabel} is assumed to run longer, at ${
         complex.duration
       }, but it also runs hotter — about ${usd(
         complexPerMonth,
@@ -1050,18 +1051,20 @@ export function tempoSentence(ctx: StateCostContext, matterLabel: string): strin
     if (complexPerMonth < perMonth * 0.9) {
       return `The ${usd(moderate.median)} median across ${
         moderate.duration
-      } is about ${usd(perMonth)} a month. A complex ${matterLabel} costs more in total but less per month — roughly ${usd(
+      }, the national duration the estimate assumes for a moderate ${matterLabel}, is about ${usd(perMonth)} a month. A complex ${matterLabel} costs more in total but less per month — roughly ${usd(
         complexPerMonth,
-      )} across ${complex.duration} — because the additional cost arrives as a longer timeline rather than a heavier monthly burn.`;
+      )} across the ${complex.duration} it assumes — because the additional cost arrives as a longer timeline rather than a heavier monthly burn.`;
     }
-    return `Per month of elapsed time the two tiers are close: about ${usd(
+    return `Per month of elapsed time the two tiers are close: the ${usd(moderate.median)} moderate median is about ${usd(
       perMonth,
-    )} a month across the ${moderate.duration} estimated for a moderate matter, and ${usd(
-      complexPerMonth,
-    )} a month across the ${complex.duration} estimated for a complex one.`;
+    )} a month across the ${moderate.duration} assumed for a moderate matter, and the ${usd(
+      complex.median,
+    )} complex median is ${usd(complexPerMonth)} a month across the ${
+      complex.duration
+    } assumed for a complex one. Both durations are national figures for this matter, not specific to ${stateName}.`;
   }
 
-  return `Across the ${moderate.duration} the sources record for a moderate matter, the ${usd(
+  return `Across the ${moderate.duration} the estimate assumes for a moderate matter (a national figure for this matter and complexity, not specific to ${stateName}), the ${usd(
     moderate.median,
   )} median is roughly ${usd(perMonth)} a month of elapsed time.`;
 }

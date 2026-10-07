@@ -37,6 +37,11 @@ export function CostDetailsSection({
   const impliedHours = (row?: LegalCostData) =>
     row && row.hourlyRate.median > 0 ? Math.round(row.costRange.median / row.hourlyRate.median) : null;
 
+  const checkedFor = (fee: string) =>
+    stateCode && categorySlug ? verifiedFeeForLine(fee, stateCode, categorySlug) : null;
+  const hasCheckedFee = commonFees.some((fee) => checkedFor(fee));
+  const hasGenericFigure = commonFees.some((fee) => /[$%]/.test(fee) && !checkedFor(fee));
+
   const hasHourly = (hourlyRate?.median ?? 0) > 0;
   const contingency = !hasHourly ? (moderate?.contingencyFee ?? null) : null;
 
@@ -130,13 +135,19 @@ export function CostDetailsSection({
 
         <div className="grid gap-8 lg:grid-cols-2">
           <div>
-            <h2 className="mb-4 text-xl font-bold text-slate-900">
+            <h2 className="mb-2 text-xl font-bold text-slate-900">
               Common {categoryName} Fees in {stateName}
             </h2>
+            {hasGenericFigure && (
+              <p className="mb-4 text-sm text-slate-600">
+                {hasCheckedFee
+                  ? `Lines marked Checked are confirmed for ${stateName} on the date shown. The other figures are typical nationwide ranges, not specific to ${stateName}: some are set federally and others vary by court, county or provider.`
+                  : `These are typical nationwide ranges, not specific to ${stateName}: some are set federally and others vary by court, county or provider.`}
+              </p>
+            )}
             <ul className="space-y-2">
               {commonFees.map((fee, i) => {
-                const verified =
-                  stateCode && categorySlug ? verifiedFeeForLine(fee, stateCode, categorySlug) : null;
+                const verified = checkedFor(fee);
                 return (
                   <li key={i} className="flex items-start gap-2 text-sm text-slate-700">
                     <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-teal-500" />

@@ -614,6 +614,8 @@ const countStates = (n: number) => `${n} ${n === 1 ? "state" : "states"}`;
 
 const countPlaces = (n: number) => `${n} ${n === 1 ? "place" : "places"}`;
 
+const hourWord = (n: number) => (n === 1 ? "hour" : "hours");
+
 const tierMidpointGap = (median: number, midpoint: number, mode: "over-under" | "off") => {
   const gap = Math.round(Math.abs(median - midpoint));
   if (gap === 0) return `exactly on the ${usd(midpoint)} tier midpoint`;
@@ -811,11 +813,11 @@ export function hoursSentence(ctx: StateCostContext, matterLabel: string): strin
     peerMedianHours === null
       ? ""
       : hours > peerMedianHours
-        ? ` The peer median is ${peerMedianHours} hours, so ${hours - peerMedianHours} more hours of work sit behind the ${stateName} figure than behind the typical state's.`
+        ? ` The peer median is ${peerMedianHours} hours, so ${hours - peerMedianHours} more ${hourWord(hours - peerMedianHours)} of work ${hours - peerMedianHours === 1 ? "sits" : "sit"} behind the ${stateName} figure than behind the typical state's.`
         : hours < peerMedianHours
           ? ` The peer median is ${peerMedianHours} hours: ${stateName} reaches its total in ${
               peerMedianHours - hours
-            } fewer implied hours, because the rate rather than the workload carries more of it.`
+            } fewer implied ${hourWord(peerMedianHours - hours)}, because the rate rather than the workload carries more of it.`
           : ` That rounds to the same ${peerMedianHours} hours as the peer median, so on workload ${stateName} is indistinguishable from the middle of the table at this precision.`;
 
   if (hours >= 45) {
@@ -1521,7 +1523,7 @@ export function calculationBlocks(ctx: StateCostContext, matterLabel: string): C
           simple.hours
         } hours, spread over ${simple.duration} at roughly ${usd(
           simple.median / simple.durationMonths,
-        )} a month. The ${usd(moneyGap)} step to the moderate tier is ${hourGap} more hours at that rate.`,
+        )} a month. The ${usd(moneyGap)} step to the moderate tier is ${hourGap} more ${hourWord(hourGap)} at that rate.`,
       });
     } else {
       blocks.push({
@@ -1545,17 +1547,23 @@ export function calculationBlocks(ctx: StateCostContext, matterLabel: string): C
     blocks.push({
       lead: "Work against price.",
       body:
-        workShare >= 60
+        addedHours <= 0
           ? `${usd(moderate.median)} to ${usd(complex.median)} is a ${usd(
               gap,
-            )} step, mostly work: ${addedHours} more hours at ${usd(
+            )} step carried by price, not work: the implied hours ${
+              addedHours === 0 ? `stay at ${complex.hours}` : `fall from ${moderate.hours} to ${complex.hours}`
+            }, while the rate moves from ${usd(moderate.hourlyMedian)} to ${usd(complex.hourlyMedian)}.`
+          : workShare >= 60
+          ? `${usd(moderate.median)} to ${usd(complex.median)} is a ${usd(
+              gap,
+            )} step, mostly work: ${addedHours} more ${addedHours === 1 ? "hour" : "hours"} at ${usd(
               moderate.hourlyMedian,
             )} is ${usd(workEffect)}, while moving to ${usd(complex.hourlyMedian)} across ${
               complex.hours
             } hours adds ${usd(rateEffect)}. Work carries ${workShare}%.`
           : `${usd(moderate.median)} to ${usd(complex.median)} is a ${usd(
               gap,
-            )} step weighted toward price: ${addedHours} more hours at ${usd(
+            )} step weighted toward price: ${addedHours} more ${addedHours === 1 ? "hour" : "hours"} at ${usd(
               moderate.hourlyMedian,
             )} is ${usd(workEffect)}, but ${usd(complex.hourlyMedian)} across ${
               complex.hours
@@ -1745,12 +1753,15 @@ export function movementSentences(ctx: StateCostContext, matterLabel: string): s
 
   if (up.length > 0) {
     const target = up[0]!;
+    const upNames = up.map((state) => state.name).join(", ");
     out.push(
-      `Climbing five places would mean passing ${up
-        .map((state) => state.name)
-        .join(", ")} and adding ${usd(
-        target.median - moderate.median,
-      )} to the ${usd(moderate.median)} estimate here.`,
+      target.median === moderate.median
+        ? `Climbing five places would mean passing ${upNames}, which all record the same ${usd(
+            moderate.median,
+          )} as ${ctx.stateName}, so the position moves without the figure changing.`
+        : `Climbing five places would mean passing ${upNames} and adding ${usd(
+            target.median - moderate.median,
+          )} to the ${usd(moderate.median)} estimate here.`,
     );
   } else {
     out.push(
@@ -1762,10 +1773,13 @@ export function movementSentences(ctx: StateCostContext, matterLabel: string): s
 
   if (down.length > 0) {
     const target = down[down.length - 1]!;
+    const downNames = down.map((state) => state.name).join(", ");
     out.push(
-      `Five places down means passing under ${down
-        .map((state) => state.name)
-        .join(", ")}: ${usd(moderate.median - target.median)}.`,
+      target.median === moderate.median
+        ? `Five places down means passing under ${downNames}, which all record the same ${usd(
+            moderate.median,
+          )} as ${ctx.stateName}.`
+        : `Five places down means passing under ${downNames}: ${usd(moderate.median - target.median)}.`,
     );
   } else {
     out.push(
@@ -1799,6 +1813,7 @@ export function calibrationSentence(ctx: StateCostContext, matterLabel: string):
     ((ctx.peerMedian - moderate.low) / (moderate.high - moderate.low)) * 100,
   );
   const hoursAtPeer = Math.round(ctx.peerMedian / moderate.hourlyMedian);
+  const hoursGap = Math.abs((moderate.hours ?? 0) - hoursAtPeer);
 
   if (position < 0) {
     return `The ${usd(ctx.peerMedian)} table midpoint falls below the ${usd(
@@ -1816,9 +1831,9 @@ export function calibrationSentence(ctx: StateCostContext, matterLabel: string):
     ctx.peerMedian,
   )} table midpoint, buying ${hoursAtPeer} hours at ${usd(
     moderate.hourlyMedian,
-  )} against the ${moderate.hours} the local ${matterLabel} median implies — ${Math.abs(
-    (moderate.hours ?? 0) - hoursAtPeer,
-  )} ${Math.abs((moderate.hours ?? 0) - hoursAtPeer) === 1 ? "hour" : "hours"} apart.`;
+  )} against the ${moderate.hours} the local ${matterLabel} median implies — ${
+    hoursGap === 0 ? "the same number of hours" : `${hoursGap} ${hoursGap === 1 ? "hour" : "hours"} apart`
+  }.`;
 }
 
 
@@ -1846,6 +1861,11 @@ export function hoursRankSentence(ctx: StateCostContext, matterLabel: string): s
     )} above its cost rank of ${ordinal(
       ctx.rank,
     )} on cost — more work behind the same ${matterLabel} money.`;
+  }
+  if (vsCost === 0) {
+    return `By implied hours ${ctx.stateName} is ${ordinal(ctx.hoursRank)} of ${
+      ctx.rankedOutOf
+    } at ${moderate.hours} hours, the same place it holds on cost, so the ${matterLabel} total and the implied workload agree even though the hourly rate ranks differently.`;
   }
   return `By implied hours ${ctx.stateName} falls to ${ordinal(ctx.hoursRank)} of ${
     ctx.rankedOutOf

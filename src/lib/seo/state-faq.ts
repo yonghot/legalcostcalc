@@ -30,6 +30,8 @@ import { ordinal, type StateCostContext } from "@/lib/seo/state-context";
 
 const usd = (value: number) => formatCurrency(Math.round(value));
 
+const stateTally = (n: number) => (n === 0 ? "no state" : `${n} ${n === 1 ? "state" : "states"}`);
+
 export interface FaqEntry {
   question: string;
   answer: string;
@@ -88,18 +90,18 @@ export function buildStateFaq(ctx: StateCostContext, matterLabel: string): FaqEn
               Math.abs(ctx.dollarsFromPeerMedian),
             )} above the ${usd(ctx.peerMedian)} midpoint of the ${
               ctx.rankedOutOf
-            } tracked states, and ranks ${stateName} ${ordinal(ctx.rank)}, with ${
-              ctx.rank - 1
-            } ${ctx.rank === 2 ? "state" : "states"} recording more.`
+            } tracked states, and ranks ${stateName} ${ordinal(ctx.rank)}, with ${stateTally(
+              ctx.rank - 1,
+            )} recording more.`
           : `The median estimate is ${usd(moderate.median)} for a moderate-complexity matter, inside ${usd(
               moderate.low,
             )}–${usd(moderate.high)}. That is ${usd(
               Math.abs(ctx.dollarsFromPeerMedian),
             )} below the ${usd(ctx.peerMedian)} midpoint of the ${
               ctx.rankedOutOf
-            } tracked states, ranking ${stateName} ${ordinal(ctx.rank)} with ${
-              ctx.rankedOutOf - ctx.rank
-            } ${ctx.rankedOutOf - ctx.rank === 1 ? "state" : "states"} recording less.`,
+            } tracked states, ranking ${stateName} ${ordinal(ctx.rank)} with ${stateTally(
+              ctx.rankedOutOf - ctx.rank,
+            )} recording less.`,
   });
 
   /* 2 — the rate, and what the rate does and does not explain. */

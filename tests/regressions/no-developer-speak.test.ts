@@ -24,7 +24,7 @@ const BROKEN_PROSE = new RegExp(
     String.raw`\b[A-Za-z]+court's`,
     String.raw`\ba (?:estate|immigration)\b|\ban (?:divorce|dui|personal|bankruptcy|real|criminal)\b`,
     String.raw`\b\d*[02-9][123]th\b`,
-    String.raw`\bundefined\b|\bNaN\b|\[object|\$-\d`,
+    String.raw`\bundefined\b|\bNaN\b|\[object|\$-\d|\$0(?!\d|,\d)|(?<![\d.])1 more hours|\b0 (?:states|places)\b|\b0 hours apart`,
   ].join("|"),
   "gi",
 );
@@ -75,6 +75,16 @@ const TEMPLATE_PAGES: Array<[string, () => Promise<string>]> = [
   pair("wyoming", "personal-injury-cost"),
   pair("minnesota", "bankruptcy-cost"),
   pair("north-carolina", "bankruptcy-cost"),
+  pair("oklahoma", "dui-cost"),
+  pair("idaho", "bankruptcy-cost"),
+  pair("massachusetts", "bankruptcy-cost"),
+  pair("alabama", "real-estate-cost"),
+  pair("arizona", "estate-planning-cost"),
+  pair("virginia", "estate-planning-cost"),
+  pair("alabama", "divorce-cost"),
+  pair("hawaii", "divorce-cost"),
+  pair("kansas", "divorce-cost"),
+  pair("nevada", "dui-cost"),
 ];
 
 const OTHER_PAGES: Array<[string, () => Promise<string>]> = [
@@ -124,10 +134,17 @@ describe("K2: readers never see developer vocabulary or broken generated prose",
       "How Much Does a Immigration Cost",
       "a estate planning",
       "−$0",
+      "adding $0 to the $4,400 estimate",
+      "passing under Kentucky: $0.",
+      "0 more hours at $220 is $0, but",
+      "1 more hours at $220",
+      "with 0 states recording less",
+      "0 places below its 40th on cost",
+      "implies — 0 hours apart.",
     ]) {
       expect(matches(bad, BROKEN_PROSE).length, bad).toBeGreaterThan(0);
     }
-    for (const fine of ["1 state sits", "the 11th percentile", "the 21st percentile", "an immigration", "7.1 matters", "a one-time cost"]) {
+    for (const fine of ["1 state sits", "the 11th percentile", "the 21st percentile", "an immigration", "7.1 matters", "a one-time cost", "1 more hour at $220"]) {
       expect(matches(fine, BROKEN_PROSE), fine).toEqual([]);
     }
   });

@@ -7,13 +7,16 @@ import { DEFAULT_STATE_SLUG } from "@/lib/constants/costs";
 import { STATE_BY_SLUG } from "@/lib/constants/states";
 import { FOCUS_RING } from "@/lib/utils/styles";
 import { AdsenseLoader } from "@/components/ads/adsense-loader";
+import { buildMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMeta({
   title: "Embed the Legal Cost Calculator",
   description:
     "Add the free LegalCostCalc cost calculator to your own website with a single iframe snippet. Includes a source-attribution link.",
-  alternates: { canonical: "/embed" },
-};
+  path: "/embed",
+  skipFit: true,
+  withOgImage: true,
+});
 
 export default function EmbedIndexPage() {
   const defaultCategory = CATEGORIES[0];

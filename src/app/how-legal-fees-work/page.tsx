@@ -37,6 +37,7 @@ export const metadata: Metadata = buildMeta({
   description: DESCRIPTION,
   path: PAGE_PATH,
   skipFit: true,
+  withOgImage: true,
 });
 
 // The first section is the framing intro; the rest are the numbered body

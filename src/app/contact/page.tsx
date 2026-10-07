@@ -76,7 +76,7 @@ export default function ContactPage() {
         </div>
       </section>
 
-      <main>
+      <div>
         <section className="py-16">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="grid gap-12 lg:grid-cols-3">
@@ -145,7 +145,7 @@ export default function ContactPage() {
             <Disclaimer />
           </div>
         </section>
-      </main>
+      </div>
     </div>
   );
 }

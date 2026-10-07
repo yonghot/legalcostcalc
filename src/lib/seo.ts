@@ -19,6 +19,13 @@ export const SITE_NAME = "LegalCostCalc";
 export const CANONICAL_ORIGIN =
   process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "https://legalcostcalc.co";
 
+export const DEFAULT_OG_IMAGE = {
+  url: "/opengraph-image",
+  width: 1200,
+  height: 630,
+  alt: "LegalCostCalc — How Much Will Your Legal Matter Really Cost?",
+};
+
 const MAX_TITLE_LENGTH = 60;
 const BRAND_SUFFIX = ` — ${SITE_NAME}`;
 
@@ -49,6 +56,8 @@ export interface BuildMetaParams {
   year?: number;
   /** Set true for a hand-written title: used as written, brand appended only when it fits in 60 characters. */
   skipFit?: boolean;
+  /** Pages without their own opengraph-image file: openGraph replaces the layout's, so the shared card must be re-added. */
+  withOgImage?: boolean;
   /**
    * robots override — e.g. { index: false, follow: true } for thin-gated
    * pages. Object form only (not the string shorthand) so buildMeta() can
@@ -70,6 +79,7 @@ export function buildMeta({
   path,
   year,
   skipFit = false,
+  withOgImage = false,
   robots,
 }: BuildMetaParams): Metadata {
   const finalTitle = skipFit ? fixedTitle(title) : fitTitle(title, year ?? latestContentYear());
@@ -101,6 +111,7 @@ export function buildMeta({
       url: canonicalUrl,
       siteName: SITE_NAME,
       locale: "en_US",
+      ...(withOgImage ? { images: [DEFAULT_OG_IMAGE] } : {}),
     },
     twitter: {
       card: "summary_large_image",

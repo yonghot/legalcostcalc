@@ -56,16 +56,25 @@ describe("K09 — max-image-preview:large on robots declarations", () => {
   });
 
   it("every page that declares its own metadata object without buildMeta() has no robots override (so it inherits the layout default)", () => {
-    // These four routes hand-roll a Metadata object instead of calling
-    // buildMeta() — confirm none of them re-declare `robots` (which would
+    // The home route hand-rolls a Metadata object instead of calling
+    // buildMeta() — confirm it does not re-declare `robots` (which would
     // shadow the root layout's max-image-preview:large without carrying it
     // forward).
-    const files = ["src/app/page.tsx", "src/app/embed/page.tsx", "src/app/privacy/page.tsx", "src/app/terms/page.tsx"];
+    const files = ["src/app/page.tsx"];
     for (const f of files) {
       const src = readSource(f);
       const metadataBlockMatch = src.match(/export const metadata:\s*Metadata\s*=\s*\{[\s\S]*?\n\};/);
       expect(metadataBlockMatch).not.toBeNull();
       expect(metadataBlockMatch![0]).not.toMatch(/robots:/);
+    }
+  });
+
+  it("privacy, terms and embed moved onto buildMeta() (og:url) and still declare no robots override", () => {
+    for (const f of ["src/app/embed/page.tsx", "src/app/privacy/page.tsx", "src/app/terms/page.tsx"]) {
+      const src = readSource(f);
+      const block = src.match(/export const metadata:\s*Metadata\s*=\s*buildMeta\(\{[\s\S]*?\n\}\);/);
+      expect(block, f).not.toBeNull();
+      expect(block![0]).not.toMatch(/robots:/);
     }
   });
 });

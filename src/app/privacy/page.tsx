@@ -8,13 +8,16 @@ import { Disclaimer } from "@/components/shared/disclaimer";
 import { PublishedBy } from "@/components/shared/published-by";
 import { PUBLISHER } from "@/lib/constants/publisher";
 import { AdsenseLoader } from "@/components/ads/adsense-loader";
+import { buildMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMeta({
   title: "Privacy Policy",
   description:
     "How LegalCostCalc handles data, cookies, analytics (Google Analytics 4), advertising (Google AdSense), GDPR/CCPA rights, and affiliate links.",
-  alternates: { canonical: "/privacy" },
-};
+  path: "/privacy",
+  skipFit: true,
+  withOgImage: true,
+});
 
 const POLICY_EFFECTIVE_DATE = "October 7, 2026";
 

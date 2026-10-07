@@ -83,6 +83,10 @@ const nextConfig: NextConfig = {
   experimental: {
     cpus: 4,
   },
+  // Next classifies a route file named favicon.ico as static metadata, so the generated icon is served by rewrite.
+  async rewrites() {
+    return [{ source: "/favicon.ico", destination: "/icon" }];
+  },
   async headers() {
     // /embed/* must be loadable inside third-party iframes, so it overrides the
     // global X-Frame-Options / frame-ancestors lockdown. Everything else keeps

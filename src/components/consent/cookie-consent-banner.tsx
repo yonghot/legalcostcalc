@@ -37,13 +37,13 @@ export function CookieConsentBanner() {
         <div className="flex flex-shrink-0 gap-3">
           <button
             onClick={() => choose("declined")}
-            className={`rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 ${FOCUS_RING}`}
+            className={`min-h-11 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 ${FOCUS_RING}`}
           >
             Decline
           </button>
           <button
             onClick={() => choose("accepted")}
-            className={`rounded-md bg-teal-700 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-teal-800 ${FOCUS_RING}`}
+            className={`min-h-11 rounded-md bg-teal-700 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-teal-800 ${FOCUS_RING}`}
           >
             Accept
           </button>

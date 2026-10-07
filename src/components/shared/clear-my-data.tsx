@@ -35,7 +35,7 @@ export function ClearMyData({ className, variant = "card" }: ClearMyDataProps) {
 
   const baseClasses =
     variant === "card"
-      ? `inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50 ${FOCUS_RING}`
+      ? `inline-flex min-h-11 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50 ${FOCUS_RING}`
       : "inline-flex items-center gap-1.5";
 
   return (

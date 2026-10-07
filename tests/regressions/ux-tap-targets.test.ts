@@ -6,6 +6,12 @@ import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
 import { Breadcrumbs } from "@/components/seo/breadcrumbs";
 import { HubLinks } from "@/components/seo/hub-links";
+import { HubLinksBar } from "@/components/seo/hub-links-bar";
+import { ResultShare } from "@/components/shared/result-share";
+import { ClearMyData } from "@/components/shared/clear-my-data";
+import { ContinueBanner } from "@/components/shared/continue-banner";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import CategoryHubPage from "@/app/category/[category]/page";
 import DivorceHubPage from "@/app/divorce-cost-by-state/page";
 import StateHubPage from "@/app/[state]/page";
@@ -71,6 +77,29 @@ describe("UX P1-2 / P1-4: 44px tap targets in site chrome and hub links that lea
       expect(buttons.length).toBeGreaterThan(0);
       for (const tag of buttons) expect(classOf(tag), tag).toContain("min-h-11");
     }
+  });
+
+  it("hub chips, the copy-link button, clear-my-data and the continue banner reach 44px", () => {
+    const noop = () => {};
+    const rendered = [
+      renderToStaticMarkup(createElement(HubLinksBar, { stateSlug: "texas", stateName: "Texas", categorySlug: "dui", categoryName: "DUI" })),
+      renderToStaticMarkup(createElement(ResultShare, { calcType: "dui" })),
+      renderToStaticMarkup(createElement(ClearMyData, {})),
+      renderToStaticMarkup(createElement(ContinueBanner, { onApply: noop, onDismiss: noop })),
+    ];
+    for (const html of rendered) {
+      const controls = controlsIn(html);
+      expect(controls.length).toBeGreaterThan(0);
+      for (const tag of controls) expect(classOf(tag), tag).toContain("min-h-11");
+    }
+  });
+
+  it("the cookie banner and the contact form buttons reach 44px", () => {
+    const root = path.resolve(__dirname, "..", "..", "src", "components");
+    const banner = readFileSync(path.join(root, "consent/cookie-consent-banner.tsx"), "utf8");
+    expect(banner.match(/min-h-11 rounded-md/g)?.length).toBe(2);
+    const contact = readFileSync(path.join(root, "shared/contact-form.tsx"), "utf8");
+    expect(contact).toContain("inline-flex min-h-11 items-center gap-2 rounded-md bg-teal-700");
   });
 
   it("the back link on a hub says where it goes: the calculator", async () => {

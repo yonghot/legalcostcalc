@@ -80,7 +80,7 @@ export default function SettlementEstimatorPage() {
               are reimbursed from the settlement.
             </li>
           </ul>
-          <p className="mt-3 text-xs text-slate-400">
+          <p className="mt-3 text-xs text-slate-600">
             Source:{" "}
             <a
               href="https://www.nolo.com/legal-encyclopedia/contingency-fees-lawyers-payment-28563.html"

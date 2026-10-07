@@ -239,7 +239,7 @@ export default function HomePage() {
 
           {STATES.length > popularStates.length && (
             <details className="group mt-4">
-              <summary className={`flex cursor-pointer items-center justify-center gap-1 text-sm font-medium text-teal-600 hover:text-teal-700 ${FOCUS_RING} rounded-md`}>
+              <summary className={`flex cursor-pointer items-center justify-center gap-1 text-sm font-medium text-teal-700 hover:text-teal-800 ${FOCUS_RING} rounded-md`}>
                 View all {STATES.length} states
                 <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" aria-hidden="true" />
               </summary>
@@ -285,7 +285,7 @@ export default function HomePage() {
                 contingency arrangements. Use our free calculator to get cost estimates specific
                 to your legal matter and state.
               </dd>
-              <dd className="mt-2 text-xs text-slate-400">
+              <dd className="mt-2 text-xs text-slate-600">
                 Sources:{" "}
                 <a
                   href="https://www.clio.com/resources/legal-trends/compare-lawyer-rates/"

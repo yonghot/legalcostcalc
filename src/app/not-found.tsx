@@ -29,7 +29,7 @@ export default function NotFound() {
         </p>
         <Link
           href="/"
-          className={`mt-6 inline-flex items-center gap-2 rounded-md bg-teal-600 px-6 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-teal-700 ${FOCUS_RING}`}
+          className={`mt-6 inline-flex items-center gap-2 rounded-md bg-teal-700 px-6 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-teal-800 ${FOCUS_RING}`}
         >
           <Home className="h-5 w-5" aria-hidden="true" />
           Back to Calculator

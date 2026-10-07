@@ -72,7 +72,7 @@ export const CostResult = memo(function CostResult({
   return (
     <div className="space-y-4">
       <Card className="overflow-hidden border-slate-200 shadow-sm">
-        <CardHeader className="bg-teal-600 text-white">
+        <CardHeader className="bg-teal-700 text-white">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg">
               {categoryName} Cost in {stateName}
@@ -197,9 +197,9 @@ export const CostResult = memo(function CostResult({
                   This data may be outdated. This page has not been updated in over a year.
                 </p>
               )}
-              <p className="text-xs text-slate-400">{dateLabel(dateRecord)}</p>
+              <p className="text-xs text-slate-600">{dateLabel(dateRecord)}</p>
               {safeSourceUrls.length < 2 && (
-                <p className="mt-1 text-xs italic text-slate-400">
+                <p className="mt-1 text-xs italic text-slate-600">
                   Estimated range (single source)
                 </p>
               )}

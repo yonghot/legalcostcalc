@@ -74,7 +74,7 @@ export function RecentCalculations() {
               className={`inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-600 ${CARD_HOVER} ${FOCUS_RING}`}
             >
               <span className="font-medium text-slate-700">{resolved.label}</span>
-              <span className="text-slate-400">{formatRelativeDate(entry.date)}</span>
+              <span className="text-slate-600">{formatRelativeDate(entry.date)}</span>
             </Link>
           );
         })}

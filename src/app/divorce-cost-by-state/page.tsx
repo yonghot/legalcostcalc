@@ -117,7 +117,7 @@ export default function DivorceCostByStatePage() {
             Divorce Cost by State
           </h2>
           <DivorceHubTable rows={rows} />
-          <p className="mt-3 text-xs text-slate-400">
+          <p className="mt-3 text-xs text-slate-600">
             Figures shown are median estimated total costs (attorney fees + court costs)
             for each complexity tier. See an individual state page for the full range,
             hourly rates, typical duration, and cited sources.

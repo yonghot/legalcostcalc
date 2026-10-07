@@ -70,16 +70,16 @@ function PrimaryIntentCTA({
         <p className="text-xs font-medium uppercase tracking-wide text-teal-700">
           Free Consultation Available
         </p>
-        <AffiliateDisclosure className="mt-1 text-teal-600" />
+        <AffiliateDisclosure className="mt-1 text-teal-700" />
         <a
           href={telHref}
-          className={`mt-3 flex w-full items-center justify-center gap-2 rounded-md bg-teal-600 px-5 py-3 text-base font-semibold text-white transition-colors hover:bg-teal-700 sm:w-auto ${FOCUS_RING}`}
+          className={`mt-3 flex w-full items-center justify-center gap-2 rounded-md bg-teal-700 px-5 py-3 text-base font-semibold text-white transition-colors hover:bg-teal-800 sm:w-auto ${FOCUS_RING}`}
           rel="noopener"
         >
           <Phone className="h-5 w-5" aria-hidden="true" />
           {label}
         </a>
-        <p className="mt-2 text-xs text-teal-600">{DISCLAIMER_SHORT}</p>
+        <p className="mt-2 text-xs text-teal-700">{DISCLAIMER_SHORT}</p>
       </div>
     );
   }
@@ -93,17 +93,17 @@ function PrimaryIntentCTA({
         <p className="text-xs font-medium uppercase tracking-wide text-teal-700">
           Attorney Advertising
         </p>
-        <AffiliateDisclosure className="mt-1 text-teal-600" />
+        <AffiliateDisclosure className="mt-1 text-teal-700" />
         <a
           href={url}
           target="_blank"
           rel="noopener noreferrer nofollow"
-          className={`mt-3 flex w-full items-center justify-center gap-2 rounded-md bg-teal-600 px-5 py-3 text-base font-semibold text-white transition-colors hover:bg-teal-700 sm:w-auto ${FOCUS_RING}`}
+          className={`mt-3 flex w-full items-center justify-center gap-2 rounded-md bg-teal-700 px-5 py-3 text-base font-semibold text-white transition-colors hover:bg-teal-800 sm:w-auto ${FOCUS_RING}`}
         >
           {label}
           <ExternalLink className="h-4 w-4" aria-hidden="true" />
         </a>
-        <p className="mt-2 text-xs text-teal-600">{DISCLAIMER_SHORT}</p>
+        <p className="mt-2 text-xs text-teal-700">{DISCLAIMER_SHORT}</p>
       </div>
     );
   }
@@ -117,17 +117,17 @@ function PrimaryIntentCTA({
         <p className="text-xs font-medium uppercase tracking-wide text-teal-700">
           Legal Service Advertisement
         </p>
-        <AffiliateDisclosure className="mt-1 text-teal-600" />
+        <AffiliateDisclosure className="mt-1 text-teal-700" />
         <a
           href={first.trackingUrl}
           target="_blank"
           rel="noopener noreferrer nofollow"
-          className={`mt-3 flex w-full items-center justify-center gap-2 rounded-md bg-teal-600 px-5 py-3 text-base font-semibold text-white transition-colors hover:bg-teal-700 sm:w-auto ${FOCUS_RING}`}
+          className={`mt-3 flex w-full items-center justify-center gap-2 rounded-md bg-teal-700 px-5 py-3 text-base font-semibold text-white transition-colors hover:bg-teal-800 sm:w-auto ${FOCUS_RING}`}
         >
           {first.partner.ctaText}
           <ExternalLink className="h-4 w-4" aria-hidden="true" />
         </a>
-        <p className="mt-2 text-xs text-teal-600">{DISCLAIMER_SHORT}</p>
+        <p className="mt-2 text-xs text-teal-700">{DISCLAIMER_SHORT}</p>
       </div>
     );
   }
@@ -186,13 +186,13 @@ function FeaturedPartnerTableBlock({
                         href={safeSrc}
                         target="_blank"
                         rel="noopener noreferrer nofollow"
-                        className={`inline-flex items-center gap-1 rounded-md bg-teal-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-teal-700 ${FOCUS_RING}`}
+                        className={`inline-flex items-center gap-1 rounded-md bg-teal-700 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-teal-800 ${FOCUS_RING}`}
                       >
                         Visit
                         <ExternalLink className="h-3 w-3" aria-hidden="true" />
                       </a>
                     ) : (
-                      <span className="text-xs text-slate-400">—</span>
+                      <span className="text-xs text-slate-600">—</span>
                     )}
                   </td>
                 </tr>
@@ -215,7 +215,7 @@ function SponsorSlot() {
   if (cfg.sponsorHtml) {
     return (
       <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-        <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+        <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
           Sponsored
         </p>
         <AffiliateDisclosure className="mb-2" />
@@ -227,7 +227,7 @@ function SponsorSlot() {
   if (cfg.sponsorBackfillUrl && isSafeUrl(cfg.sponsorBackfillUrl)) {
     return (
       <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-        <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+        <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
           Sponsored
         </p>
         <AffiliateDisclosure className="mb-2" />

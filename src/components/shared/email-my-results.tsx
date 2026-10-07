@@ -144,7 +144,7 @@ export function EmailMyResults({ calcType, className }: EmailMyResultsProps) {
         </p>
       )}
       {POSTAL_ADDRESS && (
-        <p className="mt-2 text-xs text-slate-400">{POSTAL_ADDRESS}</p>
+        <p className="mt-2 text-xs text-slate-600">{POSTAL_ADDRESS}</p>
       )}
     </div>
   );

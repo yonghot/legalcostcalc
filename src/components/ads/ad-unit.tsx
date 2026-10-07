@@ -175,7 +175,7 @@ export function AdUnit({
 
   return (
     <div className={className} aria-hidden="true">
-      <p className="mb-1 text-center text-[10px] font-medium uppercase tracking-wide text-slate-400">
+      <p className="mb-1 text-center text-[10px] font-medium uppercase tracking-wide text-slate-600">
         Advertisement
       </p>
       {/* Reserve space (min-h) matching the placeholder to prevent CLS.

@@ -40,7 +40,7 @@ export function Header() {
             <Link
               key={link.href}
               href={link.href}
-              className={`text-sm font-medium text-slate-600 transition-colors hover:text-teal-600 ${FOCUS_RING} rounded-sm`}
+              className={`py-3 text-sm font-medium text-slate-600 transition-colors hover:text-teal-700 ${FOCUS_RING} rounded-sm`}
             >
               {link.label}
             </Link>
@@ -50,7 +50,7 @@ export function Header() {
         {/* Mobile hamburger menu */}
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger
-            className={`inline-flex h-10 w-10 items-center justify-center rounded-md text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 ${FOCUS_RING} md:hidden`}
+            className={`inline-flex h-11 w-11 items-center justify-center rounded-md text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 ${FOCUS_RING} md:hidden`}
             aria-label="Open menu"
           >
             <Menu className="h-5 w-5" />
@@ -71,7 +71,7 @@ export function Header() {
                   key={link.href}
                   href={link.href}
                   onClick={() => setOpen(false)}
-                  className={`rounded-md px-3 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-teal-50 hover:text-teal-700 ${FOCUS_RING}`}
+                  className={`rounded-md px-3 py-3 text-sm font-medium text-slate-700 transition-colors hover:bg-teal-50 hover:text-teal-700 ${FOCUS_RING}`}
                 >
                   {link.label}
                 </Link>

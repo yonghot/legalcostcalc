@@ -118,7 +118,7 @@ export default function ContactPage() {
                     You can also reach us directly at{" "}
                     <a
                       href={`mailto:${PUBLISHER.email}`}
-                      className={`text-teal-600 underline hover:text-teal-700 ${FOCUS_RING} rounded-sm`}
+                      className={`text-teal-700 underline hover:text-teal-800 ${FOCUS_RING} rounded-sm`}
                     >
                       {PUBLISHER.email}
                     </a>

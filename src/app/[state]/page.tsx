@@ -105,9 +105,9 @@ export default async function StateHubPage({ params }: PageProps) {
           <div className="mt-8">
             <Link
               href="/"
-              className={`text-sm font-medium text-teal-600 hover:text-teal-700 ${FOCUS_RING} rounded-sm`}
+              className={`py-3 text-sm font-medium text-teal-700 hover:text-teal-800 ${FOCUS_RING} rounded-sm`}
             >
-              ← Back to all states
+              ← Calculate your own estimate
             </Link>
           </div>
         </div>

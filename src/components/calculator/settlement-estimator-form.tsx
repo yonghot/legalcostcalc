@@ -397,7 +397,7 @@ export function SettlementEstimatorForm() {
                     value={formatUSD(output.result.estimatedNetUSD)}
                     highlight
                   />
-                  <p className="mt-2 text-xs text-slate-400">
+                  <p className="mt-2 text-xs text-slate-600">
                     Estimated net is approximately{" "}
                     <span className="font-mono font-semibold">
                       {output.result.netPct.toFixed(1)}%

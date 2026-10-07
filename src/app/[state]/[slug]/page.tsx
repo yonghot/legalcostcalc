@@ -293,7 +293,7 @@ export default async function StateCategoryPage({ params }: PageProps) {
                       <Badge variant="outline" className="capitalize">
                         {cost.complexity}
                       </Badge>
-                      <span className="text-xs text-slate-400">{cost.typicalDuration}</span>
+                      <span className="text-xs text-slate-600">{cost.typicalDuration}</span>
                     </div>
                     <p className="font-mono text-2xl font-bold text-teal-600">
                       {formatCurrency(cost.costRange.median)}
@@ -307,7 +307,7 @@ export default async function StateCategoryPage({ params }: PageProps) {
                       </p>
                     )}
                     {cost.sources.length < 2 && (
-                      <p className="mt-2 text-xs italic text-slate-400">Estimated range (single source)</p>
+                      <p className="mt-2 text-xs italic text-slate-600">Estimated range (single source)</p>
                     )}
                   </CardContent>
                 </Card>
@@ -323,7 +323,7 @@ export default async function StateCategoryPage({ params }: PageProps) {
                   This data may be outdated. This page has not been updated in over a year.
                 </p>
               )}
-              <p className="text-xs text-slate-400">{dateLabel(dateRecord)}</p>
+              <p className="text-xs text-slate-600">{dateLabel(dateRecord)}</p>
             </div>
           )}
 

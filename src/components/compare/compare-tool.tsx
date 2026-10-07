@@ -245,7 +245,7 @@ function CostDifference({ cost1, cost2 }: { cost1: number; cost2: number }) {
   const isHigher = diff > 0;
   return (
     <div className="flex items-center justify-center gap-1.5 py-2">
-      <span className={`font-mono text-sm font-semibold ${isHigher ? "text-red-600" : "text-teal-600"}`}>
+      <span className={`font-mono text-sm font-semibold ${isHigher ? "text-red-600" : "text-teal-700"}`}>
         {isHigher ? "+" : ""}{formatCurrency(diff)}
       </span>
       <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${isHigher ? "bg-red-50 text-red-700" : "bg-teal-50 text-teal-700"}`}>
@@ -305,17 +305,17 @@ function ComparisonResultSection({
                           <p className="mt-1 font-mono text-sm text-slate-500">
                             {formatCurrency(cost.costRange.low)} – {formatCurrency(cost.costRange.high)}
                           </p>
-                          <p className="mt-2 font-mono text-xs text-slate-400">
+                          <p className="mt-2 font-mono text-xs text-slate-600">
                             {formatCurrency(cost.hourlyRate.median)}/hr median rate
                           </p>
                         </>
                       ) : (
-                        <p className="text-sm text-slate-400">No data available</p>
+                        <p className="text-sm text-slate-600">No data available</p>
                       )}
                       {item.linkSlug && (
                         <Link
                           href={`/${item.linkSlug}/${item.linkCategory}-cost`}
-                          className={`mt-3 inline-block text-xs font-medium text-teal-600 hover:text-teal-700 ${FOCUS_RING} rounded-sm`}
+                          className={`mt-3 inline-block text-xs font-medium text-teal-700 hover:text-teal-800 ${FOCUS_RING} rounded-sm`}
                         >
                           View full details →
                         </Link>

@@ -188,15 +188,15 @@ export default function AboutPage() {
                 <MethodNote scope="each state" className="mt-3 text-slate-600" />
                 <ol className="mt-3 space-y-2 text-sm text-slate-600">
                   <li className="flex items-start gap-2">
-                    <span className="flex-shrink-0 font-semibold text-teal-600">1.</span>
+                    <span className="flex-shrink-0 font-semibold text-teal-700">1.</span>
                     Start from published national fee guides and rate surveys
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="flex-shrink-0 font-semibold text-teal-600">2.</span>
+                    <span className="flex-shrink-0 font-semibold text-teal-700">2.</span>
                     Segment by case complexity (simple, moderate, complex)
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="flex-shrink-0 font-semibold text-teal-600">3.</span>
+                    <span className="flex-shrink-0 font-semibold text-teal-700">3.</span>
                     Publish each estimate as a range, with the public sources it draws on
                   </li>
                 </ol>

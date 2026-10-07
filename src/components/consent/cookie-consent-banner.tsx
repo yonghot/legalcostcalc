@@ -43,7 +43,7 @@ export function CookieConsentBanner() {
           </button>
           <button
             onClick={() => choose("accepted")}
-            className={`rounded-md bg-teal-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-teal-700 ${FOCUS_RING}`}
+            className={`rounded-md bg-teal-700 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-teal-800 ${FOCUS_RING}`}
           >
             Accept
           </button>

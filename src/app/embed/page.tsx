@@ -76,7 +76,7 @@ export default function EmbedIndexPage() {
             </ul>
             <p>
               Prefer to link instead? Just point your readers at the full{" "}
-              <Link href={canonicalPath} className={`text-teal-600 hover:text-teal-700 ${FOCUS_RING} rounded-sm`}>
+              <Link href={canonicalPath} className={`text-teal-700 hover:text-teal-800 ${FOCUS_RING} rounded-sm`}>
                 cost calculator page
               </Link>
               .

@@ -99,7 +99,7 @@ export function RelatedLinks({
                 {showHubLink && (
                   <Link
                     href={`/category/${categoryInfo.slug}`}
-                    className={`flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3 text-sm font-medium text-teal-600 hover:text-teal-700 ${FOCUS_RING}`}
+                    className={`flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3 text-sm font-medium text-teal-700 hover:text-teal-800 ${FOCUS_RING}`}
                     onClick={() => trackEvent("related_click", { link_module: "hub", link_url: `/category/${categoryInfo.slug}` })}
                   >
                     View all {hubStateCount} states

@@ -90,7 +90,7 @@ export function CostDetailsSection({
                     / hour
                   </span>
                 </p>
-                <p className="mt-0.5 font-mono text-sm text-teal-600">
+                <p className="mt-0.5 font-mono text-sm text-teal-700">
                   Median: {formatCurrency(hourlyRate!.median)}/hr
                 </p>
               </div>

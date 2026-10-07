@@ -57,7 +57,7 @@ export function HubLinks({ rows, labelHeader }: HubLinksProps) {
                 <Link
                   href={row.href}
                   onClick={() => handleHubClick(row.href)}
-                  className={`inline-flex items-center gap-1 rounded-md bg-teal-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-teal-700 ${CARD_HOVER} ${FOCUS_RING}`}
+                  className={`inline-flex items-center gap-1 rounded-md bg-teal-700 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-teal-800 ${CARD_HOVER} ${FOCUS_RING}`}
                 >
                   View details
                 </Link>

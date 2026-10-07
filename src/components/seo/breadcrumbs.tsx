@@ -37,7 +37,7 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
               <Link
                 href={item.href}
                 onClick={() => handleBreadcrumbClick(item.href)}
-                className={`hover:text-teal-600 ${FOCUS_RING} rounded-sm`}
+                className={`py-3 hover:text-teal-700 ${FOCUS_RING} rounded-sm`}
               >
                 {item.name}
               </Link>

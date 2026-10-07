@@ -210,9 +210,9 @@ export function FeedbackWidget() {
             aria-haspopup="dialog"
             aria-expanded={false}
             className={[
-              "flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-full bg-teal-600 px-4",
+              "flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-full bg-teal-700 px-4",
               "text-sm font-semibold text-white shadow-md",
-              "transition-colors hover:bg-teal-700",
+              "transition-colors hover:bg-teal-800",
               FOCUS_RING,
             ].join(" ")}
           >
@@ -317,7 +317,7 @@ export function FeedbackWidget() {
                 />
                 <p
                   id="feedback-message-counter"
-                  className="mt-1 text-right text-xs text-slate-400"
+                  className="mt-1 text-right text-xs text-slate-600"
                   aria-live="polite"
                   aria-atomic="true"
                 >
@@ -332,7 +332,7 @@ export function FeedbackWidget() {
                   className="mb-1.5 block text-xs font-medium text-slate-700"
                 >
                   Email{" "}
-                  <span className="text-slate-400 font-normal">
+                  <span className="text-slate-600 font-normal">
                     (optional — so we can follow up)
                   </span>
                 </label>
@@ -391,7 +391,7 @@ export function FeedbackWidget() {
                     type="submit"
                     disabled={isBusy}
                     className={[
-                      "rounded-md bg-teal-600 px-4 py-2 text-xs font-semibold text-white",
+                      "rounded-md bg-teal-700 px-4 py-2 text-xs font-semibold text-white",
                       "transition-colors hover:bg-teal-700 disabled:opacity-50",
                       FOCUS_RING,
                     ].join(" ")}

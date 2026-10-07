@@ -30,7 +30,7 @@ export function ContinueBanner({ onApply, onDismiss, className }: ContinueBanner
         <button
           type="button"
           onClick={onApply}
-          className={`rounded-md bg-teal-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-teal-700 ${FOCUS_RING}`}
+          className={`rounded-md bg-teal-700 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-teal-800 ${FOCUS_RING}`}
         >
           Continue where you left off
         </button>

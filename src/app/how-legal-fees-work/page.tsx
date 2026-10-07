@@ -167,7 +167,7 @@ export default function HowLegalFeesWorkPage() {
           <ul className="mt-3 space-y-2 text-sm leading-relaxed text-slate-700">
             {GUIDE_FACTS.map((f) => (
               <li key={f.fact} className="flex gap-2">
-                <span aria-hidden="true" className="mt-1 text-teal-600">
+                <span aria-hidden="true" className="mt-1 text-teal-700">
                   &bull;
                 </span>
                 <span>

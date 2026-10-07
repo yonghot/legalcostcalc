@@ -165,7 +165,7 @@ export function ContactForm() {
           placeholder="Your question, correction, or feedback..."
           className={`${inputBase} resize-y`}
         />
-        <p className="mt-1 text-right text-xs text-slate-400" aria-live="polite">
+        <p className="mt-1 text-right text-xs text-slate-600" aria-live="polite">
           {message.length}/{MAX_MESSAGE}
         </p>
       </div>
@@ -189,7 +189,7 @@ export function ContactForm() {
         <button
           type="submit"
           disabled={formState === "submitting"}
-          className={`inline-flex items-center gap-2 rounded-md bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-teal-700 disabled:opacity-50 ${FOCUS_RING}`}
+          className={`inline-flex items-center gap-2 rounded-md bg-teal-700 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-teal-800 disabled:opacity-50 ${FOCUS_RING}`}
         >
           <Send className="h-4 w-4" aria-hidden="true" />
           {formState === "submitting" ? "Sending…" : "Send Message"}

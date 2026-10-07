@@ -121,7 +121,7 @@ export default function LegalCostStatisticsPage() {
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <h2 className="mb-4 text-xl font-semibold text-slate-900">Median Cost by Matter Type</h2>
           <StatisticsTable rows={categoryRows} />
-          <p className="mt-3 text-xs text-slate-400">
+          <p className="mt-3 text-xs text-slate-600">
             Each average is the mean of the moderate-complexity state median estimates for that
             matter type, taken over the states counted in the &ldquo;States&rdquo; column. A state is
             counted only when it has a sourced estimate that differs from every other state&apos;s

@@ -83,7 +83,7 @@ function EzoicSlot({ lazy }: { lazy: boolean }) {
 
   return (
     <div ref={wrapRef} className="min-h-[90px] sm:min-h-[250px]" aria-hidden="true">
-      <p className="mb-1 text-center text-[10px] font-medium uppercase tracking-wide text-slate-400">
+      <p className="mb-1 text-center text-[10px] font-medium uppercase tracking-wide text-slate-600">
         Advertisement
       </p>
     </div>
@@ -129,7 +129,7 @@ function RaptiveSlot({ lazy }: { lazy: boolean }) {
 
   return (
     <div ref={wrapRef} className="min-h-[90px] sm:min-h-[250px]" aria-hidden="true">
-      <p className="mb-1 text-center text-[10px] font-medium uppercase tracking-wide text-slate-400">
+      <p className="mb-1 text-center text-[10px] font-medium uppercase tracking-wide text-slate-600">
         Advertisement
       </p>
     </div>
@@ -177,7 +177,7 @@ function JourneySlot({ lazy }: { lazy: boolean }) {
 
   return (
     <div ref={wrapRef} className="min-h-[90px] sm:min-h-[250px]" aria-hidden="true">
-      <p className="mb-1 text-center text-[10px] font-medium uppercase tracking-wide text-slate-400">
+      <p className="mb-1 text-center text-[10px] font-medium uppercase tracking-wide text-slate-600">
         Advertisement
       </p>
     </div>

@@ -2,7 +2,6 @@ import Link from "next/link";
 import { Scale } from "lucide-react";
 import { DISCLAIMER_TEXT } from "@/lib/constants/disclaimer";
 import { CATEGORIES } from "@/lib/constants/categories";
-import { DEFAULT_STATE_SLUG } from "@/lib/constants/costs";
 import { FOCUS_RING_DARK } from "@/lib/utils/styles";
 import { ManageConsentLink } from "@/components/consent/manage-consent-link";
 import { ClearMyData } from "@/components/shared/clear-my-data";
@@ -10,6 +9,8 @@ import { FeedbackLink } from "@/components/shared/feedback-link";
 import { PublishedBy } from "@/components/shared/published-by";
 import { PUBLISHER } from "@/lib/constants/publisher";
 import { latestContentYear } from "@/lib/content-dates";
+
+const footerLink = `inline-flex min-h-11 items-center text-sm text-slate-400 transition-colors hover:text-teal-400 lg:min-h-8 ${FOCUS_RING_DARK} rounded-sm`;
 
 export function Footer() {
   const currentYear = latestContentYear();
@@ -54,12 +55,12 @@ export function Footer() {
 
           <div>
             <h3 className="mb-3 text-sm font-semibold text-white">Legal Categories</h3>
-            <ul className="space-y-2">
+            <ul className="grid grid-cols-2 gap-x-4 sm:grid-cols-1">
               {CATEGORIES.map((cat) => (
                 <li key={cat.slug}>
                   <Link
-                    href={`/${DEFAULT_STATE_SLUG}/${cat.slug}-cost`}
-                    className={`text-sm text-slate-400 hover:text-teal-400 transition-colors ${FOCUS_RING_DARK} rounded-sm`}
+                    href={`/category/${cat.slug}`}
+                    className={footerLink}
                   >
                     {cat.displayName} Costs
                   </Link>
@@ -70,71 +71,71 @@ export function Footer() {
 
           <div>
             <h3 className="mb-3 text-sm font-semibold text-white">Resources</h3>
-            <ul className="space-y-2">
+            <ul className="grid grid-cols-2 gap-x-4 sm:grid-cols-1">
               <li>
-                <Link href="/" className={`text-sm text-slate-400 hover:text-teal-400 transition-colors ${FOCUS_RING_DARK} rounded-sm`}>
+                <Link href="/" className={footerLink}>
                   Cost Calculator
                 </Link>
               </li>
               <li>
-                <Link href="/compare" className={`text-sm text-slate-400 hover:text-teal-400 transition-colors ${FOCUS_RING_DARK} rounded-sm`}>
+                <Link href="/compare" className={footerLink}>
                   Compare Costs
                 </Link>
               </li>
               <li>
-                <Link href="/settlement-estimator" className={`text-sm text-slate-400 hover:text-teal-400 transition-colors ${FOCUS_RING_DARK} rounded-sm`}>
+                <Link href="/settlement-estimator" className={footerLink}>
                   Settlement Estimator
                 </Link>
               </li>
               <li>
-                <Link href="/how-legal-fees-work" className={`text-sm text-slate-400 hover:text-teal-400 transition-colors ${FOCUS_RING_DARK} rounded-sm`}>
+                <Link href="/how-legal-fees-work" className={footerLink}>
                   How Legal Fees Work
                 </Link>
               </li>
               <li>
-                <Link href="/legal-cost-statistics" className={`text-sm text-slate-400 hover:text-teal-400 transition-colors ${FOCUS_RING_DARK} rounded-sm`}>
+                <Link href="/legal-cost-statistics" className={footerLink}>
                   Legal Cost Statistics
                 </Link>
               </li>
               <li>
-                <Link href="/about" className={`text-sm text-slate-400 hover:text-teal-400 transition-colors ${FOCUS_RING_DARK} rounded-sm`}>
+                <Link href="/about" className={footerLink}>
                   About &amp; Methodology
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className={`text-sm text-slate-400 hover:text-teal-400 transition-colors ${FOCUS_RING_DARK} rounded-sm`}>
+                <Link href="/contact" className={footerLink}>
                   Contact
                 </Link>
               </li>
               <li>
                 <FeedbackLink
-                  className={`text-left text-sm text-slate-400 hover:text-teal-400 transition-colors ${FOCUS_RING_DARK} rounded-sm`}
+                  className={`text-left ${footerLink}`}
                 />
               </li>
               <li>
-                <Link href="/embed" className={`text-sm text-slate-400 hover:text-teal-400 transition-colors ${FOCUS_RING_DARK} rounded-sm`}>
+                <Link href="/embed" className={footerLink}>
                   Embed Calculator
                 </Link>
               </li>
               <li>
-                <Link href="/privacy" className={`text-sm text-slate-400 hover:text-teal-400 transition-colors ${FOCUS_RING_DARK} rounded-sm`}>
+                <Link href="/privacy" className={footerLink}>
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link href="/terms" className={`text-sm text-slate-400 hover:text-teal-400 transition-colors ${FOCUS_RING_DARK} rounded-sm`}>
+                <Link href="/terms" className={footerLink}>
                   Terms of Service
                 </Link>
               </li>
-              <li>
+              <li className="col-span-2 sm:col-span-1">
                 <ManageConsentLink
-                  className={`text-left text-sm text-slate-400 hover:text-teal-400 transition-colors ${FOCUS_RING_DARK} rounded-sm`}
+                  className={`text-left ${footerLink}`}
                 />
               </li>
               <li>
                 <ClearMyData
                   variant="link"
-                  className={`text-left text-sm text-slate-400 hover:text-teal-400 transition-colors ${FOCUS_RING_DARK} rounded-sm`}
+                  className={`text-left ${footerLink}`}
                 />
               </li>
             </ul>

@@ -5,7 +5,9 @@ import { renderPage } from "./helpers/render";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
 import { Breadcrumbs } from "@/components/seo/breadcrumbs";
+import { HubLinks } from "@/components/seo/hub-links";
 import CategoryHubPage from "@/app/category/[category]/page";
+import DivorceHubPage from "@/app/divorce-cost-by-state/page";
 import StateHubPage from "@/app/[state]/page";
 import { CATEGORIES } from "@/lib/constants/categories";
 
@@ -57,6 +59,18 @@ describe("UX P1-2 / P1-4: 44px tap targets in site chrome and hub links that lea
     const links = controlsIn(html);
     expect(links).toHaveLength(2);
     for (const tag of links) expect(classOf(tag), tag).toContain("py-3");
+  });
+
+  it("the View details buttons in hub tables are 44px high on touch widths", async () => {
+    const hub = renderToStaticMarkup(
+      createElement(HubLinks, { rows: [{ key: "TX", label: "Texas", href: "/texas/divorce-cost", medianCost: 8000 }], labelHeader: "State" }),
+    );
+    const divorce = await renderPage(DivorceHubPage as never);
+    for (const html of [hub, divorce]) {
+      const buttons = controlsIn(html).filter((t) => t.includes("bg-teal-700"));
+      expect(buttons.length).toBeGreaterThan(0);
+      for (const tag of buttons) expect(classOf(tag), tag).toContain("min-h-11");
+    }
   });
 
   it("the back link on a hub says where it goes: the calculator", async () => {

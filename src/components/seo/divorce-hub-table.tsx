@@ -75,7 +75,7 @@ export function DivorceHubTable({ rows }: DivorceHubTableProps) {
                 <Link
                   href={row.href}
                   onClick={() => handleRowClick(row.href)}
-                  className={`inline-flex items-center gap-1 rounded-md bg-teal-700 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-teal-800 ${CARD_HOVER} ${FOCUS_RING}`}
+                  className={`inline-flex min-h-11 items-center gap-1 rounded-md bg-teal-700 px-3 py-1.5 text-xs lg:min-h-9 font-medium text-white transition-colors hover:bg-teal-800 ${CARD_HOVER} ${FOCUS_RING}`}
                 >
                   View details
                 </Link>

@@ -1,25 +1,8 @@
 import { NextResponse } from "next/server";
 import { getClientIp, rateLimitGuard } from "@/lib/utils/api-security";
 import { EMAIL_RE, MAX_EMAIL_LENGTH, MAX_NAME_LENGTH, MAX_MESSAGE_LENGTH, getField } from "@/lib/utils/feedback-validation";
+import { deliveryResponse, forwardToCollector } from "@/lib/utils/message-delivery";
 
-/**
- * Same-origin contact form endpoint (src/app/contact/page.tsx).
- *
- * Behaviour:
- *  - Accepts POST JSON { name, email, message }.
- *  - Validates all three fields (required, length caps, email shape).
- *  - Returns 200 { ok: true } as a SAFE NO-OP — nothing is persisted or sent.
- *    This lets the form work in dev/preview/production-before-wiring without
- *    leaking errors or secrets.
- *
- * TODO(owner): wire a real delivery mechanism here (server-side only):
- *   1. Add a server-only env var, e.g. RESEND_API_KEY or SMTP credentials —
- *      never NEXT_PUBLIC_.
- *   2. Below the validation block, if that env is set, send the message via
- *      your chosen ESP, then return { ok: true }.
- *   3. Keep the no-op fallback below so the form never errors when unconfigured.
- * Until then this endpoint deliberately stores nothing.
- */
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
@@ -85,10 +68,14 @@ export async function POST(request: Request) {
     );
   }
 
-  // ----- No delivery mechanism configured: safe no-op success. -----
-  // See TODO(owner) above for how to wire a real ESP here.
-  return NextResponse.json(
-    { ok: true },
-    { status: 200, headers: { "Cache-Control": "no-store" } },
-  );
+  const delivered = await forwardToCollector({
+    type: "contact",
+    name,
+    email,
+    message,
+    site: "legalcostcalc.co",
+    userAgent: request.headers.get("user-agent")?.slice(0, 512) ?? null,
+    receivedAt: new Date().toISOString(),
+  });
+  return deliveryResponse(delivered);
 }

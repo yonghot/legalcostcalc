@@ -3,8 +3,13 @@
 import { useState } from "react";
 import { Send } from "lucide-react";
 import { FOCUS_RING } from "@/lib/utils/styles";
+import { PUBLISHER } from "@/lib/constants/publisher";
 
 type FormState = "idle" | "submitting" | "success" | "error";
+
+type ContactOutcome = { state: "success" | "error"; message: string; offerEmail: boolean };
+
+const GENERIC_FAILURE = "Something went wrong. Please try again.";
 
 const MAX_NAME = 100;
 const MAX_MESSAGE = 2000;
@@ -24,12 +29,40 @@ export function validateContactFields(
   return null;
 }
 
+export function interpretContactResponse(
+  status: number,
+  data: { ok?: boolean; error?: string } | null,
+): ContactOutcome {
+  if (status >= 200 && status < 300 && data?.ok === true) {
+    return { state: "success", message: "Thank you. Your message has been sent.", offerEmail: false };
+  }
+  const message = data?.error ?? GENERIC_FAILURE;
+  const validationError = status >= 400 && status < 500;
+  return { state: "error", message, offerEmail: !validationError };
+}
+
+function MessageWithMailbox({ message, offerEmail }: { message: string; offerEmail: boolean }) {
+  if (!offerEmail) return <>{message}</>;
+  const link = (
+    <a
+      href={`mailto:${PUBLISHER.email}`}
+      className={`font-medium underline hover:text-red-900 ${FOCUS_RING} rounded-sm`}
+    >
+      {PUBLISHER.email}
+    </a>
+  );
+  const at = message.indexOf(PUBLISHER.email);
+  if (at === -1) return <>{message} You can also email {link}.</>;
+  return <>{message.slice(0, at)}{link}{message.slice(at + PUBLISHER.email.length)}</>;
+}
+
 export function ContactForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [formState, setFormState] = useState<FormState>("idle");
   const [statusMessage, setStatusMessage] = useState("");
+  const [offerEmail, setOfferEmail] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -43,6 +76,7 @@ export function ContactForm() {
 
     setFormState("submitting");
     setStatusMessage("");
+    setOfferEmail(false);
 
     try {
       const res = await fetch("/api/contact", {
@@ -51,23 +85,21 @@ export function ContactForm() {
         body: JSON.stringify({ name: name.trim(), email: email.trim(), message: message.trim() }),
       });
 
-      const data = (await res.json()) as { ok: boolean; error?: string };
+      const data = (await res.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
+      const outcome = interpretContactResponse(res.status, data);
 
-      if (res.ok && data.ok) {
-        setFormState("success");
-        setStatusMessage(
-          "Thank you for your message. We typically respond within 1–2 business days.",
-        );
+      setFormState(outcome.state);
+      setStatusMessage(outcome.message);
+      setOfferEmail(outcome.offerEmail);
+      if (outcome.state === "success") {
         setName("");
         setEmail("");
         setMessage("");
-      } else {
-        setFormState("error");
-        setStatusMessage(data.error ?? "Something went wrong. Please try again.");
       }
     } catch {
       setFormState("error");
       setStatusMessage("A network error occurred. Please check your connection and try again.");
+      setOfferEmail(true);
     }
   }
 
@@ -147,7 +179,7 @@ export function ContactForm() {
         )}
         {formState === "error" && (
           <p role="alert" className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700 border border-red-200">
-            {statusMessage}
+            <MessageWithMailbox message={statusMessage} offerEmail={offerEmail} />
           </p>
         )}
       </div>

@@ -14,7 +14,7 @@ import { AdsenseLoader } from "@/components/ads/adsense-loader";
 export const metadata: Metadata = buildMeta({
   title: "Contact Us — Questions, Corrections & Feedback",
   description:
-    "Questions, corrections, or feedback about our legal cost estimates? Send us a message and we'll get back to you within 1–2 business days.",
+    "Questions, corrections, or feedback about our legal cost estimates? Send a message through the form or email the publisher.",
   path: "/contact",
   skipFit: true,
 });
@@ -70,7 +70,6 @@ export default function ContactPage() {
               </h1>
               <p className="mt-3 max-w-2xl text-lg text-slate-600">
                 Questions, corrections, or feedback about our estimates? Send us a message.
-                We typically respond within 1{"–2"} business days.
               </p>
             </div>
           </div>

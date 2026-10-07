@@ -3,7 +3,7 @@
  * validateContactFields helper.
  *
  * API route (src/app/api/contact/route.ts):
- *   - Valid payload returns 200 { ok: true }
+ *   - Valid payload is forwarded to the collector; 200 { ok: true } only when it accepts it (see tests/regressions/contact-honest-delivery.test.ts)
  *   - Missing name → 400
  *   - Name over 100 chars → 400
  *   - Missing email → 400

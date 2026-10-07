@@ -11,8 +11,9 @@
  *   - Optional email omitted is fine
  *
  * API route forwarding behaviour (src/app/api/feedback/route.ts):
- *   - When FEEDBACK_ENDPOINT is unset → fetch is NOT called
+ *   - When FEEDBACK_ENDPOINT is unset → fetch is NOT called, 503 (nothing was delivered)
  *   - When FEEDBACK_ENDPOINT is set → fetch IS called with the assembled record
+ *   - When the forward fails → 503 (success is reported only when the collector answers 2xx)
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
@@ -256,10 +257,8 @@ describe("feedback API route — endpoint forwarding", () => {
     const res = await POST(req);
     const data = (await res.json()) as { ok: boolean };
 
-    expect(res.status).toBe(200);
-    expect(data.ok).toBe(true);
-    // The only fetch that should NOT have been called is to an external endpoint.
-    // (fetch may be called 0 times)
+    expect(res.status).toBe(503);
+    expect(data.ok).toBe(false);
     expect(mockFetch).not.toHaveBeenCalled();
   });
 
@@ -303,7 +302,7 @@ describe("feedback API route — endpoint forwarding", () => {
     expect(typeof sent.receivedAt).toBe("string");
   });
 
-  it("returns 200 ok:true even when forward fetch throws", async () => {
+  it("returns 503 ok:false when the forward fetch throws", async () => {
     process.env.FEEDBACK_ENDPOINT = "https://example.com/collect";
     mockFetch.mockRejectedValue(new Error("network error"));
 
@@ -316,10 +315,11 @@ describe("feedback API route — endpoint forwarding", () => {
       body: JSON.stringify({ type: "other", message: "test" }),
     });
 
+    vi.spyOn(console, "error").mockImplementation(() => {});
     const res = await POST(req);
     const data = (await res.json()) as { ok: boolean };
 
-    expect(res.status).toBe(200);
-    expect(data.ok).toBe(true);
+    expect(res.status).toBe(503);
+    expect(data.ok).toBe(false);
   });
 });

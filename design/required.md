@@ -5,7 +5,8 @@ agent treats a miss as a blocking finding.
 
 ## Structure
 - **Disclaimer top + bottom** on every page (`src/components/shared/disclaimer.tsx`).
-  Non-negotiable UPL invariant (CLAUDE.md).
+  Non-negotiable UPL invariant (CLAUDE.md). Top = one-line `DisclaimerNote` linking to the
+  full text; bottom = `<Disclaimer id="disclaimer" />` once below the content (leader D2).
 - **Source attribution** rendered wherever cost figures appear, with
   `lastVerifiedAt` date. Data >1yr shows the outdated warning.
 - **Semantic landmarks**: one `<h1>` per page, `<main>`, nav/footer landmarks.

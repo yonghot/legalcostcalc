@@ -50,7 +50,7 @@ src/
 - Schema.org FAQPage structured data on every landing page
 
 ## Legal Compliance (UPL Risk)
-- ALWAYS show disclaimer: top and bottom of every page
+- ALWAYS show disclaimer: top and bottom of every page. Leader decision D2 (2026-10-07): the top is the one-line `DisclaimerNote` (summary + link to `#disclaimer`); the full text renders once below the page content (`<Disclaimer id="disclaimer" />`) and in the footer. Never delete or weaken either; guarded by tests/regressions/ux-disclaimer-placement.test.ts
 - NEVER implement advice-type features ("Should I...", "Do I need...")
 - NEVER predict outcomes or apply law to individual circumstances
 - Present ONLY cost ranges and general information

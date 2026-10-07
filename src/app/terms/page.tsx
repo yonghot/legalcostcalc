@@ -5,7 +5,7 @@
 
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Disclaimer } from "@/components/shared/disclaimer";
+import { Disclaimer, DisclaimerNote } from "@/components/shared/disclaimer";
 import { FOCUS_RING } from "@/lib/utils/styles";
 import { PublishedBy } from "@/components/shared/published-by";
 import { PUBLISHER } from "@/lib/constants/publisher";
@@ -32,7 +32,7 @@ export default function TermsPage() {
       <AdsenseLoader />
       <section className="bg-gradient-to-b from-teal-50 to-white py-16 sm:py-20">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-          <Disclaimer />
+          <DisclaimerNote />
 
           <h1 className="mt-8 text-3xl font-semibold text-slate-900 sm:text-4xl">
             Terms of Service
@@ -245,7 +245,7 @@ export default function TermsPage() {
           </div>
 
           <div className="mt-10">
-            <Disclaimer />
+            <Disclaimer id="disclaimer" />
           </div>
         </div>
       </section>

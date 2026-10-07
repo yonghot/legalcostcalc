@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { Disclaimer } from "@/components/shared/disclaimer";
+import { Disclaimer, DisclaimerNote } from "@/components/shared/disclaimer";
 import { EmbedSnippet } from "@/components/embed/embed-snippet";
 import { CATEGORIES } from "@/lib/constants/categories";
 import { DEFAULT_STATE_SLUG } from "@/lib/constants/costs";
@@ -29,7 +29,7 @@ export default function EmbedIndexPage() {
       <AdsenseLoader />
       <section className="bg-gradient-to-b from-teal-50 to-white py-16 sm:py-20">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-          <Disclaimer />
+          <DisclaimerNote />
           <nav className="mt-8 text-sm text-slate-500">
             <Link href="/" className={`rounded-sm hover:text-teal-600 ${FOCUS_RING}`}>
               Home
@@ -87,7 +87,7 @@ export default function EmbedIndexPage() {
 
       <section className="py-8">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-          <Disclaimer />
+          <Disclaimer id="disclaimer" />
         </div>
       </section>
     </div>

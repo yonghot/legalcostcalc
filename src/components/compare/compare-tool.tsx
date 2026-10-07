@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef, useEffect, type ReactNode } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Disclaimer } from "@/components/shared/disclaimer";
+import { Disclaimer, DisclaimerNote } from "@/components/shared/disclaimer";
 import { ComparisonForm, CompareMode } from "@/components/compare/comparison-form";
 import { BreadcrumbSchema } from "@/components/seo/breadcrumb-schema";
 import { Breadcrumbs } from "@/components/seo/breadcrumbs";
@@ -131,7 +131,7 @@ export function CompareTool({ children }: { children?: ReactNode }) {
         ]}
       />
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <Disclaimer />
+        <DisclaimerNote />
 
         <Breadcrumbs
           className="mt-8"
@@ -220,7 +220,7 @@ export function CompareTool({ children }: { children?: ReactNode }) {
         {children}
 
         <div className="mt-12">
-          <Disclaimer />
+          <Disclaimer id="disclaimer" />
         </div>
       </div>
     </div>

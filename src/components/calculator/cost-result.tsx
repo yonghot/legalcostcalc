@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { CostDisplay } from "@/components/shared/cost-display";
-import { Disclaimer } from "@/components/shared/disclaimer";
 import { ResultDisclaimer } from "@/components/compliance/ResultDisclaimer";
 import { LegalCostData } from "@/lib/types";
 import { formatCurrency } from "@/lib/utils/format";
@@ -72,8 +71,6 @@ export const CostResult = memo(function CostResult({
 
   return (
     <div className="space-y-4">
-      <Disclaimer variant="full" />
-
       <Card className="overflow-hidden border-slate-200 shadow-sm">
         <CardHeader className="bg-teal-600 text-white">
           <div className="flex items-center justify-between">
@@ -223,7 +220,8 @@ export const CostResult = memo(function CostResult({
       )}
 
       {/* ResultDisclaimer — layered UPL disclaimer ADJACENT to the result
-          (never footer-only), supplementing the top Disclaimer above. Shows
+          (never footer-only); the page-level full text sits once below the page's
+          answer and in the footer, so it is not repeated above the card. Shows
           the page's content date; the sources are listed once under "Data
           Sources" and none is named as the primary one. */}
       <ResultDisclaimer dateText={dateRecord ? dateLabel(dateRecord) : null} />

@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { Disclaimer } from "@/components/shared/disclaimer";
+import { Disclaimer, DisclaimerNote } from "@/components/shared/disclaimer";
 import { Breadcrumbs } from "@/components/seo/breadcrumbs";
 import { BreadcrumbSchema } from "@/components/seo/breadcrumb-schema";
 import { STATES } from "@/lib/constants/states";
@@ -74,7 +74,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
 
       <section className="bg-gradient-to-b from-teal-50 to-white py-16 sm:py-20">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          <Disclaimer />
+          <DisclaimerNote />
           <Breadcrumbs
             className="mt-8 mb-4"
             items={[{ name: "Home", href: "/" }, { name: "Search", href: "/search" }]}
@@ -154,7 +154,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
 
       <section className="py-8">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          <Disclaimer />
+          <Disclaimer id="disclaimer" />
         </div>
       </section>
     </div>

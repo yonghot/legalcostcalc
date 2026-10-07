@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { Disclaimer } from "@/components/shared/disclaimer";
+import { Disclaimer, DisclaimerNote } from "@/components/shared/disclaimer";
 import { ContactForm } from "@/components/shared/contact-form";
 import { BreadcrumbSchema } from "@/components/seo/breadcrumb-schema";
 import { Breadcrumbs } from "@/components/seo/breadcrumbs";
@@ -50,7 +50,7 @@ export default function ContactPage() {
 
       <section className="bg-gradient-to-b from-teal-50 to-white py-16 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Disclaimer />
+          <DisclaimerNote />
 
           <Breadcrumbs
             className="mt-8"
@@ -142,7 +142,7 @@ export default function ContactPage() {
 
         <section className="py-8">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <Disclaimer />
+            <Disclaimer id="disclaimer" />
           </div>
         </section>
       </div>

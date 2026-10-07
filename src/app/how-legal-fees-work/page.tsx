@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { Disclaimer } from "@/components/shared/disclaimer";
+import { Disclaimer, DisclaimerNote } from "@/components/shared/disclaimer";
 import { BreadcrumbSchema } from "@/components/seo/breadcrumb-schema";
 import { Breadcrumbs } from "@/components/seo/breadcrumbs";
 import { ArticleSchema } from "@/components/seo/article-schema";
@@ -128,7 +128,7 @@ export default function HowLegalFeesWorkPage() {
 
       <section className="bg-gradient-to-b from-teal-50 to-white py-16 sm:py-20">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          <Disclaimer />
+          <DisclaimerNote />
 
           <Breadcrumbs
             className="mt-8 mb-4"
@@ -263,7 +263,7 @@ export default function HowLegalFeesWorkPage() {
         </section>
 
         <div className="mt-10">
-          <Disclaimer />
+          <Disclaimer id="disclaimer" />
         </div>
 
         {/* Sources */}

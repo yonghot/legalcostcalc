@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Disclaimer } from "@/components/shared/disclaimer";
+import { Disclaimer, DisclaimerNote } from "@/components/shared/disclaimer";
 import { SettlementEstimatorForm } from "@/components/calculator/settlement-estimator-form";
 import { AffiliateCTA } from "@/components/shared/affiliate-cta";
 import { BreadcrumbSchema } from "@/components/seo/breadcrumb-schema";
@@ -30,7 +30,7 @@ export default function SettlementEstimatorPage() {
 
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
         {/* Site-level top disclaimer */}
-        <Disclaimer />
+        <DisclaimerNote />
 
         {/* Breadcrumb */}
         <Breadcrumbs
@@ -112,7 +112,7 @@ export default function SettlementEstimatorPage() {
 
         {/* Site-level bottom disclaimer */}
         <div className="mt-10">
-          <Disclaimer />
+          <Disclaimer id="disclaimer" />
         </div>
       </div>
     </div>

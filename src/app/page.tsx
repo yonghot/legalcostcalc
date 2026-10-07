@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { CostCalculator } from "@/components/calculator/cost-calculator";
 import { getFeaturedPartners } from "@/lib/featured-partners";
-import { Disclaimer } from "@/components/shared/disclaimer";
+import { Disclaimer, DisclaimerNote } from "@/components/shared/disclaimer";
 import { CATEGORIES } from "@/lib/constants/categories";
 import { STATES } from "@/lib/constants/states";
 import { DEFAULT_STATE_SLUG } from "@/lib/constants/costs";
@@ -87,7 +87,7 @@ export default function HomePage() {
       {/* Hero Section */}
       <section className="bg-gradient-to-b from-teal-50 to-white py-16 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Disclaimer />
+          <DisclaimerNote />
 
           <div className="mt-8 text-center">
             <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
@@ -268,6 +268,12 @@ export default function HomePage() {
         </div>
       </section>
 
+      <section className="py-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <Disclaimer id="disclaimer" />
+        </div>
+      </section>
+
       {/* FAQ Section */}
       <section className="border-t border-slate-100 py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -338,13 +344,6 @@ export default function HomePage() {
               </dd>
             </div>
           </dl>
-        </div>
-      </section>
-
-      {/* Bottom Disclaimer */}
-      <section className="py-8">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Disclaimer />
         </div>
       </section>
     </div>

@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CostCalculator } from "@/components/calculator/cost-calculator";
 import { getFeaturedPartners } from "@/lib/featured-partners";
-import { Disclaimer } from "@/components/shared/disclaimer";
+import { Disclaimer, DisclaimerNote } from "@/components/shared/disclaimer";
 import { STATES, STATE_BY_SLUG } from "@/lib/constants/states";
 import { CATEGORIES, CATEGORY_MAP } from "@/lib/constants/categories";
 import { aOrAn, formatCurrency } from "@/lib/utils/format";
@@ -224,7 +224,7 @@ export default async function StateCategoryPage({ params }: PageProps) {
 
       <section className="bg-gradient-to-b from-teal-50 to-white py-16 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Disclaimer />
+          <DisclaimerNote />
 
           <div className="mt-8">
             <Breadcrumbs
@@ -328,6 +328,10 @@ export default async function StateCategoryPage({ params }: PageProps) {
           )}
 
           <NextSteps steps={nextSteps} placement="answer" className="mt-8" />
+
+          <div className="mt-8">
+            <Disclaimer id="disclaimer" />
+          </div>
         </div>
       </section>
 
@@ -441,13 +445,6 @@ export default async function StateCategoryPage({ params }: PageProps) {
           ONE programmatic unit per page" reason as above — ResultMonetization's
           DisplaySlot (inside CostResult, below the result block) is the page's
           single ad slot. */}
-
-      {/* Bottom Disclaimer */}
-      <section className="py-8">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Disclaimer />
-        </div>
-      </section>
     </div>
   );
 }

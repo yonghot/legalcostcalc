@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Disclaimer } from "@/components/shared/disclaimer";
+import { Disclaimer, DisclaimerNote } from "@/components/shared/disclaimer";
 import { MethodNote } from "@/components/seo/method-note";
 import { BreadcrumbSchema } from "@/components/seo/breadcrumb-schema";
 import { Breadcrumbs } from "@/components/seo/breadcrumbs";
@@ -67,7 +67,7 @@ export default async function CategoryHubPage({ params }: PageProps) {
 
       <section className="bg-gradient-to-b from-teal-50 to-white py-16 sm:py-20">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <Disclaimer />
+          <DisclaimerNote />
 
           <Breadcrumbs
             className="mt-8 mb-4"
@@ -119,7 +119,7 @@ export default async function CategoryHubPage({ params }: PageProps) {
 
       <section className="py-8">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <Disclaimer />
+          <Disclaimer id="disclaimer" />
         </div>
       </section>
     </div>

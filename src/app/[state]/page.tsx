@@ -10,6 +10,7 @@ import { buildMeta } from "@/lib/seo";
 import { FOCUS_RING } from "@/lib/utils/styles";
 import Link from "next/link";
 import { AdsenseLoader } from "@/components/ads/adsense-loader";
+import { GuideAndCompareLine } from "@/components/seo/guide-and-compare-line";
 
 interface PageProps {
   params: Promise<{ state: string }>;
@@ -98,6 +99,8 @@ export default async function StateHubPage({ params }: PageProps) {
               Cost data for {stateInfo.name} is currently being collected.
             </p>
           )}
+
+          <GuideAndCompareLine className="mt-6" />
 
           <div className="mt-8">
             <Link

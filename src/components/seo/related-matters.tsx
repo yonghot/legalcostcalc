@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { CATEGORIES } from "@/lib/constants/categories";
-import { hasUniqueData } from "@/lib/page-index";
+import { isIndexable } from "@/lib/index-policy";
 import { CARD_HOVER, FOCUS_RING } from "@/lib/utils/styles";
 import { trackEvent } from "@/lib/analytics";
 
@@ -31,14 +31,14 @@ function handleRelatedClick(linkUrl: string) {
  * calculation — see cost-calculator.tsx's hasUserInteractedRef/T03 guard).
  *
  * Links are computed from the same static dataset (CATEGORIES) that backs
- * the programmatic pages, filtered through the T09 hasUniqueData gate so
+ * the programmatic pages, filtered through the index policy (T09 gate + K8) so
  * this module never links to a thin/noindexed page. Never input-derived —
  * suggestions are keyed only on the current category + state, both of which
  * are non-sensitive route params, never a calculator result value.
  */
 export function RelatedMatters({ stateCode, stateSlug, stateName, categorySlug }: RelatedMattersProps) {
   const candidates = CATEGORIES.filter(
-    (c) => c.slug !== categorySlug && hasUniqueData(stateCode, c.slug),
+    (c) => c.slug !== categorySlug && isIndexable(stateCode, c.slug),
   ).slice(0, MAX_LINKS);
 
   if (candidates.length < MIN_LINKS) return null;

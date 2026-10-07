@@ -73,5 +73,10 @@
     "date": "2026-10-07",
     "basis": "content-changed",
     "evidence": "783b107 replaced the embed page's SEO-value wording in the meta description and body; 4d8e536 created the page."
+  },
+  "page:settlement-estimator": {
+    "date": "2026-07-02",
+    "basis": "content-changed",
+    "evidence": "3c04a81 last changed the estimator page body (breadcrumbs); 4d8e536 created it. The later commits 3f5b224, 6ae89cc and bf4f96e changed a marker attribute, the ad loader and an unused prop, not the visible copy."
   }
 }

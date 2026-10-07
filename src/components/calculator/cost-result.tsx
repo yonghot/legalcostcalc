@@ -1,5 +1,4 @@
 import { memo } from "react";
-import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -15,6 +14,7 @@ import { FOCUS_RING } from "@/lib/utils/styles";
 import { ResultMonetization } from "@/components/monetization/ResultMonetization";
 import { trackEvent } from "@/lib/analytics";
 import { RelatedMatters } from "@/components/seo/related-matters";
+import { NextSteps } from "@/components/calculator/next-steps";
 import { ResultShare } from "@/components/shared/result-share";
 import { EmailMyResults } from "@/components/shared/email-my-results";
 
@@ -225,20 +225,7 @@ export const CostResult = memo(function CostResult({
           Sources" and none is named as the primary one. */}
       <ResultDisclaimer dateText={dateRecord ? dateLabel(dateRecord) : null} />
 
-      {/* U-05 (부속U §4/§5) — guide link at the result moment. Plain text
-          link (no card/border), clearly distinct from the ad markers in
-          ResultMonetization below it — informational cross-link only, not a
-          monetization surface. */}
-      <p className="text-sm text-slate-500">
-        New to how attorney fees work?{" "}
-        <Link
-          href="/how-legal-fees-work"
-          className="font-medium text-teal-700 underline hover:text-teal-800"
-        >
-          Read the legal fees guide
-        </Link>{" "}
-        — hourly, flat, and contingency billing explained.
-      </p>
+      <NextSteps categorySlug={categorySlug} categoryName={categoryName} />
 
       {/* T06 — RelatedMatters: internal sibling matter-type links at the
           result moment. Renders only after this user-driven result exists

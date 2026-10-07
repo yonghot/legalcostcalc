@@ -21,6 +21,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     entry(`${CANONICAL_ORIGIN}/legal-cost-statistics`, 0.8, familyDate("page:legal-cost-statistics")),
     entry(`${CANONICAL_ORIGIN}/how-legal-fees-work`, 0.8, familyDate("guide")),
     entry(`${CANONICAL_ORIGIN}/about`, 0.6, familyDate("page:about")),
+    entry(`${CANONICAL_ORIGIN}/settlement-estimator`, 0.6, familyDate("page:settlement-estimator")),
     entry(`${CANONICAL_ORIGIN}/embed`, 0.4, familyDate("page:embed")),
   ];
 

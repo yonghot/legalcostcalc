@@ -28,6 +28,7 @@ export function HubLinksBar({ stateSlug, stateName, categorySlug, categoryName }
   // /divorce-cost-by-state comparison hub (uncontested vs. contested
   // framing), keeping that page internally linked from every divorce spoke.
   const isDivorce = categorySlug === "divorce";
+  const isPersonalInjury = categorySlug === "personal-injury";
 
   return (
     <section className="border-t border-slate-100 bg-white py-8">
@@ -57,6 +58,16 @@ export function HubLinksBar({ stateSlug, stateName, categorySlug, categoryName }
             >
               <LayoutGrid className="h-4 w-4 text-teal-600" aria-hidden="true" />
               Uncontested vs. contested divorce cost
+            </Link>
+          )}
+          {isPersonalInjury && (
+            <Link
+              href="/settlement-estimator"
+              onClick={() => handleHubClick("/settlement-estimator")}
+              className={`inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 ${CARD_HOVER} ${FOCUS_RING}`}
+            >
+              <LayoutGrid className="h-4 w-4 text-teal-600" aria-hidden="true" />
+              Settlement net estimator
             </Link>
           )}
         </div>

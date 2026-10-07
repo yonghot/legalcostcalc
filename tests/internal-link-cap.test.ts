@@ -17,7 +17,8 @@ const INITIAL_STATES_SHOWN = 6;
 
 function countSpokePageInternalLinks(stateCode: string, categorySlug: string): number {
   const breadcrumbLinks = 2; // Home, State (current category is not a link)
-  const hubBarLinks = 2; // state hub, category hub
+  const hubBarLinks =
+    2 + (categorySlug === "divorce" || categorySlug === "personal-injury" ? 1 : 0); // state hub, category hub, matter-specific extra
 
   const otherCategories = CATEGORIES.filter((c) => c.slug !== categorySlug).length;
   const allOtherStates = STATES.filter((s) => s.code !== stateCode).length;

@@ -32,6 +32,7 @@ export type EventName =
   | "calc_input_start"
   | "calculator_complete"
   | "related_click"
+  | "next_step_click"
   | "outbound_click"
   | "result_share"
   | "embed_loaded"

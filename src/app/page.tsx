@@ -32,6 +32,8 @@ import { getFamilyDate } from "@/lib/content-dates";
 import { RecentCalculations } from "@/components/shared/recent-calculations";
 import { HomePublisherContent } from "@/components/seo/home-publisher-content";
 import { AdsenseLoader } from "@/components/ads/adsense-loader";
+import { PopularPages } from "@/components/seo/popular-pages";
+import { topTrafficPages } from "@/lib/top-traffic";
 
 export const metadata: Metadata = {
   alternates: {
@@ -54,6 +56,7 @@ export default function HomePage() {
   const popularStates = STATES.filter((s) =>
     (POPULAR_STATE_CODES as readonly string[]).includes(s.code),
   );
+  const popularPages = topTrafficPages({ limit: 6 });
 
   return (
     <div>
@@ -179,6 +182,36 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {popularPages.length > 0 && (
+        <section className="border-t border-slate-100 py-16">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <PopularPages
+              heading="Popular legal cost estimates"
+              intro={
+                <>
+                  Cost estimates that visitors open most often. To see how fees are billed first, read{" "}
+                  <Link
+                    href="/how-legal-fees-work"
+                    className={`font-medium text-teal-700 underline hover:text-teal-800 ${FOCUS_RING} rounded-sm`}
+                  >
+                    how legal fees work
+                  </Link>
+                  , or put two states side by side in the{" "}
+                  <Link
+                    href="/compare"
+                    className={`font-medium text-teal-700 underline hover:text-teal-800 ${FOCUS_RING} rounded-sm`}
+                  >
+                    compare tool
+                  </Link>
+                  .
+                </>
+              }
+              pages={popularPages}
+            />
+          </div>
+        </section>
+      )}
 
       {/* Popular States */}
       <section className="border-t border-slate-100 bg-slate-50 py-16">

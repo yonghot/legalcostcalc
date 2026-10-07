@@ -11,6 +11,9 @@ import { INDEXABLE_PAGES, getModerateMedianCost } from "@/lib/page-index";
 import { buildMeta } from "@/lib/seo";
 import { FOCUS_RING } from "@/lib/utils/styles";
 import { AdsenseLoader } from "@/components/ads/adsense-loader";
+import { PopularPages } from "@/components/seo/popular-pages";
+import { GuideAndCompareLine } from "@/components/seo/guide-and-compare-line";
+import { topTrafficPages } from "@/lib/top-traffic";
 
 interface PageProps {
   params: Promise<{ category: string }>;
@@ -50,6 +53,8 @@ export default async function CategoryHubPage({ params }: PageProps) {
       medianCost: getModerateMedianCost(p.state.code, categoryInfo.slug),
     }));
 
+  const popular = topTrafficPages({ categorySlug: categoryInfo.slug, limit: 3 });
+
   return (
     <div>
       <AdsenseLoader />
@@ -85,6 +90,12 @@ export default async function CategoryHubPage({ params }: PageProps) {
 
       <section className="py-12">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+          <PopularPages
+            className="mb-10"
+            heading={`Popular ${categoryInfo.displayName} cost pages`}
+            intro={`${categoryInfo.displayName} cost estimates that visitors open most often.`}
+            pages={popular}
+          />
           {rows.length > 0 ? (
             <HubLinks rows={rows} labelHeader="State" />
           ) : (
@@ -92,6 +103,8 @@ export default async function CategoryHubPage({ params }: PageProps) {
               Cost data for {categoryInfo.displayName.toLowerCase()} is currently being collected.
             </p>
           )}
+
+          <GuideAndCompareLine className="mt-6" />
 
           <div className="mt-8">
             <Link

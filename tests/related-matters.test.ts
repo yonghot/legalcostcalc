@@ -20,14 +20,15 @@
 import { describe, expect, it } from "vitest";
 import { CATEGORIES } from "@/lib/constants/categories";
 import { STATES } from "@/lib/constants/states";
-import { hasUniqueData, INDEXABLE_PAGES } from "@/lib/page-index";
+import { INDEXABLE_PAGES } from "@/lib/page-index";
+import { isIndexable } from "@/lib/index-policy";
 
 const MAX_LINKS = 5;
 const MIN_LINKS = 3;
 
 /** Mirrors the selection logic in src/components/seo/related-matters.tsx. */
 function computeRelatedMatterLinks(stateCode: string, categorySlug: string) {
-  return CATEGORIES.filter((c) => c.slug !== categorySlug && hasUniqueData(stateCode, c.slug)).slice(
+  return CATEGORIES.filter((c) => c.slug !== categorySlug && isIndexable(stateCode, c.slug)).slice(
     0,
     MAX_LINKS,
   );

@@ -91,7 +91,7 @@ export function buildStateFaq(ctx: StateCostContext, matterLabel: string): FaqEn
             )} above the ${usd(ctx.peerMedian)} midpoint of the ${
               ctx.rankedOutOf
             } tracked states, and ranks ${stateName} ${ordinal(ctx.rank)}, with ${stateTally(
-              ctx.rank - 1,
+              ctx.statesHigher,
             )} recording more.`
           : `The median estimate is ${usd(moderate.median)} for a moderate-complexity matter, inside ${usd(
               moderate.low,
@@ -100,7 +100,7 @@ export function buildStateFaq(ctx: StateCostContext, matterLabel: string): FaqEn
             )} below the ${usd(ctx.peerMedian)} midpoint of the ${
               ctx.rankedOutOf
             } tracked states, ranking ${stateName} ${ordinal(ctx.rank)} with ${stateTally(
-              ctx.rankedOutOf - ctx.rank,
+              ctx.statesLower,
             )} recording less.`,
   });
 
@@ -120,7 +120,7 @@ export function buildStateFaq(ctx: StateCostContext, matterLabel: string): FaqEn
               moderate.hourlyHigh ?? 0,
             )} with a median of ${usd(moderate.hourlyMedian)}, which ranks ${stateName} ${ordinal(
               ctx.hourlyRank,
-            )} of ${ctx.rankedOutOf} on rate against ${ordinal(
+            )} of ${ctx.ratedOutOf} on rate against ${ordinal(
               ctx.rank,
             )} on total cost. The two rankings are ${Math.abs(
               ctx.rankGap,
@@ -128,7 +128,7 @@ export function buildStateFaq(ctx: StateCostContext, matterLabel: string): FaqEn
           : `The moderate-tier band is ${usd(moderate.hourlyLow ?? 0)}–${usd(
               moderate.hourlyHigh ?? 0,
             )}, median ${usd(moderate.hourlyMedian)} — ${ordinal(ctx.hourlyRank)} of ${
-              ctx.rankedOutOf
+              ctx.ratedOutOf
             } tracked states. Dividing the ${usd(moderate.median)} median total by that rate implies about ${
               moderate.hours ?? 0
             } billable hours.${rateSpread}`,

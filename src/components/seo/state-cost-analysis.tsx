@@ -498,7 +498,7 @@ export function StateCostAnalysis({
                     </td>
                     <td className="py-2 pr-4 font-mono">{row.hours ?? "—"}</td>
                     <td className="py-2 pr-4 font-mono">
-                      {row.rank === null ? "—" : ordinal(row.rank)}
+                      {row.rank === null ? "—" : `${ordinal(row.rank)} of ${row.rankedOutOf}`}
                     </td>
                     <td className="py-2 pr-4 font-mono">
                       {row.vsMidpointPercent === null

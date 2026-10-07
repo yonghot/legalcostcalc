@@ -19,7 +19,7 @@ export const metadata: Metadata = buildMeta({
   withOgImage: true,
 });
 
-const POLICY_EFFECTIVE_DATE = "October 7, 2026";
+const POLICY_EFFECTIVE_DATE = "October 8, 2026";
 
 const ADS_SETTINGS_URL = "https://adssettings.google.com";
 
@@ -128,7 +128,9 @@ export default function PrivacyPage() {
                   <strong>Do Not Sell or Share My Personal Information / Manage Consent</strong>{" "}
                   link in the site footer, which opens a choice banner. If you choose Decline, we
                   tell Google to deny advertising and analytics storage, and we remember your
-                  choice on this device and apply it on later visits.
+                  choice on this device and apply it on later visits. If the site cannot tell which
+                  country you are in, for example because your browser blocks the country cookie,
+                  the link opens Google&apos;s consent message instead of our banner.
                 </li>
                 <li>
                   <strong>Interest-based ads.</strong> Google and its partners may show

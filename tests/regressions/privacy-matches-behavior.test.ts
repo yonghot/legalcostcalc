@@ -3,6 +3,13 @@ import { join, relative, sep } from "node:path";
 import { describe, expect, it } from "vitest";
 import { renderPage } from "./helpers/render";
 import PrivacyPage from "@/app/privacy/page";
+import TermsPage from "@/app/terms/page";
+import AboutPage from "@/app/about/page";
+import ContactPage from "@/app/contact/page";
+import EmbedIndexPage from "@/app/embed/page";
+import GuidePage from "@/app/how-legal-fees-work/page";
+import HomePage from "@/app/page";
+import StatisticsPage from "@/app/legal-cost-statistics/page";
 
 const ROOT = join(__dirname, "..", "..");
 
@@ -62,6 +69,12 @@ describe("K5/K2: the privacy policy describes the site as it runs", () => {
     expect(html).not.toMatch(/via our cookie\/consent banner/i);
     expect(html).not.toMatch(/loaded only after consent/i);
     expect(html).not.toMatch(/does not use cookies for ad targeting/i);
+  });
+
+  it("says what Manage Consent does when the country is unknown, and dates that change on October 8, 2026", async () => {
+    const html = visible(await renderPage(PrivacyPage));
+    expect(html).toMatch(/cannot tell which country you are in[^.]*Google(?:'|’)s consent message[^.]*instead of our banner/i);
+    expect(html).toContain("Effective date: October 8, 2026");
   });
 
   it("covers interest-based ads and links Google's ad settings page", async () => {
@@ -125,5 +138,51 @@ describe("K5/K2: the privacy policy describes the site as it runs", () => {
     const date = new Date(`${match![1]} 12:00:00 UTC`);
     expect(date.getTime()).toBeGreaterThanOrEqual(Date.parse("2026-10-07T00:00:00Z"));
     expect(date.getTime()).toBeLessThanOrEqual(Date.now() + 36 * 3600 * 1000);
+  });
+});
+
+const CSP_CLAIM =
+  /content[- ]security[- ]policy|\bCSP\b|script-src|only (?:allows?|permits?)[^.]{0,60}scripts|permits? scripts/i;
+
+describe("K13-R: reader-facing text makes no Content-Security-Policy claim", () => {
+  it("the matcher catches the sentences K13-R made false and ignores ordinary privacy wording", () => {
+    for (const claim of [
+      "Our Content-Security-Policy header only allows scripts from this site and Google.",
+      "The Site sends a Content-Security-Policy header that permits scripts from Google.",
+      "A strict CSP blocks every other origin.",
+      "script-src 'self' https://pagead2.googlesyndication.com",
+    ]) {
+      expect(CSP_CLAIM.test(claim), claim).toBe(true);
+    }
+    for (const fine of [
+      "Google AdSense scripts load once the page is open.",
+      "We use Google Analytics 4 to count visits.",
+      "Content on this site is general information.",
+    ]) {
+      expect(CSP_CLAIM.test(fine), fine).toBe(false);
+    }
+  });
+
+  const PAGES: Array<[string, () => Promise<string>]> = [
+    ["/privacy", () => renderPage(PrivacyPage)],
+    ["/terms", () => renderPage(TermsPage as never)],
+    ["/about", () => renderPage(AboutPage as never)],
+    ["/contact", () => renderPage(ContactPage as never)],
+    ["/embed", () => renderPage(EmbedIndexPage as never)],
+    ["/how-legal-fees-work", () => renderPage(GuidePage as never)],
+    ["/legal-cost-statistics", () => renderPage(StatisticsPage as never)],
+    ["/", () => renderPage(HomePage as never)],
+  ];
+
+  it.each(PAGES)("%s shows no CSP claim in its visible text", async (_path, render) => {
+    expect(visible(await render())).not.toMatch(CSP_CLAIM);
+  });
+
+  it("no page source under src/app carries a CSP claim in its text or code", () => {
+    const offenders = walk(join(ROOT, "src", "app"))
+      .filter((file) => /page\.tsx$/.test(file))
+      .filter((file) => CSP_CLAIM.test(stripComments(readFileSync(file, "utf8"))))
+      .map((file) => relative(ROOT, file).split(sep).join("/"));
+    expect(offenders).toEqual([]);
   });
 });

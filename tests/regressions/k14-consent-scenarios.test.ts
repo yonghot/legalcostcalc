@@ -18,6 +18,8 @@ import {
 
 const DIRECT_REGIONS = ["GB", "DE", "CH", "FR", "IS", "NO", "LI", "ES"];
 const OTHER_REGIONS = ["US", "XX", "CA", "BR", "KR", "AU", "JP"];
+const UNKNOWN_REGIONS = ["XX", ""];
+const KNOWN_NON_EEA = OTHER_REGIONS.filter((c) => !UNKNOWN_REGIONS.includes(c));
 
 interface Env {
   gtagCalls: unknown[][];
@@ -91,10 +93,12 @@ describe("K14: pure decisions", () => {
       expect(bannerMode(country)).toBe("cmp");
       expect(manageConsentAction(country)).toBe("cmp");
     }
-    for (const country of OTHER_REGIONS) {
-      expect(bannerMode(country)).toBe("own");
-      expect(manageConsentAction(country)).toBe("banner");
-    }
+    for (const country of OTHER_REGIONS) expect(bannerMode(country)).toBe("own");
+    for (const country of KNOWN_NON_EEA) expect(manageConsentAction(country)).toBe("banner");
+  });
+
+  it("an unknown region sends Manage consent to the Google CMP, never to our banner", () => {
+    for (const country of UNKNOWN_REGIONS) expect(manageConsentAction(country), JSON.stringify(country)).toBe("cmp");
   });
 });
 
@@ -201,7 +205,7 @@ describe("K14: client scenarios", () => {
     expect((win.googlefc as { callbackQueue: unknown[] }).callbackQueue[0]).toBe(existing);
   });
 
-  it.each(OTHER_REGIONS)("%s: Manage consent reopens the banner and does not touch the Google CMP", (country) => {
+  it.each(KNOWN_NON_EEA)("%s: Manage consent reopens the banner and does not touch the Google CMP", (country) => {
     const { win, store } = setup(country, "declined");
     const reopened = vi.fn();
     win.addEventListener("consentReopen", reopened);
@@ -209,6 +213,39 @@ describe("K14: client scenarios", () => {
     expect(reopened).toHaveBeenCalledTimes(1);
     expect(win.googlefc).toBeUndefined();
     expect(store.get(CONSENT_KEY)).toBe("declined");
+  });
+
+  it.each(UNKNOWN_REGIONS)("country %j: Manage consent queues the CMP revocation message and leaves our banner shut", (country) => {
+    const { win, store } = setup(country, null);
+    const reopened = vi.fn();
+    win.addEventListener("consentReopen", reopened);
+    openManageConsent();
+    const fc = win.googlefc as { callbackQueue: Array<() => void>; showRevocationMessage?: () => void };
+    expect(fc.callbackQueue).toHaveLength(1);
+    const showRevocationMessage = vi.fn();
+    fc.showRevocationMessage = showRevocationMessage;
+    fc.callbackQueue[0]!();
+    expect(showRevocationMessage).toHaveBeenCalledTimes(1);
+    expect(reopened).not.toHaveBeenCalled();
+    expect(store.size).toBe(0);
+  });
+
+  it("a visitor with no region cookie at all gets the CMP, not our banner", () => {
+    const { win } = setup("US", null);
+    vi.stubGlobal("document", { cookie: "other=1" });
+    const reopened = vi.fn();
+    win.addEventListener("consentReopen", reopened);
+    openManageConsent();
+    const fc = win.googlefc as { callbackQueue: Array<() => void> };
+    expect(fc.callbackQueue).toHaveLength(1);
+    expect(reopened).not.toHaveBeenCalled();
+  });
+
+  it("an unknown region never gets update(granted) from the Manage consent path", () => {
+    const { gtagCalls } = setup("XX", null);
+    initConsent();
+    openManageConsent();
+    expect(granted(gtagCalls)).toHaveLength(0);
   });
 
   it("unreadable or unwritable browser storage never crashes and never blocks a choice", () => {

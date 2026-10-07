@@ -55,7 +55,12 @@ export function bannerMode(country: string): "cmp" | "own" {
 }
 
 export function manageConsentAction(country: string): "cmp" | "banner" {
-  return requiresOptIn(country) ? "cmp" : "banner";
+  // An unknown region may be EEA, and our banner's Accept sends update(granted), which would override the TCF decision there.
+  return requiresOptIn(country) || !isKnownCountry(country) ? "cmp" : "banner";
+}
+
+function isKnownCountry(country: string): boolean {
+  return /^[A-Z]{2}$/.test(country) && country !== "XX";
 }
 
 type GtagArgs = ["consent", "update", Record<string, unknown>];

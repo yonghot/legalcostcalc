@@ -5,7 +5,6 @@ import { BreadcrumbSchema } from "@/components/seo/breadcrumb-schema";
 import { Breadcrumbs } from "@/components/seo/breadcrumbs";
 import { HubLinks, type HubLinkRow } from "@/components/seo/hub-links";
 import { STATES, STATE_BY_SLUG } from "@/lib/constants/states";
-import { CATEGORIES } from "@/lib/constants/categories";
 import { INDEXABLE_PAGES, getModerateMedianCost } from "@/lib/page-index";
 import { buildMeta } from "@/lib/seo";
 import { FOCUS_RING } from "@/lib/utils/styles";
@@ -20,6 +19,11 @@ export async function generateStaticParams() {
   return STATES.map((state) => ({ state: state.slug }));
 }
 
+const matterTypes = (n: number) => `${n} matter type${n === 1 ? "" : "s"}`;
+
+const hubPagesFor = (stateCode: string) =>
+  INDEXABLE_PAGES.filter((p) => p.state.code === stateCode).sort((a, b) => a.category.sortOrder - b.category.sortOrder);
+
 export const revalidate = 604800; // 7 days
 export const dynamicParams = false;
 
@@ -28,9 +32,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const stateInfo = STATE_BY_SLUG.get(stateSlug);
   if (!stateInfo) return { title: "Not Found", robots: { index: false, follow: false } };
 
+  const listed = hubPagesFor(stateInfo.code);
+  const named = listed.slice(0, 3).map((p) => p.category.displayName.toLowerCase());
   return buildMeta({
     title: `Legal Costs in ${stateInfo.name}`,
-    description: `Compare legal costs across 8 matter types in ${stateInfo.name}, including divorce, DUI, bankruptcy, and more. Free cost estimates, sourced and dated.`,
+    description: `Compare legal costs across ${matterTypes(listed.length)} in ${stateInfo.name}${named.length > 0 ? `, including ${named.join(", ")}` : ""}. Free cost estimates, sourced and dated.`,
     path: `/${stateInfo.slug}`,
   });
 }
@@ -43,8 +49,7 @@ export default async function StateHubPage({ params }: PageProps) {
   // T09: hub lists ONLY pages that exist and pass hasUniqueData — draws from
   // the same INDEXABLE_PAGES set that gates the sitemap and generateMetadata
   // robots directive, so this hub never links to a noindexed page.
-  const rows: HubLinkRow[] = INDEXABLE_PAGES.filter((p) => p.state.code === stateInfo.code)
-    .sort((a, b) => a.category.sortOrder - b.category.sortOrder)
+  const rows: HubLinkRow[] = hubPagesFor(stateInfo.code)
     .map((p) => ({
       key: p.category.slug,
       label: `${p.category.displayName} Cost`,
@@ -78,8 +83,8 @@ export default async function StateHubPage({ params }: PageProps) {
             Legal Costs in {stateInfo.name}
           </h1>
           <p className="mt-3 text-lg text-slate-600">
-            Compare estimated legal costs for {CATEGORIES.length} common matter types in{" "}
-            {stateInfo.name}, including attorney fees, court costs, and typical case duration.
+            Compare estimated legal costs for {matterTypes(rows.length)} in {stateInfo.name},
+            including attorney fees, court costs, and typical case duration.
           </p>
         </div>
       </section>

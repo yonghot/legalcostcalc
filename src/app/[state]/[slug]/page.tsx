@@ -19,6 +19,7 @@ import { AuthorByline } from "@/components/shared/author-byline";
 import { UpdatedBadge } from "@/components/shared/updated-badge";
 import { buildMeta, CANONICAL_ORIGIN } from "@/lib/seo";
 import { isIndexable } from "@/lib/index-policy";
+import { INDEXABLE_PAGES } from "@/lib/page-index";
 import {
   costFamilyKey,
   dateLabel,
@@ -157,8 +158,13 @@ export default async function StateCategoryPage({ params }: PageProps) {
   ];
 
   // Related links
-  const otherCategories = CATEGORIES.filter((c) => c.slug !== categoryInfo.slug);
-  const allOtherStates = STATES.filter((s) => s.code !== stateInfo.code);
+  const otherCategories = CATEGORIES.filter(
+    (c) => c.slug !== categoryInfo.slug && isIndexable(stateInfo.code, c.slug),
+  );
+  const allOtherStates = STATES.filter(
+    (s) => s.code !== stateInfo.code && isIndexable(s.code, categoryInfo.slug),
+  );
+  const hubStateCount = INDEXABLE_PAGES.filter((p) => p.category.slug === categoryInfo.slug).length;
 
   // CODE-01: GEO answer block — built from this page's own already-computed
   // cost rows (real numbers only). Rendered directly below the H1, ahead of
@@ -364,6 +370,7 @@ export default async function StateCategoryPage({ params }: PageProps) {
         categoryInfo={categoryInfo}
         otherCategories={otherCategories}
         allOtherStates={allOtherStates}
+        hubStateCount={hubStateCount}
       />
 
       {/* CODE-03 — "Embed this calculator" pointer to /embed. Placed below

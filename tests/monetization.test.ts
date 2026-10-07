@@ -19,6 +19,7 @@ import {
   VERTICAL_DEFAULT_CTA_TYPE,
 } from "@/lib/monetization";
 import { resolveAdsenseClient } from "@/lib/env";
+import { getFeaturedPartners } from "@/lib/featured-partners";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -177,7 +178,6 @@ describe("getMonetizationConfig — all env vars unset", () => {
   const KEYS = [
     "NEXT_PUBLIC_AD_PROVIDER",
     "NEXT_PUBLIC_ADSENSE_CLIENT_ID",
-    "NEXT_PUBLIC_EZOIC_ENABLED",
     "NEXT_PUBLIC_EZOIC_SCRIPT_SRC",
     "NEXT_PUBLIC_RAPTIVE_SITE_ID",
     "NEXT_PUBLIC_JOURNEY_SITE_ID",
@@ -191,7 +191,6 @@ describe("getMonetizationConfig — all env vars unset", () => {
     "NEXT_PUBLIC_SPONSOR_HTML",
     "NEXT_PUBLIC_SPONSOR_BACKFILL_URL",
     "NEXT_PUBLIC_EMAIL_CAPTURE",
-    "NEXT_PUBLIC_AUTOAFFILIATE",
   ];
 
   const cleanups: Array<() => void> = [];
@@ -206,32 +205,12 @@ describe("getMonetizationConfig — all env vars unset", () => {
     for (const fn of cleanups.splice(0)) fn();
   });
 
-  it("adProvider defaults to 'adsense' when NEXT_PUBLIC_AD_PROVIDER is unset", () => {
-    expect(getMonetizationConfig().adProvider).toBe("adsense");
+  it("the provider switch defaults to 'adsense' when NEXT_PUBLIC_AD_PROVIDER is unset", () => {
+    expect(parseAdProvider(process.env.NEXT_PUBLIC_AD_PROVIDER ?? null)).toBe("adsense");
   });
 
   it("does not carry a second AdSense client id read (resolveAdsenseClient is the only one)", () => {
     expect(getMonetizationConfig()).not.toHaveProperty("adSenseClientId");
-  });
-
-  it("ezoicEnabled is false when unset", () => {
-    expect(getMonetizationConfig().ezoicEnabled).toBe(false);
-  });
-
-  it("ezoicScriptSrc is null when unset", () => {
-    expect(getMonetizationConfig().ezoicScriptSrc).toBeNull();
-  });
-
-  it("raptiveSiteId is null when unset", () => {
-    expect(getMonetizationConfig().raptiveSiteId).toBeNull();
-  });
-
-  it("journeySiteId is null when unset", () => {
-    expect(getMonetizationConfig().journeySiteId).toBeNull();
-  });
-
-  it("adsTxtRedirectUrl is null when unset", () => {
-    expect(getMonetizationConfig().adsTxtRedirectUrl).toBeNull();
   });
 
   it("primaryCTAType defaults to vertical default ('call') when unset", () => {
@@ -254,10 +233,6 @@ describe("getMonetizationConfig — all env vars unset", () => {
     expect(getMonetizationConfig().cplLabel).toBeNull();
   });
 
-  it("featuredPartners is [] when MON_FEATURED_PARTNERS is unset", () => {
-    expect(getMonetizationConfig().featuredPartners).toEqual([]);
-  });
-
   it("sponsorHtml is null when unset", () => {
     expect(getMonetizationConfig().sponsorHtml).toBeNull();
   });
@@ -268,10 +243,6 @@ describe("getMonetizationConfig — all env vars unset", () => {
 
   it("emailCaptureEnabled is false when unset", () => {
     expect(getMonetizationConfig().emailCaptureEnabled).toBe(false);
-  });
-
-  it("autoAffiliate is null when unset", () => {
-    expect(getMonetizationConfig().autoAffiliate).toBeNull();
   });
 
   it("postalAddress is null when unset (CAN-SPAM gate)", () => {
@@ -290,42 +261,27 @@ describe("getMonetizationConfig — env vars set", () => {
 
   it("reads NEXT_PUBLIC_AD_PROVIDER=ezoic", () => {
     cleanups.push(withEnv("NEXT_PUBLIC_AD_PROVIDER", "ezoic"));
-    expect(getMonetizationConfig().adProvider).toBe("ezoic");
+    expect(parseAdProvider(process.env.NEXT_PUBLIC_AD_PROVIDER ?? null)).toBe("ezoic");
   });
 
   it("reads NEXT_PUBLIC_AD_PROVIDER=raptive", () => {
     cleanups.push(withEnv("NEXT_PUBLIC_AD_PROVIDER", "raptive"));
-    expect(getMonetizationConfig().adProvider).toBe("raptive");
+    expect(parseAdProvider(process.env.NEXT_PUBLIC_AD_PROVIDER ?? null)).toBe("raptive");
   });
 
   it("reads NEXT_PUBLIC_AD_PROVIDER=journey", () => {
     cleanups.push(withEnv("NEXT_PUBLIC_AD_PROVIDER", "journey"));
-    expect(getMonetizationConfig().adProvider).toBe("journey");
+    expect(parseAdProvider(process.env.NEXT_PUBLIC_AD_PROVIDER ?? null)).toBe("journey");
   });
 
   it("reads NEXT_PUBLIC_AD_PROVIDER=none", () => {
     cleanups.push(withEnv("NEXT_PUBLIC_AD_PROVIDER", "none"));
-    expect(getMonetizationConfig().adProvider).toBe("none");
+    expect(parseAdProvider(process.env.NEXT_PUBLIC_AD_PROVIDER ?? null)).toBe("none");
   });
 
   it("resolveAdsenseClient reads NEXT_PUBLIC_ADSENSE_CLIENT_ID", () => {
     cleanups.push(withEnv("NEXT_PUBLIC_ADSENSE_CLIENT_ID", "ca-pub-1234567890123456"));
     expect(resolveAdsenseClient()).toBe("ca-pub-1234567890123456");
-  });
-
-  it("reads NEXT_PUBLIC_EZOIC_ENABLED=true", () => {
-    cleanups.push(withEnv("NEXT_PUBLIC_EZOIC_ENABLED", "true"));
-    expect(getMonetizationConfig().ezoicEnabled).toBe(true);
-  });
-
-  it("reads NEXT_PUBLIC_RAPTIVE_SITE_ID", () => {
-    cleanups.push(withEnv("NEXT_PUBLIC_RAPTIVE_SITE_ID", "example-site-id"));
-    expect(getMonetizationConfig().raptiveSiteId).toBe("example-site-id");
-  });
-
-  it("reads NEXT_PUBLIC_JOURNEY_SITE_ID", () => {
-    cleanups.push(withEnv("NEXT_PUBLIC_JOURNEY_SITE_ID", "example-journey-id"));
-    expect(getMonetizationConfig().journeySiteId).toBe("example-journey-id");
   });
 
   it("reads NEXT_PUBLIC_PPC_NUMBER", () => {
@@ -362,30 +318,34 @@ describe("getMonetizationConfig — env vars set", () => {
     );
   });
 
-  it("reads MON_FEATURED_PARTNERS valid JSON", () => {
+  it("reads MON_FEATURED_PARTNERS valid JSON on the server", () => {
     const json = JSON.stringify([
       { label: "LegalZoom", figure: "From $79", href: "https://tracking.example.com/lz" },
     ]);
     cleanups.push(withEnv("MON_FEATURED_PARTNERS", json));
-    const partners = getMonetizationConfig().featuredPartners;
+    const partners = getFeaturedPartners();
     expect(partners).toHaveLength(1);
     expect(partners[0].label).toBe("LegalZoom");
   });
 
   it("MON_FEATURED_PARTNERS invalid JSON => []", () => {
     cleanups.push(withEnv("MON_FEATURED_PARTNERS", "not-json"));
-    expect(getMonetizationConfig().featuredPartners).toEqual([]);
+    expect(getFeaturedPartners()).toEqual([]);
   });
 
-  it("reads NEXT_PUBLIC_AUTOAFFILIATE", () => {
-    cleanups.push(withEnv("NEXT_PUBLIC_AUTOAFFILIATE", "sovrn"));
-    expect(getMonetizationConfig().autoAffiliate).toBe("sovrn");
+  it.each([
+    "adProvider",
+    "ezoicEnabled",
+    "ezoicScriptSrc",
+    "raptiveSiteId",
+    "journeySiteId",
+    "adsTxtRedirectUrl",
+    "featuredPartners",
+    "autoAffiliate",
+  ])("the config no longer carries the unread field %s", (field) => {
+    expect(getMonetizationConfig()).not.toHaveProperty(field);
   });
 
-  it("reads NEXT_PUBLIC_ADSTXT_REDIRECT_URL", () => {
-    cleanups.push(withEnv("NEXT_PUBLIC_ADSTXT_REDIRECT_URL", "https://cdn.ezoic.net/ads.txt"));
-    expect(getMonetizationConfig().adsTxtRedirectUrl).toBe("https://cdn.ezoic.net/ads.txt");
-  });
 });
 
 // ── Single-provider invariant ────────────────────────────────────────────────
@@ -425,9 +385,8 @@ describe("AdProvider single-provider invariant", () => {
     expect(result).not.toBe("raptive");
   });
 
-  it("getMonetizationConfig returns a single adProvider value, never undefined", () => {
-    const cfg = getMonetizationConfig();
-    expect(VALID_PROVIDERS).toContain(cfg.adProvider);
+  it("the provider switch returns a single known value, never undefined", () => {
+    expect(VALID_PROVIDERS).toContain(parseAdProvider(process.env.NEXT_PUBLIC_AD_PROVIDER ?? null));
   });
 
   it("journey provider never coexists with another provider's site id being 'active' — parseAdProvider is the sole switch", () => {

@@ -23,6 +23,7 @@ import { useCalculatorPersistence } from "@/lib/hooks/use-calculator-persistence
 import { ContinueBanner } from "@/components/shared/continue-banner";
 import { CALCULATOR_PRESETS, type CalculatorPreset } from "@/lib/constants/presets";
 import { FOCUS_RING } from "@/lib/utils/styles";
+import type { FeaturedPartner } from "@/lib/monetization";
 
 interface CostCalculatorProps {
   initialCategory?: string;
@@ -33,6 +34,8 @@ interface CostCalculatorProps {
    * renders inside a third-party iframe. Defaults to false everywhere else.
    */
   monetizationDisabled?: boolean;
+  /** Parsed on the server by the page; threads to the partner table below the result. */
+  featuredPartners?: FeaturedPartner[];
 }
 
 // T16 — persistence allowlist for this calculator. `category`/`stateCode`/
@@ -54,6 +57,7 @@ export function CostCalculator({
   initialCategory,
   initialState,
   monetizationDisabled,
+  featuredPartners,
 }: CostCalculatorProps) {
   const [category, setCategory] = useState(initialCategory || "");
   const [stateCode, setStateCode] = useState(initialState || "");
@@ -329,6 +333,7 @@ export function CostCalculator({
           stateCode={stateCode}
           stateSlug={STATE_MAP.get(stateCode)?.slug}
           monetizationDisabled={monetizationDisabled}
+          featuredPartners={featuredPartners}
         />
         </div>
       )}

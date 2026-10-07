@@ -7,7 +7,7 @@
  * Fixed top-to-bottom order:
  *   (a) PrimaryIntentCTA   — call / cpl / affiliate / null
  *   (b) DisplaySlot        — single programmatic unit via <AdProvider>
- *   (c) AdvertiserDisclosure + FeaturedPartnerTable  — from MON_FEATURED_PARTNERS
+ *   (c) AdvertiserDisclosure + FeaturedPartnerTable  — from the featuredPartners prop
  *   (d) SponsorSlot        — from NEXT_PUBLIC_SPONSOR_HTML or backfill URL
  *   (e) EmailCapture       — reuses existing component, gated by NEXT_PUBLIC_EMAIL_CAPTURE
  *
@@ -20,11 +20,12 @@ import { useRef, useEffect, useState } from "react";
 import { Phone, ExternalLink } from "lucide-react";
 import { EmailCapture } from "@/components/shared/email-capture";
 import { AdProvider } from "@/components/monetization/AdProvider";
-import { getMonetizationConfig, type FeaturedPartner } from "@/lib/monetization";
+import { getMonetizationConfig, parseAdProvider, type FeaturedPartner } from "@/lib/monetization";
 import { isSafeUrl } from "@/lib/utils/sanitize";
 import { FOCUS_RING } from "@/lib/utils/styles";
 import { DISCLAIMER_SHORT } from "@/lib/constants/disclaimer";
-import { getPartnersForCategory, getAffiliateTrackingUrl } from "@/lib/constants/affiliates";
+import { getActivePartners } from "@/lib/constants/affiliates";
+import { resolveAdSlot } from "@/lib/ad-slots";
 import { AffiliateDisclosure } from "@/components/compliance/AffiliateDisclosure";
 
 interface ResultMonetizationProps {
@@ -41,6 +42,8 @@ interface ResultMonetizationProps {
    * partner table, sponsor slot, or email capture.
    */
   monetizationDisabled?: boolean;
+  /** Rows parsed on the server (getFeaturedPartners); never read from env in the client bundle. */
+  featuredPartners?: FeaturedPartner[];
   className?: string;
 }
 
@@ -67,6 +70,7 @@ function PrimaryIntentCTA({
         <p className="text-xs font-medium uppercase tracking-wide text-teal-700">
           Free Consultation Available
         </p>
+        <AffiliateDisclosure className="mt-1 text-teal-600" />
         <a
           href={telHref}
           className={`mt-3 flex w-full items-center justify-center gap-2 rounded-md bg-teal-600 px-5 py-3 text-base font-semibold text-white transition-colors hover:bg-teal-700 sm:w-auto ${FOCUS_RING}`}
@@ -106,31 +110,26 @@ function PrimaryIntentCTA({
 
   if (type === "affiliate") {
     // Show the first env-configured affiliate partner (featured affiliate button).
-    const candidates = getPartnersForCategory(categorySlug);
-    for (const partner of candidates) {
-      const trackingUrl = getAffiliateTrackingUrl(partner, isSafeUrl);
-      if (trackingUrl) {
-        return (
-          <div className="rounded-lg border border-teal-200 bg-teal-50 p-5">
-            <p className="text-xs font-medium uppercase tracking-wide text-teal-700">
-              Legal Service Advertisement
-            </p>
-            <AffiliateDisclosure className="mt-1 text-teal-600" />
-            <a
-              href={trackingUrl}
-              target="_blank"
-              rel="noopener noreferrer nofollow"
-              className={`mt-3 flex w-full items-center justify-center gap-2 rounded-md bg-teal-600 px-5 py-3 text-base font-semibold text-white transition-colors hover:bg-teal-700 sm:w-auto ${FOCUS_RING}`}
-            >
-              {partner.ctaText}
-              <ExternalLink className="h-4 w-4" aria-hidden="true" />
-            </a>
-            <p className="mt-2 text-xs text-teal-600">{DISCLAIMER_SHORT}</p>
-          </div>
-        );
-      }
-    }
-    return null;
+    const first = getActivePartners(categorySlug, isSafeUrl)[0];
+    if (!first) return null;
+    return (
+      <div className="rounded-lg border border-teal-200 bg-teal-50 p-5">
+        <p className="text-xs font-medium uppercase tracking-wide text-teal-700">
+          Legal Service Advertisement
+        </p>
+        <AffiliateDisclosure className="mt-1 text-teal-600" />
+        <a
+          href={first.trackingUrl}
+          target="_blank"
+          rel="noopener noreferrer nofollow"
+          className={`mt-3 flex w-full items-center justify-center gap-2 rounded-md bg-teal-600 px-5 py-3 text-base font-semibold text-white transition-colors hover:bg-teal-700 sm:w-auto ${FOCUS_RING}`}
+        >
+          {first.partner.ctaText}
+          <ExternalLink className="h-4 w-4" aria-hidden="true" />
+        </a>
+        <p className="mt-2 text-xs text-teal-600">{DISCLAIMER_SHORT}</p>
+      </div>
+    );
   }
 
   return null;
@@ -219,6 +218,7 @@ function SponsorSlot() {
         <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
           Sponsored
         </p>
+        <AffiliateDisclosure className="mb-2" />
         <p className="text-sm text-slate-700">{cfg.sponsorHtml}</p>
       </div>
     );
@@ -230,6 +230,7 @@ function SponsorSlot() {
         <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
           Sponsored
         </p>
+        <AffiliateDisclosure className="mb-2" />
         <a
           href={cfg.sponsorBackfillUrl}
           target="_blank"
@@ -251,7 +252,7 @@ function SponsorSlot() {
 
 // ── (b) DisplaySlot lazy wrapper ─────────────────────────────────────────────
 
-function DisplaySlot() {
+function DisplaySlotFrame() {
   const wrapRef = useRef<HTMLDivElement>(null);
   // Start visible immediately if IntersectionObserver is unavailable (SSR/old browser).
   const [visible, setVisible] = useState(
@@ -289,11 +290,19 @@ function DisplaySlot() {
 
 // ── Main exported component ───────────────────────────────────────────────────
 
+function DisplaySlot() {
+  const provider = parseAdProvider(process.env.NEXT_PUBLIC_AD_PROVIDER ?? null);
+  if (provider === "none") return null;
+  if (provider === "adsense" && !resolveAdSlot("result")) return null;
+  return <DisplaySlotFrame />;
+}
+
 export function ResultMonetization({
   context,
   categorySlug,
   stateName: _stateName, // eslint-disable-line @typescript-eslint/no-unused-vars
   monetizationDisabled = false,
+  featuredPartners = [],
   className,
 }: ResultMonetizationProps) {
   // Embed-widget invariant: never serve ads or partner/CTA content inside a
@@ -314,7 +323,7 @@ export function ResultMonetization({
       <DisplaySlot />
 
       {/* (c) FTC disclosure + featured partner table */}
-      <FeaturedPartnerTableBlock partners={cfg.featuredPartners} />
+      <FeaturedPartnerTableBlock partners={featuredPartners} />
 
       {/* (d) Sponsor slot */}
       <SponsorSlot />

@@ -12,6 +12,7 @@ import { costFamilyKey, dateLabel, getFamilyDate, isOlderThanOneYear } from "@/l
 import { Clock, DollarSign, FileText, ExternalLink, Percent } from "lucide-react";
 import { FOCUS_RING } from "@/lib/utils/styles";
 import { ResultMonetization } from "@/components/monetization/ResultMonetization";
+import type { FeaturedPartner } from "@/lib/monetization";
 import { trackEvent } from "@/lib/analytics";
 import { RelatedMatters } from "@/components/seo/related-matters";
 import { NextSteps } from "@/components/calculator/next-steps";
@@ -40,6 +41,7 @@ interface CostResultProps {
   stateSlug?: string;
   /** True on embed/iframe surfaces — suppresses the ResultMonetization stack entirely. */
   monetizationDisabled?: boolean;
+  featuredPartners?: FeaturedPartner[];
 }
 
 export const CostResult = memo(function CostResult({
@@ -50,6 +52,7 @@ export const CostResult = memo(function CostResult({
   stateCode,
   stateSlug,
   monetizationDisabled,
+  featuredPartners,
 }: CostResultProps) {
   // Show the first result (filtered by complexity)
   const cost = results[0];
@@ -264,6 +267,7 @@ export const CostResult = memo(function CostResult({
         categorySlug={categorySlug}
         stateName={stateName}
         monetizationDisabled={monetizationDisabled}
+        featuredPartners={featuredPartners}
       />
     </div>
   );

@@ -101,16 +101,15 @@ export const AFFILIATE_PARTNERS: AffiliatePartner[] = [
 const MAX_PARTNERS_SHOWN = 3;
 
 /**
- * Get partners relevant to a given legal category, capped for display.
+ * Get partners relevant to a given legal category.
  * Returns all-category partners (relevantCategories empty) plus category matches.
  */
 export function getPartnersForCategory(categorySlug?: string): AffiliatePartner[] {
-  const matches = !categorySlug
+  return !categorySlug
     ? AFFILIATE_PARTNERS
     : AFFILIATE_PARTNERS.filter(
         (p) => p.relevantCategories.length === 0 || p.relevantCategories.includes(categorySlug),
       );
-  return matches.slice(0, MAX_PARTNERS_SHOWN);
 }
 
 /**
@@ -140,4 +139,17 @@ export function getAffiliateTrackingUrl(
   const rawValue = urls[partner.affiliateUrlEnvVar];
   if (!rawValue || !isSafeUrl(rawValue)) return undefined;
   return rawValue;
+}
+
+// The display cap applies after the env filter, otherwise a configured partner ranked below the cap never renders.
+export function getActivePartners(
+  categorySlug: string | undefined,
+  isSafeUrl: (url: string) => boolean,
+): Array<{ partner: AffiliatePartner; trackingUrl: string }> {
+  return getPartnersForCategory(categorySlug)
+    .flatMap((partner) => {
+      const trackingUrl = getAffiliateTrackingUrl(partner, isSafeUrl);
+      return trackingUrl ? [{ partner, trackingUrl }] : [];
+    })
+    .slice(0, MAX_PARTNERS_SHOWN);
 }

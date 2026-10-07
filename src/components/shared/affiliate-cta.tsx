@@ -1,11 +1,7 @@
 "use client";
 
 import { ExternalLink } from "lucide-react";
-import {
-  getPartnersForCategory,
-  getAffiliateTrackingUrl,
-  type AffiliatePartner,
-} from "@/lib/constants/affiliates";
+import { getActivePartners } from "@/lib/constants/affiliates";
 import { CARD_HOVER, FOCUS_RING } from "@/lib/utils/styles";
 import { isSafeUrl } from "@/lib/utils/sanitize";
 import { AffiliateDisclosure } from "@/components/compliance/AffiliateDisclosure";
@@ -37,22 +33,14 @@ interface AffiliateCTAProps {
  * tagged public site URL.
  *
  * Gate summary:
- *   1. getPartnersForCategory() filters by category relevance.
- *   2. getAffiliateTrackingUrl() reads the env var and isSafeUrl-guards it.
+ *   1. getActivePartners() filters by category relevance.
+ *   2. It reads each env var and isSafeUrl-guards it.
  *   3. Only partners whose env var is set AND passes isSafeUrl render a link.
  *   4. Partners without a configured URL are silently omitted.
  *   5. If no partners have a configured URL, the entire block renders null.
  */
 export function AffiliateCTA({ categorySlug, stateName }: AffiliateCTAProps) {
-  const candidates = getPartnersForCategory(categorySlug);
-
-  // Resolve the tracking URL for each candidate — only keep those with a
-  // valid, owner-supplied env var.
-  const activePartners: Array<{ partner: AffiliatePartner; trackingUrl: string }> =
-    candidates.flatMap((partner) => {
-      const trackingUrl = getAffiliateTrackingUrl(partner, isSafeUrl);
-      return trackingUrl ? [{ partner, trackingUrl }] : [];
-    });
+  const activePartners = getActivePartners(categorySlug, isSafeUrl);
 
   // Nothing to show — owner has not configured any affiliate programs yet.
   if (activePartners.length === 0) return null;

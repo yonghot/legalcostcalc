@@ -29,26 +29,6 @@ export interface FeaturedPartner {
 }
 
 export interface MonetizationConfig {
-  /** Which programmatic ad network to load (exactly one, never two). */
-  adProvider: AdProvider;
-
-  /** Ezoic: whether Ezoic is enabled. Script src/id come from env. */
-  ezoicEnabled: boolean;
-  ezoicScriptSrc: string | null;
-
-  /** Raptive site id. Null when unset. */
-  raptiveSiteId: string | null;
-
-  /**
-   * Journey by Mediavine site id (K10 — dormant premium-tier network, wired
-   * ahead of the 1,000-sessions/month upgrade trigger in 부속M §6). Null
-   * when unset.
-   */
-  journeySiteId: string | null;
-
-  /** /ads.txt redirect target. When set, route 301s there. */
-  adsTxtRedirectUrl: string | null;
-
   /** Which primary CTA to show. Falls back to vertical default. */
   primaryCTAType: PrimaryCTAType;
 
@@ -59,9 +39,6 @@ export interface MonetizationConfig {
   /** Cost-per-lead outbound link config. */
   cplUrl: string | null;
   cplLabel: string | null;
-
-  /** Featured partner table rows. Empty array when unset or invalid JSON. */
-  featuredPartners: FeaturedPartner[];
 
   /** Sponsor slot — HTML string or null. */
   sponsorHtml: string | null;
@@ -79,9 +56,6 @@ export interface MonetizationConfig {
    * physical postal address is a legal prerequisite, not a style choice.
    */
   postalAddress: string | null;
-
-  /** Auto-affiliate provider for uncontracted links (e.g. "sovrn" or "skimlinks:id"). */
-  autoAffiliate: string | null;
 }
 
 // ── Parser helpers ────────────────────────────────────────────────────────────
@@ -92,7 +66,7 @@ function readEnv(v: string | undefined): string | null {
 }
 
 /**
- * Parse MON_FEATURED_PARTNERS — a JSON array of {label, figure, href}.
+ * Parse a JSON array of {label, figure, href} (the MON_FEATURED_PARTNERS value).
  * Returns [] on any parse/validation failure so the table renders nothing.
  */
 export function parseFeaturedPartners(raw: string | null): FeaturedPartner[] {
@@ -149,26 +123,17 @@ export function parsePrimaryCTAType(raw: string | null): PrimaryCTAType {
  * Safe to call in both server and client contexts.
  */
 export function getMonetizationConfig(): MonetizationConfig {
-  const adProvider = parseAdProvider(readEnv(process.env.NEXT_PUBLIC_AD_PROVIDER));
   const emailCaptureRaw = readEnv(process.env.NEXT_PUBLIC_EMAIL_CAPTURE);
 
   return {
-    adProvider,
-    ezoicEnabled: readEnv(process.env.NEXT_PUBLIC_EZOIC_ENABLED) === "true",
-    ezoicScriptSrc: readEnv(process.env.NEXT_PUBLIC_EZOIC_SCRIPT_SRC),
-    raptiveSiteId: readEnv(process.env.NEXT_PUBLIC_RAPTIVE_SITE_ID),
-    journeySiteId: readEnv(process.env.NEXT_PUBLIC_JOURNEY_SITE_ID),
-    adsTxtRedirectUrl: readEnv(process.env.NEXT_PUBLIC_ADSTXT_REDIRECT_URL),
     primaryCTAType: parsePrimaryCTAType(readEnv(process.env.NEXT_PUBLIC_PRIMARY_CTA_TYPE)),
     ppcNumber: readEnv(process.env.NEXT_PUBLIC_PPC_NUMBER),
     ppcLabel: readEnv(process.env.NEXT_PUBLIC_PPC_LABEL),
     cplUrl: readEnv(process.env.NEXT_PUBLIC_CPL_URL),
     cplLabel: readEnv(process.env.NEXT_PUBLIC_CPL_LABEL),
-    featuredPartners: parseFeaturedPartners(readEnv(process.env.MON_FEATURED_PARTNERS)),
     sponsorHtml: readEnv(process.env.NEXT_PUBLIC_SPONSOR_HTML),
     sponsorBackfillUrl: readEnv(process.env.NEXT_PUBLIC_SPONSOR_BACKFILL_URL),
     emailCaptureEnabled: emailCaptureRaw === "on",
     postalAddress: readEnv(process.env.NEXT_PUBLIC_POSTAL_ADDRESS),
-    autoAffiliate: readEnv(process.env.NEXT_PUBLIC_AUTOAFFILIATE),
   };
 }

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { CostCalculator } from "@/components/calculator/cost-calculator";
+import { getFeaturedPartners } from "@/lib/featured-partners";
 import { Disclaimer } from "@/components/shared/disclaimer";
 import { CATEGORIES } from "@/lib/constants/categories";
 import { STATES } from "@/lib/constants/states";
@@ -96,7 +97,7 @@ export default function HomePage() {
 
           {/* Calculator */}
           <div className="mt-10">
-            <CostCalculator />
+            <CostCalculator featuredPartners={getFeaturedPartners()} />
           </div>
 
           {/* T16 — Recent calculations (client-only, renders nothing when empty) */}

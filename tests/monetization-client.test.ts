@@ -22,8 +22,8 @@ const BUILD_ENV: Record<string, string> = {
   NEXT_PUBLIC_AFFILIATE_LAWDEPOT_URL: "https://example.com/affiliate/5",
 };
 
-function compileForBrowser<T>(file: string): T {
-  const { code } = transformSync(readFileSync(resolve(process.cwd(), file), "utf8"), {
+function browserCode(file: string): string {
+  return transformSync(readFileSync(resolve(process.cwd(), file), "utf8"), {
     filename: file,
     jsc: {
       parser: { syntax: "typescript" },
@@ -38,7 +38,11 @@ function compileForBrowser<T>(file: string): T {
       },
     },
     module: { type: "commonjs" },
-  });
+  }).code;
+}
+
+function compileForBrowser<T>(file: string): T {
+  const code = browserCode(file);
   const exports = {};
   runInNewContext(code, { exports, process: { env: {} } });
   return exports as T;
@@ -61,7 +65,13 @@ describe("monetization in a browser without server environment variables", () =>
     expect(config.sponsorBackfillUrl).toBe("https://example.com/sponsor");
     expect(config.emailCaptureEnabled).toBe(true);
     expect(config.postalAddress).toBe("Test postal address");
-    expect(config.featuredPartners).toEqual([]);
+    expect(config).not.toHaveProperty("featuredPartners");
+  });
+
+  it("never references the server-only featured-partners variable", () => {
+    const source = readFileSync(resolve(process.cwd(), "src/lib/monetization.ts"), "utf8");
+    expect(source.replace(/\/\*[\s\S]*?\*\//g, "")).not.toContain("MON_FEATURED_PARTNERS");
+    expect(browserCode("src/lib/monetization.ts")).not.toContain("MON_FEATURED_PARTNERS");
   });
 
   it("retains configured CPL settings and trims public values", () => {

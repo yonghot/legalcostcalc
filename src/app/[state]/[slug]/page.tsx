@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CostCalculator } from "@/components/calculator/cost-calculator";
+import { getFeaturedPartners } from "@/lib/featured-partners";
 import { Disclaimer } from "@/components/shared/disclaimer";
 import { STATES, STATE_BY_SLUG } from "@/lib/constants/states";
 import { CATEGORIES, CATEGORY_MAP } from "@/lib/constants/categories";
@@ -348,6 +349,7 @@ export default async function StateCategoryPage({ params }: PageProps) {
           <CostCalculator
             initialCategory={categoryInfo.slug}
             initialState={stateInfo.code}
+            featuredPartners={getFeaturedPartners()}
           />
         </div>
       </section>

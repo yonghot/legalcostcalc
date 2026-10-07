@@ -48,6 +48,7 @@ vi.mock("next/link", async () => {
 import { CostResult } from "@/components/calculator/cost-result";
 import { ResultMonetization } from "@/components/monetization/ResultMonetization";
 import EmbedCalculatorPage from "@/app/embed/[state]/[slug]/page";
+import { getFeaturedPartners } from "@/lib/featured-partners";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -91,6 +92,7 @@ function renderCostResult(monetizationDisabled: boolean | undefined): string {
       stateCode: "CA",
       stateSlug: "california",
       monetizationDisabled,
+      featuredPartners: getFeaturedPartners(),
     }),
   );
 }

@@ -2013,20 +2013,16 @@ export function hoursRankSentence(ctx: StateCostContext, matterLabel: string): s
       ctx.hoursRank,
     )} of ${ctx.ratedOutOf} at ${moderate.hours} hours, ${countPlaces(
       Math.abs(vsCost),
-    )} above its cost rank of ${ordinal(
-      ctx.rank,
-    )} on cost — more work behind the same ${matterLabel} money.`;
+    )} above its cost rank of ${ordinal(ctx.rank)}.`;
   }
   if (vsCost === 0) {
     return `By implied hours ${ctx.stateName} is ${ordinal(ctx.hoursRank)} of ${
       ctx.ratedOutOf
     } at ${moderate.hours} hours, the same place it holds on cost, so the ${matterLabel} total and the implied workload agree even though the hourly rate ranks differently.`;
   }
-  return `By implied hours ${ctx.stateName} falls to ${ordinal(ctx.hoursRank)} of ${
+  return `By implied hours ${ctx.stateName} is ${ordinal(ctx.hoursRank)} of ${
     ctx.ratedOutOf
-  } at ${moderate.hours} hours, ${countPlaces(vsCost)} below its ${ordinal(
-    ctx.rank,
-  )} on cost — the ${matterLabel} total arriving on fewer implied hours.`;
+  } at ${moderate.hours} hours, ${countPlaces(vsCost)} below its ${ordinal(ctx.rank)} on cost.`;
 }
 
 /**

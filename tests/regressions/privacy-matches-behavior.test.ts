@@ -71,10 +71,10 @@ describe("K5/K2: the privacy policy describes the site as it runs", () => {
     expect(html).not.toMatch(/does not use cookies for ad targeting/i);
   });
 
-  it("says what Manage Consent does when the country is unknown, and dates that change on October 8, 2026", async () => {
+  it("says what Manage Consent does when the country is unknown, and dates that change on October 10, 2026", async () => {
     const html = visible(await renderPage(PrivacyPage));
     expect(html).toMatch(/cannot tell which country you are in[^.]*Google(?:'|’)s consent message[^.]*instead of our banner/i);
-    expect(html).toContain("Effective date: October 8, 2026");
+    expect(html).toContain("Effective date: October 10, 2026");
   });
 
   it("covers interest-based ads and links Google's ad settings page", async () => {

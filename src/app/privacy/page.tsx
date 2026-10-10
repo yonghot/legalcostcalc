@@ -19,7 +19,7 @@ export const metadata: Metadata = buildMeta({
   withOgImage: true,
 });
 
-const POLICY_EFFECTIVE_DATE = "October 8, 2026";
+const POLICY_EFFECTIVE_DATE = "October 10, 2026";
 
 const ADS_SETTINGS_URL = "https://adssettings.google.com";
 
@@ -100,7 +100,7 @@ export default function PrivacyPage() {
               </ul>
             </section>
 
-            <section>
+            <section id="cookies" className="scroll-mt-24">
               <h2 className="text-xl font-semibold text-slate-900">
                 Cookies, browser storage &amp; advertising
               </h2>
@@ -130,7 +130,11 @@ export default function PrivacyPage() {
                   tell Google to deny advertising and analytics storage, and we remember your
                   choice on this device and apply it on later visits. If the site cannot tell which
                   country you are in, for example because your browser blocks the country cookie,
-                  the link opens Google&apos;s consent message instead of our banner.
+                  the link opens Google&apos;s consent message instead of our banner. If that
+                  message has not opened within two seconds, the link opens a notice of ours
+                  with a Decline button and no Accept button, because the country is unknown;
+                  Decline tells Google to deny advertising and analytics storage, and we
+                  remember your choice on this device.
                 </li>
                 <li>
                   <strong>Interest-based ads.</strong> Google and its partners may show

@@ -46,7 +46,7 @@ function checkEscalation(p: Page, text: string | null): string[] {
   for (const [name, n] of [["cost multiple", cm], ["hours multiple", hm], ["rate multiple", rm]] as const) {
     if (!new RegExp(`(?<![\\d.])${String(n).replace(".", "\\.")}x`).test(text)) v.push(`${name} ${n}x missing`);
   }
-  const branch = /most of that is hours rather than price/.test(text)
+  const branch = /multiplies the .+ total by .+x: /.test(text)
     ? "a"
     : /breaks down as/.test(text)
       ? "b"
@@ -57,7 +57,7 @@ function checkEscalation(p: Page, text: string | null): string[] {
           : "?";
   const want = hm >= 5 ? "a" : hm >= 4.4 ? "b" : hm >= 3.9 ? "c" : "d";
   if (branch !== want) v.push(`branch ${branch} but ${hm}x hours selects ${want}`);
-  if (/(most of that is hours|Hours carry the larger part|Hours still carry the larger part)/.test(text) && !(hm > rm)) v.push(`says hours carry the larger part but ${hm}x hours against ${rm}x rate`);
+  if (/most of that is hours|Hours (?:still )?carry the larger part/.test(text)) v.push(`keeps a share claim the data does not decide: ${hm}x hours against ${rm}x rate`);
   if (/almost all|not a premium hourly rate|unusually large share|senior-rate|comparatively shallow|more billed time|a higher rate:/.test(text)) {
     v.push("keeps a comparative or ratio claim the data does not support");
   }
@@ -80,7 +80,6 @@ function checkOverlap(p: Page, text: string | null): string[] {
   if (ov1 && ov2) {
     if (!/The three bands are continuous/.test(text)) v.push("both pairs touch but the bands are not called continuous");
     if (!same([s.high, m.low, m.high, c.low])) v.push(`figures ${got.map(usd)} differ from the simple ceiling, moderate floor, moderate ceiling and complex floor`);
-    if (!/can therefore belong to two different tiers/.test(text)) v.push("touching bands without the two-tier consequence");
   } else if (ov1) {
     if (!/The lower two bands run into each other/.test(text)) v.push("simple and moderate touch but the sentence does not say so");
     if (!same([s.high, m.low, c.low - m.high, m.high, c.low])) v.push(`figures ${got.map(usd)} differ from the expected gap and bounds`);
@@ -94,7 +93,7 @@ function checkOverlap(p: Page, text: string | null): string[] {
     if (!same([m.low - s.high, c.low - m.high])) v.push(`figures ${got.map(usd)} differ from the two gaps`);
     if (!(s.high < c.low)) v.push("claims one tier per estimate although the outer tiers overlap");
   }
-  if (/maps to exactly one tier/.test(text) !== (!ov1 && !ov2)) v.push("the one-tier claim does not follow the band relations");
+  if (/maps to exactly one tier|clean break|a step, not a slope|the same money|can therefore belong|unusually informative/.test(text)) v.push("keeps a consequence the band figures do not decide");
   return v;
 }
 
@@ -111,10 +110,17 @@ function checkBand(p: Page, text: string | null): string[] {
   const peer = middle(widths);
   const delta = width - peer;
   const got = amounts(text);
-  const branch = /moderate band is wide:/.test(text) ? "wide" : /narrower than the peer-median band/.test(text) ? "narrow" : /close to the/.test(text) ? "close" : "?";
-  const want = peer > 0 && delta > peer * 0.15 ? "wide" : peer > 0 && delta < -peer * 0.15 ? "narrow" : "close";
-  if (branch !== want) v.push(`branch ${branch} but the band is ${usd(width)} against a peer median of ${usd(peer)}`);
-  const expected = want === "close" ? [m.low, m.high, width, peer] : [m.low, m.high, width, Math.abs(delta), peer];
+  const said = /, the same as the peer-median band of/.test(text)
+    ? "same"
+    : /which is \$[\d,]+ wider than the peer-median band of/.test(text)
+      ? "wider"
+      : /which is \$[\d,]+ narrower than the peer-median band of/.test(text)
+        ? "narrower"
+        : "none";
+  const want = peer <= 0 ? "none" : delta === 0 ? "same" : delta > 0 ? "wider" : "narrower";
+  if (said !== want) v.push(`says ${said} but the band is ${usd(width)} against a peer median of ${usd(peer)}`);
+  if (/ is wide:|close to the|cluster|tightly/.test(text)) v.push("keeps a verdict on the width");
+  const expected = want === "none" ? [m.low, m.high, width] : want === "same" ? [m.low, m.high, width, peer] : [m.low, m.high, width, Math.abs(delta), peer];
   if (!expected.every((n, i) => got[i] === n)) v.push(`figures ${got.slice(0, expected.length).map(usd)} differ from ${expected.map(usd)}`);
   const extra = m.rate > 0 ? Math.round(width / m.rate) : 0;
   const end = text.match(/End to end that is (\d+) hours? at (\$[\d,]+)\./);
@@ -181,8 +187,7 @@ function checkExtra(p: Page, blocks: CalculationBlock[]): string[] {
     const factor = Math.round((cH / sH) * 10) / 10;
     if (!versus.body.includes(`${usd(c.median)} buys ${count} matters at the ${usd(s.median)} simple median`)) v.push("matters count differs from complex / simple");
     if (!versus.body.includes(`${cH} implied hours against ${sH}, a factor of ${factor}`)) v.push("hours factor differs from complex / simple hours");
-    const differing = /the two ratios differing because the rate rises with the tier/.test(versus.body);
-    if (differing !== (count !== factor && c.rate > s.rate)) v.push(`"the ratios differ because the rate rises" is ${differing} at ${count} against ${factor} with rates ${usd(s.rate)} to ${usd(c.rate)}`);
+    if (/the two ratios differing|because the rate rises/.test(versus.body)) v.push(`keeps a causal tail at ${count} against ${factor}`);
   }
   return v;
 }
@@ -220,17 +225,17 @@ function checkPremium(p: Page, text: string | null): string[] {
     }
     if (percentOf(m) !== want) v.push(`${i === 0 ? "highest" : "lowest"} premium stated ${percentOf(m)}% but the ${i === 0 ? "maximum" : "minimum"} is ${want}%`);
   }
-  const tier = /close to uniform/.test(text) ? "close" : /not equally priced/.test(text) ? "mid" : /spread across practice areas is wide/.test(text) ? "wide" : "?";
-  const wantTier = spread <= 8 ? "close" : spread <= 20 ? "mid" : "wide";
-  if (tier !== wantTier) v.push(`branch ${tier} but the spread is ${spread} points`);
+  if (!text.startsWith("Measured against each matter's own midpoint, ")) v.push("does not name the metric the premiums are measured in");
+  if (/close to uniform|not equally priced|spread across practice areas is wide|Whatever drives/.test(text)) v.push(`keeps a verdict on a ${spread}-point spread`);
   const stated = text.match(/only (\d+) percentage points apart|a (\d+)-point spread|(\d+) percentage points apart/);
   if (!stated || Number(stated[1] ?? stated[2] ?? stated[3]) !== spread) v.push(`spread stated ${stated?.[0]} but is ${spread}`);
-  const wrongForOne = /would be wrong for at least one of the matter types/.test(text);
+  const wrongForOne = /Some tracked matter types run above their own midpoint here and others run below\./.test(text);
+  if (/would be wrong for at least one|is expensive|is inexpensive/.test(text)) v.push("keeps a verdict on whether the state is expensive");
   const allAbove = /Every tracked matter type runs above its own midpoint/.test(text);
   const allBelow = /Every tracked matter type runs below its own midpoint/.test(text);
-  if (wrongForOne !== (wantTier === "wide" && hi > 0 && lo < 0)) v.push(`"wrong for at least one matter type" is ${wrongForOne} with premiums from ${lo}% to ${hi}%`);
-  if (allAbove !== (wantTier === "wide" && lo > 0)) v.push(`"every matter type above its midpoint" is ${allAbove} with a lowest premium of ${lo}%`);
-  if (allBelow !== (wantTier === "wide" && hi < 0)) v.push(`"every matter type below its midpoint" is ${allBelow} with a highest premium of ${hi}%`);
+  if (wrongForOne !== (hi > 0 && lo < 0)) v.push(`"some above, some below" is ${wrongForOne} with premiums from ${lo}% to ${hi}%`);
+  if (allAbove !== (!(hi > 0 && lo < 0) && lo > 0)) v.push(`"every matter type above its midpoint" is ${allAbove} with a lowest premium of ${lo}%`);
+  if (allBelow !== (!(hi > 0 && lo < 0) && !(lo > 0) && hi < 0)) v.push(`"every matter type below its midpoint" is ${allBelow} with a highest premium of ${hi}%`);
   return v;
 }
 
@@ -240,7 +245,7 @@ describe("K4-a extension: escalation, overlap, band, calibration and extra calcu
   });
 
   it("overlapSentence names the band relation that the figures have (every page)", () => {
-    expect(collect((p) => checkOverlap(p, overlapSentence(p.ctx, p.label)))).toEqual([]);
+    expect(collect((p) => checkOverlap(p, overlapSentence(p.ctx)))).toEqual([]);
   });
 
   it("bandSentence states the width, the peer comparison and the hours it implies (every page)", () => {
@@ -262,19 +267,18 @@ describe("K4-a extension: escalation, overlap, band, calibration and extra calcu
     };
     for (const p of PAGES) {
       const esc = escalationSentence(p.ctx, p.label);
-      hit("escalation a", esc, /most of that is hours rather than price/);
+      hit("escalation a", esc, /multiplies the .+ total by/);
       hit("escalation b", esc, /breaks down as/);
       hit("escalation c", esc, /Decomposed, that is/);
       hit("escalation d", esc, /rises under 3\.9x/);
-      const ov = overlapSentence(p.ctx, p.label);
+      const ov = overlapSentence(p.ctx);
       hit("overlap both", ov, /continuous/);
       hit("overlap lower", ov, /lower two bands/);
-      hit("overlap upper", ov, /clean break/);
+      hit("overlap upper", ov, /separates the simple ceiling/);
       hit("overlap neither", ov, /Neither pair/);
       const band = bandSentence(p.ctx);
-      hit("band wide", band, /is wide:/);
-      hit("band narrow", band, /narrower than/);
-      hit("band close", band, /close to the/);
+      hit("band wider", band, /wider than the peer-median/);
+      hit("band narrower", band, /narrower than the peer-median/);
       hit("band hours", band, /End to end/);
       hit("calibration inside", calibrationSentence(p.ctx, p.label), /% up the/);
       const extra = extraCalculations(p.ctx, p.label).map((b) => b.body).join(" ");
@@ -283,7 +287,7 @@ describe("K4-a extension: escalation, overlap, band, calibration and extra calcu
     }
     const required = [
       "escalation a", "escalation b", "escalation c", "escalation d", "overlap both", "overlap lower", "overlap upper", "overlap neither",
-      "band wide", "band narrow", "band close", "band hours", "calibration inside", "extra both ends", "extra versus",
+      "band wider", "band narrower", "band hours", "calibration inside", "extra both ends", "extra versus",
     ];
     expect(required.filter((name) => !seen.get(name))).toEqual([]);
   });
@@ -311,20 +315,17 @@ describe("K4-a extension: premiumSentence states spreads and claims the premiums
     expect(collect((p) => checkPremium(p, premiumSentence(p.ctx)))).toEqual([]);
   });
 
-  it("every branch occurs, including a wide spread that does not straddle the midpoint", () => {
+  it("every closing relation occurs, including one for a spread that stays on one side of the midpoint", () => {
     const seen = new Map<string, number>();
     for (const p of PAGES) {
       const text = premiumSentence(p.ctx);
       const hit = (name: string, re: RegExp) => text && re.test(text) && seen.set(name, (seen.get(name) ?? 0) + 1);
-      hit("close", /close to uniform/);
-      hit("mid", /not equally priced/);
-      hit("wide", /spread across practice areas is wide/);
-      hit("straddles", /would be wrong for at least one/);
+      hit("straddles", /Some tracked matter types run above their own midpoint here and others run below/);
       hit("all above", /Every tracked matter type runs above/);
       hit("all below", /Every tracked matter type runs below/);
       hit("within a percent", /sits within a percent of its own midpoint/);
     }
-    expect(["close", "mid", "wide", "straddles", "all above", "all below", "within a percent"].filter((n) => !seen.get(n))).toEqual([]);
+    expect(["straddles", "all above", "all below", "within a percent"].filter((n) => !seen.get(n))).toEqual([]);
   });
 
   it("positive control: the checker flags the earlier closing claim on a spread that stays above the midpoint", () => {
@@ -335,8 +336,8 @@ describe("K4-a extension: premiumSentence states spreads and claims the premiums
     expect(p).toBeDefined();
     const ok = premiumSentence(p.ctx)!;
     expect(checkPremium(p, ok)).toEqual([]);
-    const old = `${ok.replace(/ Every tracked matter type runs above its own midpoint.*$/, "")} A single "${p.state} is expensive" or "${p.state} is inexpensive" claim would be wrong for at least one of the matter types tracked here.`;
+    const old = `${ok.replace(/ Every tracked matter type runs above its own midpoint.*$/, "")} Some tracked matter types run above their own midpoint here and others run below.`;
     expect(old).not.toBe(ok);
-    expect(checkPremium(p, old).join(" ")).toMatch(/"wrong for at least one matter type" is true/);
+    expect(checkPremium(p, old).join(" ")).toMatch(/"some above, some below" is true/);
   });
 });

@@ -28,20 +28,20 @@ import {
 const O = "(?:st|nd|rd|th)";
 const ITEM_TEMPLATES: [string, RegExp][] = [
   ["cluster4", /^(\d+) tracked states record a median within three percent of (\$[\d,]+) — about (\$[\d,]+) either way — so a revision of that size could move (.+?) past as many as (\d+) places\.$/],
-  ["cluster0", /^No other tracked state's median is within three percent of (\$[\d,]+), so the rank would hold under a revision of that size, but there is no state that close to cross-check the figure against\.$/],
-  ["cluster13", /^(.+?) (?:records a median|record medians) within three percent of (\$[\d,]+); no other state is close enough to corroborate it\.$/],
-  ["gap6", new RegExp(`^Rate and total disagree by (\\d+) places \\((\\d+)${O} on rate against (\\d+)${O} on total\\), so the (\\$[\\d,]+) rate alone is a poor guide to the (\\$[\\d,]+) total\\.$`)],
-  ["gap0", new RegExp(`^Rate and total both rank (.+?) (\\d+)${O}, which makes (\\$[\\d,]+) a workable shorthand here — it is not one everywhere in our cost figures\\.$`)],
-  ["gapSmall", new RegExp(`^Rate and total sit (\\d+) places? apart \\((\\d+)${O} against (\\d+)${O}\\); close, but not the same measurement\\.$`)],
-  ["ov1", /^(\$[\d,]+)(?:–(\$[\d,]+))? belongs to both bands; the tier, not the figure, separates them\.$/],
+  ["cluster0", /^No other tracked state's median is within three percent of (\$[\d,]+), so the rank would hold under a revision of that size\.$/],
+  ["cluster13", /^(.+?) (?:records a median|record medians) within three percent of (\$[\d,]+)\.$/],
+  ["gap6", new RegExp(`^Rate and total differ by (\\d+) places \\((\\d+)${O} on rate against (\\d+)${O} on total\\): the rate is (\\$[\\d,]+) and the total (\\$[\\d,]+)\\.$`)],
+  ["gap0", new RegExp(`^Rate and total both rank (.+?) (\\d+)${O}: (\\$[\\d,]+) an hour and (\\$[\\d,]+) in total\\.$`)],
+  ["gapSmall", new RegExp(`^Rate and total sit (\\d+) places? apart \\((\\d+)${O} against (\\d+)${O}\\)\\.$`)],
+  ["ov1", /^(\$[\d,]+)(?:–(\$[\d,]+))? belongs to both bands\.$/],
   ["noov1", /^A quote between (\$[\d,]+) and (\$[\d,]+) falls in the gap between two estimated bands, and this page does not describe it\.$/],
-  ["ov2", /^The moderate band reaches (\$[\d,]+) while the complex band starts at (\$[\d,]+): the same money buys different work at the two tiers\.$/],
-  ["noov2", /^(\$[\d,]+) of clear space separates the moderate ceiling from the complex floor, so escalation is a jump rather than a drift\.$/],
-  ["shift", new RegExp(`^"The (.+?) rank" is ambiguous by (\\d+) places unless a tier is named: (\\d+)${O} simple, (\\d+)${O} moderate, (\\d+)${O} complex\\.$`)],
+  ["ov2", /^The moderate band reaches (\$[\d,]+) while the complex band starts at (\$[\d,]+)\.$/],
+  ["noov2", /^(\$[\d,]+) of clear space separates the moderate ceiling from the complex floor\.$/],
+  ["shift", new RegExp(`^The (.+?) rank is (\\d+)${O} at the simple tier, (\\d+)${O} at moderate and (\\d+)${O} at complex, a spread of (\\d+) places\\.$`)],
   ["hours35", /^The (\d+) implied hours are arithmetic, not a timesheet: they treat all of (\$[\d,]+) as attorney time at (\$[\d,]+), although a total can include costs other than attorney time\.$/],
   ["hoursSmall", /^(\$[\d,]+) ÷ (\$[\d,]+) comes to about (\d+) hours — an arithmetic implication of the estimate for an? .+?, not a timesheet\.$/],
-  ["countyHigh", /^The (\$[\d,]+)–(\$[\d,]+) band is a single statewide estimate for (.+?), with no county-level figures behind it, so a quote above (\$[\d,]+) is a comparison with a model rather than a finding about any county\.$/],
-  ["countyLow", /^The (\$[\d,]+)–(\$[\d,]+) band is one statewide estimate with no county breakdown behind it, so a quote outside it is not by itself evidence of anything\.$/],
+  ["countyHigh", /^The (\$[\d,]+)–(\$[\d,]+) band is a single statewide estimate for (.+?), with no county-level figures behind it\.$/],
+  ["countyLow", /^The (\$[\d,]+)–(\$[\d,]+) band is one statewide estimate with no county breakdown behind it\.$/],
   ["rankUp", new RegExp(`^A rise of (\\$[\\d,]+) in the (.+?) median, to the (\\$[\\d,]+) that (.+?) records, would move it up from (\\d+)${O}\\.$`)],
   ["rankTopTie", new RegExp(`^(.+?) holds (\\d+)${O} with no state above it, but (?:another state records|(\\d+) other states record) the same (\\$[\\d,]+), so any fall in its figure would lower its rank\\.$`)],
   ["rankTop", new RegExp(`^(.+?) holds (\\d+)${O} with no state above it; a fall of more than (\\$[\\d,]+), below the (\\$[\\d,]+) that (.+?) records, would be needed to lower its rank\\.$`)],
@@ -149,7 +149,7 @@ function checkAssumptionItem(p: Page, f: AssumptionFacts, name: string, mt: RegE
     }
     case "gap0":
       nameIn(1);
-      if (num(2) !== f.rank || f.rank !== f.hourlyRank || amt(3) !== m.rate) v.push(`says both rank ${ord(num(2))} but cost rank ${f.rank}, rate rank ${f.hourlyRank}`);
+      if (num(2) !== f.rank || f.rank !== f.hourlyRank || amt(3) !== m.rate || amt(4) !== f.own) v.push(`says both rank ${ord(num(2))} but cost rank ${f.rank}, rate rank ${f.hourlyRank}`);
       break;
     case "ov1":
       if (amt(1) !== m.low || (mt[2] ? amt(2) !== s!.high : m.low !== s!.high)) v.push("shared range differs from the moderate floor and simple ceiling");
@@ -168,7 +168,7 @@ function checkAssumptionItem(p: Page, f: AssumptionFacts, name: string, mt: RegE
       const sr = strictRank(seedTable(p.category, "simple"), s!.median);
       const cr = strictRank(seedTable(p.category, "complex"), c!.median);
       nameIn(1);
-      if (num(2) !== Math.max(sr, f.rank, cr) - Math.min(sr, f.rank, cr) || num(3) !== sr || num(4) !== f.rank || num(5) !== cr) v.push(`says ${mt[0]!.slice(0, 90)} but the strict tier ranks are ${sr}, ${f.rank}, ${cr}`);
+      if (num(5) !== Math.max(sr, f.rank, cr) - Math.min(sr, f.rank, cr) || num(2) !== sr || num(3) !== f.rank || num(4) !== cr) v.push(`says ${mt[0]!.slice(0, 90)} but the strict tier ranks are ${sr}, ${f.rank}, ${cr}`);
       break;
     }
     case "hours35":
@@ -180,10 +180,7 @@ function checkAssumptionItem(p: Page, f: AssumptionFacts, name: string, mt: RegE
     case "countyHigh":
     case "countyLow":
       if (amt(1) !== m.low || amt(2) !== m.high) v.push("band differs from the page's moderate band");
-      if (name === "countyHigh") {
-        nameIn(3);
-        if (amt(4) !== m.high) v.push("ceiling differs from the page's");
-      }
+      if (name === "countyHigh") nameIn(3);
       break;
     case "rankUp": {
       const g = amt(1);

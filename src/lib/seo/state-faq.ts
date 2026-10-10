@@ -80,9 +80,7 @@ export function buildStateFaq(ctx: StateCostContext, matterLabel: string): FaqEn
             moderate.low,
           )}–${usd(moderate.high)}. That is within a percent of the ${usd(
             ctx.peerMedian,
-          )} midpoint of the ${ctx.rankedOutOf} states tracked here, which puts ${stateName} at ${ordinal(
-            ctx.rank,
-          )} — a position in the middle of the table rather than at either end of it.`
+          )} midpoint of the ${ctx.rankedOutOf} states tracked here, and ranks ${stateName} ${ordinal(ctx.rank)}.`
         : ctx.direction === "above"
           ? `The median estimate is ${usd(moderate.median)} for a moderate-complexity matter, inside ${usd(
               moderate.low,
@@ -104,7 +102,7 @@ export function buildStateFaq(ctx: StateCostContext, matterLabel: string): FaqEn
             )} recording less.`,
   });
 
-  /* 2 — the rate, and what the rate does and does not explain. */
+  /* 2 — the rate, with the rank it holds against the total's rank. */
   if (moderate.hourlyMedian && ctx.hourlyRank !== null) {
     const rateSpread =
       simple?.hourlyMedian && complex?.hourlyMedian
@@ -122,9 +120,7 @@ export function buildStateFaq(ctx: StateCostContext, matterLabel: string): FaqEn
               ctx.hourlyRank,
             )} of ${ctx.ratedOutOf} on rate against ${ordinal(
               ctx.rank,
-            )} on total cost. The two rankings are ${Math.abs(
-              ctx.rankGap,
-            )} places apart, so the rate on its own is a poor predictor of the total here.${rateSpread}`
+            )} on total cost. The two rankings are ${Math.abs(ctx.rankGap)} places apart.${rateSpread}`
           : `The moderate-tier band is ${usd(moderate.hourlyLow ?? 0)}–${usd(
               moderate.hourlyHigh ?? 0,
             )}, median ${usd(moderate.hourlyMedian)} — ${ordinal(ctx.hourlyRank)} of ${
@@ -174,55 +170,27 @@ export function buildStateFaq(ctx: StateCostContext, matterLabel: string): FaqEn
   /* 5 — complexity, answered with the state's rank at each tier. */
   if (simple && complex && simple.rank && complex.rank) {
     const shift = ctx.tierRankShift ?? 0;
-    const middleRank = (ctx.rankedOutOf + 1) / 2;
-    const offMidpoint = (tier: typeof simple) => (tier.peerMedian > 0 ? Math.abs(tier.median / tier.peerMedian - 1) : 0);
-    const moreDistinctiveWhenContested =
-      Math.abs(complex.rank - middleRank) > Math.abs(simple.rank - middleRank) && offMidpoint(complex) > offMidpoint(simple);
-    const simpleOver = simple.peerMedian > 0 ? simple.median / simple.peerMedian - 1 : 0;
-    const complexOver = complex.peerMedian > 0 ? complex.median / complex.peerMedian - 1 : 0;
-    const premiumIsAtSimpleTier = simpleOver > 0 && complexOver <= simpleOver / 2;
+    const spread = ctx.tierRankSpread ?? 0;
     entries.push({
       question: `Does ${matterLabel} cost vary by complexity in ${stateName}?`,
       answer:
         shift >= 4
-          ? `Substantially, and the state's standing changes with it. ${stateName} records ${usd(
-              simple.median,
-            )} at the simple tier, ${usd(moderate.median)} at moderate and ${usd(
+          ? `${stateName} records ${usd(simple.median)} at the simple tier, ${usd(moderate.median)} at moderate and ${usd(
               complex.median,
-            )} at complex — and its rank moves from ${ordinal(simple.rank)} of ${
-              ctx.rankedOutOf
-            } up to ${ordinal(complex.rank)}${
-              moreDistinctiveWhenContested ? ", so it is more distinctive on contested matters than on straightforward ones" : ""
-            }.`
+            )} at complex, and its rank moves from ${ordinal(simple.rank)} of ${ctx.rankedOutOf} up to ${ordinal(complex.rank)}.`
           : shift <= -4
-            ? `Substantially. The three tiers record ${usd(simple.median)}, ${usd(
-                moderate.median,
-              )} and ${usd(complex.median)}, but the state's position falls from ${ordinal(
-                simple.rank,
-              )} of ${ctx.rankedOutOf} at the simple tier to ${ordinal(
+            ? `The three tiers record ${usd(simple.median)}, ${usd(moderate.median)} and ${usd(
+                complex.median,
+              )}, and the state's position falls from ${ordinal(simple.rank)} of ${ctx.rankedOutOf} at the simple tier to ${ordinal(
                 complex.rank,
-              )} at the complex tier${
-                premiumIsAtSimpleTier
-                  ? ` — the premium ${stateName} carries is concentrated in straightforward matters`
-                  : ""
-              }.`
-            : `Yes: ${usd(simple.median)} at the simple tier, ${usd(
-                moderate.median,
-              )} at moderate and ${usd(complex.median)} at complex, a span of ${
-                ctx.costMultiple ?? 0
-              }x. ${
-                (ctx.tierRankSpread ?? 0) >= 4
-                  ? `The state's rank depends on the tier — ${ordinal(simple.rank)}, ${ordinal(
-                      moderate.rank ?? ctx.rank,
-                    )} and ${ordinal(complex.rank)} of ${ctx.rankedOutOf}, a spread of ${
-                      ctx.tierRankSpread
-                    } places — so the headline figure does not stand for every tier.`
-                  : `${stateName} holds a similar position at every tier — ${ordinal(
-                      simple.rank,
-                    )}, ${ordinal(moderate.rank ?? ctx.rank)} and ${ordinal(complex.rank)} of ${
-                      ctx.rankedOutOf
-                    } — so complexity moves the price without moving the state's standing.`
-              }`,
+              )} at the complex tier.`
+            : `Yes: ${usd(simple.median)} at the simple tier, ${usd(moderate.median)} at moderate and ${usd(
+                complex.median,
+              )} at complex, a span of ${ctx.costMultiple ?? 0}x. The state's rank across the tiers is ${ordinal(
+                simple.rank,
+              )}, ${ordinal(moderate.rank ?? ctx.rank)} and ${ordinal(complex.rank)} of ${ctx.rankedOutOf}, ${
+                spread === 0 ? "the same rank at all three tiers" : `a spread of ${spread} ${spread === 1 ? "place" : "places"}`
+              }.`,
     });
   }
 

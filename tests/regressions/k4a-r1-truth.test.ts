@@ -15,7 +15,6 @@ import { buildStateFaq } from "@/lib/seo/state-faq";
 import {
   NAME_RE,
   collect,
-  middle,
   money,
   nameToCode,
   seedRow,
@@ -67,7 +66,7 @@ describe("r1-truth-TXT-02: a state with nobody within three percent does not 'mo
       const near = seedTable(p.category, "moderate").filter((r) => r.code !== p.code && Math.abs(r.median - own) / own <= 0.03);
       if (near.length > 0) return [];
       seen++;
-      const text = clusterSentence(p.ctx, p.label) ?? "";
+      const text = clusterSentence(p.ctx) ?? "";
       const out: string[] = [];
       if (/several places/.test(text)) out.push(`cluster sentence moves the state several places: ${text}`);
       if (!/rank would hold/.test(text)) out.push(`cluster sentence does not say the rank would hold: ${text}`);
@@ -241,7 +240,6 @@ describe("r1-truth-TXT-06: a state ranked in one third of every table is not cal
 });
 
 describe("r1-truth-TXT-07/08/09: tier-trajectory claims agree with the tier tables", () => {
-  const simpleMid = (p: Page) => middle(seedTable(p.category, "simple").map((r) => r.median));
   const tierRanks = (p: Page) =>
     (["simple", "moderate", "complex"] as const).map((tier) => {
       const table = seedTable(p.category, tier);
@@ -250,36 +248,35 @@ describe("r1-truth-TXT-07/08/09: tier-trajectory claims agree with the tier tabl
   const complexityAnswer = (p: Page) =>
     buildStateFaq(p.ctx, p.label).find((e) => /vary by complexity/.test(e.question))?.answer ?? "";
 
-  it("FAQ: a premium concentrated in straightforward matters needs a simple-tier median above the tier midpoint", () => {
+  it("FAQ: no complexity answer says the premium is concentrated in straightforward matters", () => {
     let seen = 0;
     const v = collect((p) => {
-      if (!/premium .+ carries is concentrated in straightforward matters/.test(complexityAnswer(p))) return [];
-      seen++;
-      return ownMedian(p, "simple")! > simpleMid(p) ? [] : [`simple ${usd(ownMedian(p, "simple")!)} <= midpoint ${usd(simpleMid(p))}`];
+      const text = complexityAnswer(p);
+      if (text) seen++;
+      return /concentrated in straightforward matters/.test(text) ? [text] : [];
     });
     expect(seen).toBeGreaterThan(0);
     expect(v).toEqual([]);
   });
 
-  it("trajectory: 'expensive to start' needs a simple-tier median above the tier midpoint", () => {
+  it("trajectory: no page calls the simple tier 'expensive to start' or 'ordinary', the gaps to the midpoints are printed instead", () => {
     let seen = 0;
     const v = collect((p) => {
-      if (!/expensive to start/.test(trajectorySentence(p.ctx, p.label) ?? "")) return [];
-      seen++;
-      return ownMedian(p, "simple")! > simpleMid(p) ? [] : [`simple ${usd(ownMedian(p, "simple")!)} <= midpoint ${usd(simpleMid(p))}`];
+      const text = trajectorySentence(p.ctx) ?? "";
+      if (/a fall of \d+ places as the matter becomes harder/.test(text)) seen++;
+      return /expensive to start|comparatively ordinary|already sits at or below/.test(text) ? [text] : [];
     });
     expect(seen).toBeGreaterThan(0);
     expect(v).toEqual([]);
   });
 
-  it("'barely moves' and 'similar position at every tier' need the three tier ranks within three places", () => {
+  it("no sentence says the rank 'barely moves' or holds a 'similar position at every tier': the three ranks and their spread are printed", () => {
     let seen = 0;
     const v = collect((p) => {
-      const claims = /barely moves/.test(trajectorySentence(p.ctx, p.label) ?? "") || /similar position at every tier/.test(complexityAnswer(p));
-      if (!claims) return [];
-      seen++;
+      const text = `${trajectorySentence(p.ctx) ?? ""} ${complexityAnswer(p)}`;
       const ranks = tierRanks(p);
-      return Math.max(...ranks) - Math.min(...ranks) <= 3 ? [] : [`tier ranks ${ranks.join("/")}`];
+      if (Math.max(...ranks) - Math.min(...ranks) <= 3) seen++;
+      return /barely moves|similar position|roughly the same relative position/.test(text) ? [text] : [];
     });
     expect(seen).toBeGreaterThan(0);
     expect(v).toEqual([]);

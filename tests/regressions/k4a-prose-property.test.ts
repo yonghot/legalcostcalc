@@ -131,7 +131,7 @@ function checkRank(p: Page, text: string): string[] {
   if (lower && (lower[2] ? Number(lower[2]) : 0) !== s.lower) v.push(`says ${lower[1]} lower but ${s.lower} record a lower median`);
   const higher =
     text.match(/with (no state|(\d+) states?) recording a higher median/) ??
-    text.match(/(?:only (\d+) states? records?|no state records) a higher median/);
+    text.match(/(?:(\d+) states? records?|no state records) a higher median/);
   if (higher) {
     const n = higher[2] !== undefined ? Number(higher[2]) : higher[1] && /^\d+$/.test(higher[1]) ? Number(higher[1]) : 0;
     if (n !== s.higher) v.push(`says ${higher[0]} but ${s.higher} record a higher median`);
@@ -161,15 +161,15 @@ function checkNeighbor(p: Page, text: string | null): string[] {
   if ((m = text.match(new RegExp(`^${NAME_RE} and ${NAME_RE} both record ${MONEY}, the same figure as`)))) {
     for (const n of [m[1]!, m[2]!]) if (valueOf(list, n) !== own) v.push(`${n} does not record the same figure`);
     if (money(m[3]!) !== own) v.push("stated common figure differs");
-    if (!/tie-break/.test(text)) v.push("a three-way tie is not described as a tie-break");
+    if (/tie-break|measured difference/.test(text)) v.push("a three-way tie keeps an interpretation of the tie");
   } else if ((m = text.match(new RegExp(`^${NAME_RE} \\(${MONEY}\\) and ${NAME_RE} \\(${MONEY}\\) bracket .+? inside a ${MONEY} window`)))) {
     v.push(...adjacency(list, own, m[1]!, "above"), ...adjacency(list, own, m[3]!, "below"));
     if (money(m[5]!) !== money(m[2]!) - money(m[4]!)) v.push("window width is not above minus below");
-  } else if ((m = text.match(new RegExp(`^${NAME_RE} is the nearest state below at ${MONEY} — (the same figure|${MONEY} away) — while the next state up, ${NAME_RE}, is a wider ${MONEY} step at ${MONEY}\\.`)))) {
+  } else if ((m = text.match(new RegExp(`^${NAME_RE} is the nearest state below at ${MONEY} — (the same figure|${MONEY} away) — while the next state up, ${NAME_RE}, is ${MONEY} away at ${MONEY}\\.`)))) {
     v.push(...adjacency(list, own, m[1]!, "below"), ...adjacency(list, own, m[5]!, "above"));
     if (m[3] === "the same figure" ? money(m[2]!) !== own : own - money(m[2]!) !== money(m[4]!)) v.push("distance below is wrong");
     if (money(m[7]!) - own !== money(m[6]!)) v.push("step above is wrong");
-  } else if ((m = text.match(new RegExp(`^${NAME_RE}, at ${MONEY}, is (level with|only ${MONEY} above) .+?, but the drop to ${NAME_RE} at ${MONEY} is ${MONEY}`)))) {
+  } else if ((m = text.match(new RegExp(`^${NAME_RE}, at ${MONEY}, is (level with|${MONEY} above) .+?, and ${NAME_RE} at ${MONEY} is ${MONEY} below\\.`)))) {
     v.push(...adjacency(list, own, m[1]!, "above"), ...adjacency(list, own, m[5]!, "below"));
     const gapUp = money(m[2]!) - own;
     if (valueOf(list, m[1]!) !== money(m[2]!)) v.push("stated figure of the state above is wrong");
@@ -289,14 +289,14 @@ describe("K4-a: tie handling in the rank statements (every state x matter page)"
       hit("neighbor tie", nb, /both record/);
       hit("neighbor bracket", nb, /bracket/);
       hit("neighbor top edge", nb, /nearest state below/);
-      hit("neighbor bottom edge", nb, /drop to/);
+      hit("neighbor bottom edge", nb, /at \$[\d,]+ is \$[\d,]+ below\./);
       hit("neighbor between", nb, /falls between/);
       hit("neighbor no higher", nb, /^No tracked state records a higher/);
       hit("neighbor no lower", nb, /^No tracked state records a lower/);
       const faq = buildStateFaq(p.ctx, p.label)[0]!.answer;
       hit("faq more", faq, /recording more/);
       hit("faq less", faq, /recording less/);
-      hit("sensitivity tie", sensitivitySentence(p.ctx, p.label), /tie-break/);
+      hit("sensitivity tie", sensitivitySentence(p.ctx, p.label), /Another tracked state records exactly/);
       hit("movement same figure", movementSentences(p.ctx, p.label).join(" "), /which all record the same/);
       hit("movement nothing above", movementSentences(p.ctx, p.label).join(" "), /There is nothing above/);
       hit("category largest", categoryMixSentence(p.ctx, p.label), /carries the largest median/);
@@ -308,11 +308,11 @@ describe("K4-a: tie handling in the rank statements (every state x matter page)"
       hit("tier down", tierAnalysisSentences(p.ctx, p.label, "complex").join(" "), /below its moderate position/);
       hit("thirds tally", stateShapeSentences(p.ctx, p.label).join(" "), /in the upper third, \d+ in the lower/);
       hit("hourly position", hourlyPositionSentence(p.ctx, p.label), /places/);
-      hit("hours rank", hoursRankSentence(p.ctx, p.label), /of \d+ at/);
+      hit("hours rank", hoursRankSentence(p.ctx), /of \d+ at/);
       hit("rate group", rateGroupSentences(p.ctx, p.label).join(" "), /record the same|record exactly/);
-      hit("cluster", clusterSentence(p.ctx, p.label), /within three percent/);
+      hit("cluster", clusterSentence(p.ctx), /within three percent/);
       hit("tier cluster", tierClusterSentence(p.ctx, "simple"), /within three percent/);
-      hit("trajectory", trajectorySentence(p.ctx, p.label), /place/);
+      hit("trajectory", trajectorySentence(p.ctx), /place/);
       hit("dataset quartile", datasetSentences(p.ctx).join(" "), /quarter/);
     }
     const missing = [...new Set([
@@ -558,7 +558,7 @@ describe("K4-a: every other rank, tier and matter-type claim equals the computed
           if (both && !(valueOf(list, both[1]!) === s.value && valueOf(list, both[2]!) === s.value)) out.push("both-record claim is wrong");
         }
       }
-      const t = trajectorySentence(p.ctx, p.label);
+      const t = trajectorySentence(p.ctx);
       if (t) {
         const ranks = [...t.matchAll(/(\d+)(?:st|nd|rd|th) at the (simple|moderate|complex) tier|(\d+)(?:st|nd|rd|th) at (moderate|complex)/g)];
         for (const r of ranks) {
@@ -566,7 +566,7 @@ describe("K4-a: every other rank, tier and matter-type claim equals the computed
           const s = standing(rows(p.category, tier), p.code)!;
           if (Number(r[1] ?? r[3]) !== s.rank) out.push(`trajectory ${r[0]} but strict ${s.rank}`);
         }
-        const shift = t.match(/(climbs|a fall of|slides|a) (\d+)[- ]place/);
+        const shift = t.match(/(climbs|a fall of|a climb of|slides) (\d+)[- ]place/);
         if (shift) {
           const sS = standing(rows(p.category, "simple"), p.code)!.rank;
           const cS = standing(rows(p.category, "complex"), p.code)!.rank;
@@ -594,7 +594,7 @@ describe("K4-a: every other rank, tier and matter-type claim equals the computed
         const places = [...hp.matchAll(/(\d+) places?/g)].map((m) => Number(m[1]));
         if (places.some((n) => n !== gap)) out.push(`hourly sentence gap ${places} but strict gap ${gap}`);
       }
-      const hr = hoursRankSentence(p.ctx, p.label);
+      const hr = hoursRankSentence(p.ctx);
       if (hr) {
         const ofs = [...hr.matchAll(/\d+(?:st|nd|rd|th) of (\d+)/g)].map((m) => Number(m[1]));
         if (ofs.some((n) => n !== rated.length)) out.push(`hours sentence denominators ${ofs} but ${rated.length} states have a rate`);
@@ -625,7 +625,8 @@ describe("K4-a: every other rank, tier and matter-type claim equals the computed
       const equalOthers = list.filter((r) => r.value === s.value && r.code !== p.code).length;
       const text = sensitivitySentence(p.ctx, p.label);
       if (text) {
-        if (/tie-break/.test(text) !== (equalOthers > 0)) out.push(`tie-break claim is ${/tie-break/.test(text)} with ${equalOthers} equal states`);
+        if (/Another tracked state records exactly/.test(text) !== (equalOthers > 0)) out.push(`equal-figure statement is ${/Another tracked state records exactly/.test(text)} with ${equalOthers} equal states`);
+        if (/tie-break|propped up|room to improve|well separated|lopsided|stable fact/.test(text)) out.push("keeps an interpretation of the surrounding states");
         const up = list.filter((r) => r.value > s.value && r.value <= s.value * 1.1).length;
         const down = list.filter((r) => r.value < s.value && r.value >= s.value * 0.9).length;
         for (const m of text.matchAll(/(?<![\d,$])(\d+) (?:states? )?above|(?<![\d,$])(\d+) up\b/g)) {
@@ -659,7 +660,7 @@ describe("K4-a: every other rank, tier and matter-type claim equals the computed
         if (valueOf(list, topEnds[1]!) !== Math.max(...list.map((r) => r.value))) out.push("top of the table is not the highest");
         if (valueOf(list, topEnds[4]!) !== Math.min(...list.map((r) => r.value))) out.push("bottom of the table is not the lowest");
       }
-      const members = clusterSentence(p.ctx, p.label) ?? "";
+      const members = clusterSentence(p.ctx) ?? "";
       const near = list.filter((r) => r.code !== p.code && Math.abs(r.value - s.value) / s.value <= 0.03).length;
       const listed = members.match(/^(.+?) record medians within/);
       const claimed = /^(\d+) tracked states/.test(members)

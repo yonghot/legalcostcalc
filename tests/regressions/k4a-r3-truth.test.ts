@@ -9,7 +9,6 @@ import {
   consistencySentence,
   hourlyPositionSentence,
   hoursRankSentence,
-  hoursSentence,
   movementSentences,
   neighborSentence,
   premiumSentence,
@@ -32,39 +31,52 @@ const peerHours = (p: Page) =>
       .map((r) => Math.round(r.median / r.rate)),
   );
 
-describe("r3-truth-R3-TXT-01: the hours-rank sentence makes no workload claim the hours sentence contradicts", () => {
-  it("'more work behind' needs hours above the peer median and 'fewer implied hours' needs hours below it", () => {
+describe("r3-truth-R3-TXT-01: the hours-rank sentence states the two ranks and makes no workload claim", () => {
+  const ordinalRe = "(\\d+)(?:st|nd|rd|th)";
+  const PARSE = new RegExp(
+    `^By implied hours .+? is ${ordinalRe} of (\\d+) at (\\d+) hours, (?:(\\d+) places? above its cost rank of ${ordinalRe}|(\\d+) places? below its ${ordinalRe} on cost|the same place it holds on cost)\\.$`,
+  );
+
+  it("no page claims more work, fewer hours or an agreement the hours sentence could contradict", () => {
     let seen = 0;
     const v = collect((p) => {
-      const text = hoursRankSentence(p.ctx, p.label);
+      const text = hoursRankSentence(p.ctx);
       if (!text) return [];
       seen++;
-      const own = hoursOf(tierRow(p, "moderate"))!;
-      const peer = peerHours(p);
-      const out: string[] = [];
-      if (/more work behind/.test(text) && !(own > peer)) out.push(`says more work, hours ${own} vs peer median ${peer}`);
-      if (/fewer implied hours/.test(text) && !(own < peer)) out.push(`says fewer hours, hours ${own} vs peer median ${peer}`);
-      return out;
+      return /more work|fewer implied hours|same money|third ordering|where cost and rate also put it|agree/.test(text) ? [text] : [];
     });
     expect(seen).toBeGreaterThan(300);
     expect(v).toEqual([]);
   });
 
-  it("both sentences stay on one side of the peer median wherever both are printed", () => {
+  it("the hours rank, its denominator, the hours and the cost-rank relation equal the seed's strict ranks", () => {
+    const seen = { above: 0, below: 0, same: 0 };
     const v = collect((p) => {
-      const rank = hoursRankSentence(p.ctx, p.label);
-      const hours = hoursSentence(p.ctx, p.label);
-      if (!rank || !hours) return [];
-      const own = hoursOf(tierRow(p, "moderate"))!;
-      const peer = peerHours(p);
-      const rankSaysMore = /more work/.test(rank);
-      const rankSaysFewer = /fewer implied hours/.test(rank);
-      const hoursSaysMore = /more hours? of work/.test(hours);
-      const hoursSaysFewer = /fewer implied hours?/.test(hours);
-      return (rankSaysMore && hoursSaysFewer) || (rankSaysFewer && hoursSaysMore) || (rankSaysFewer && own >= peer) || (rankSaysMore && own <= peer)
-        ? [`rank: ${rank} | hours: ${hours}`]
-        : [];
+      const text = hoursRankSentence(p.ctx);
+      if (!text) return [];
+      const m = text.match(PARSE);
+      if (!m) return [`unrecognised: ${text}`];
+      const rated = seedTable(p.category, "moderate").filter((r) => r.rate > 0);
+      const own = rated.find((r) => r.code === p.code)!;
+      const hoursRank = 1 + rated.filter((r) => r.median / r.rate > own.median / own.rate).length;
+      const costRank = strictRank(seedTable(p.category, "moderate"), own.median);
+      const out: string[] = [];
+      if (Number(m[1]) !== hoursRank || Number(m[2]) !== rated.length || Number(m[3]) !== hoursOf(own)) out.push(`says ${m[1]}/${m[2]}/${m[3]} hours, seed ${hoursRank}/${rated.length}/${hoursOf(own)}`);
+      if (m[4] !== undefined) {
+        seen.above++;
+        if (!(hoursRank < costRank && costRank - hoursRank === Number(m[4]) && costRank === Number(m[5]))) out.push(`"above": hours ${hoursRank}, cost ${costRank}, says ${m[4]} places over ${m[5]}`);
+      } else if (m[6] !== undefined) {
+        seen.below++;
+        if (!(hoursRank > costRank && hoursRank - costRank === Number(m[6]) && costRank === Number(m[7]))) out.push(`"below": hours ${hoursRank}, cost ${costRank}, says ${m[6]} places under ${m[7]}`);
+      } else {
+        seen.same++;
+        if (hoursRank !== costRank) out.push(`"same place": hours ${hoursRank}, cost ${costRank}`);
+      }
+      return out;
     });
+    expect(seen.above).toBeGreaterThan(20);
+    expect(seen.below).toBeGreaterThan(20);
+    expect(seen.same).toBeGreaterThan(5);
     expect(v).toEqual([]);
   });
 });
@@ -105,7 +117,7 @@ describe("r3-truth-R3-TXT-02: the rate-versus-total sentence states no cause the
   it("no branch offers an explanation of the gap at all: only the two rankings and the place count", () => {
     const v = collect((p) => {
       const text = hourlyPositionSentence(p.ctx, p.label);
-      return text && /\b(?:because|reflect|a sign|explain|rather than)\b/.test(text) ? [text] : [];
+      return text && /\b(?:because|reflect|a sign|explain|rather than|disagree|different directions|same story|nearly agree|optimistic|same signal|far above)\b/.test(text) ? [text] : [];
     });
     expect(v).toEqual([]);
   });
@@ -113,26 +125,17 @@ describe("r3-truth-R3-TXT-02: the rate-versus-total sentence states no cause the
 
 describe("r3-truth-R3-TXT-03 / R3C-01: the tier trajectory sentence prices each tier against its own midpoint", () => {
   const midpointOf = (p: Page, tier: Tier) => middle(seedTable(p.category, tier).map((r) => r.median));
-  const offBy = (p: Page, tier: Tier) => Math.abs(tierRow(p, tier)!.median - midpointOf(p, tier)) / midpointOf(p, tier);
-  const CLIMB_BIG = /Rank is not stable across the tiers/;
-  const FALL_BIG = /The tiers rank .+ very differently/;
+  const CLIMB_BIG = /it climbs \d+ places as the matter gets harder/;
+  const FALL_BIG = /a fall of \d+ places as the matter becomes harder/;
 
-  it("'ordinary' and 'is not' claims about a tier need that tier within ten percent of its midpoint (or not)", () => {
+  it("no page calls a tier ordinary or expensive: the claim is printed as dollar gaps to the midpoints", () => {
     let seen = 0;
     const v = collect((p) => {
-      const text = trajectorySentence(p.ctx, p.label) ?? "";
-      const out: string[] = [];
-      if (CLIMB_BIG.test(text)) seen++;
-      if (/estimated at ordinary prices here; contested work is not/.test(text)) {
-        if (!(offBy(p, "simple") <= 0.1)) out.push(`simple tier is ${Math.round(offBy(p, "simple") * 100)}% off its midpoint`);
-        if (!(offBy(p, "complex") > 0.1)) out.push(`complex tier is ${Math.round(offBy(p, "complex") * 100)}% off its midpoint`);
-      }
-      if (/comparatively ordinary to finish/.test(text) && !(offBy(p, "complex") <= 0.1)) {
-        out.push(`complex tier is ${Math.round(offBy(p, "complex") * 100)}% off its midpoint`);
-      }
-      return out;
+      const text = trajectorySentence(p.ctx) ?? "";
+      if (CLIMB_BIG.test(text) || FALL_BIG.test(text)) seen++;
+      return /ordinary|expensive|contested work is not|already sits at or below|rank is not stable|very differently/.test(text) ? [text] : [];
     });
-    expect(seen).toBeGreaterThan(20);
+    expect(seen).toBeGreaterThan(30);
     expect(v).toEqual([]);
   });
 
@@ -141,8 +144,8 @@ describe("r3-truth-R3-TXT-03 / R3C-01: the tier trajectory sentence prices each 
       text.match(new RegExp(String.raw`the ${tier} tier is (?:exactly on|(\$[\d,]+) \((\d+)%\) (over|under)) its (\$[\d,]+) tier midpoint`));
     let seen = 0;
     const v = collect((p) => {
-      const text = trajectorySentence(p.ctx, p.label) ?? "";
-      if (!CLIMB_BIG.test(text) && !(FALL_BIG.test(text) && !/comparatively ordinary to finish|already sits at or below/.test(text))) return [];
+      const text = trajectorySentence(p.ctx) ?? "";
+      if (!CLIMB_BIG.test(text) && !FALL_BIG.test(text)) return [];
       seen++;
       const out: string[] = [];
       for (const tier of ["simple", "complex"] as const) {
@@ -161,82 +164,112 @@ describe("r3-truth-R3-TXT-03 / R3C-01: the tier trajectory sentence prices each 
       }
       return out;
     });
-    expect(seen).toBeGreaterThan(30);
+    expect(seen).toBeGreaterThan(40);
+    expect(v).toEqual([]);
+  });
+
+  it("a page without a large shift states only the three ranks and their spread", () => {
+    let seen = 0;
+    const v = collect((p) => {
+      const text = trajectorySentence(p.ctx) ?? "";
+      const m = text.match(/^Rank by tier: .+ of \d+, (?:a spread of (\d+) places? between the highest and lowest of the three|the same rank at all three tiers)\.$/);
+      if (!m) return [];
+      seen++;
+      const ranks = (["simple", "moderate", "complex"] as const).map((tier) => {
+        const table = seedTable(p.category, tier);
+        return strictRank(table, table.find((r) => r.code === p.code)!.median);
+      });
+      return Number(m[1] ?? 0) === Math.max(...ranks) - Math.min(...ranks) ? [] : [`says ${m[1] ?? "the same rank"} for ranks ${ranks.join("/")}`];
+    });
+    expect(seen).toBeGreaterThan(100);
     expect(v).toEqual([]);
   });
 });
 
-describe("r3-truth-R3-TXT-04/05 and R3C-02: the complexity FAQ's 'so' conclusions follow from the tier ranks and prices it quotes", () => {
+describe("r3-truth-R3-TXT-04/05 and R3C-02: the complexity FAQ states the three prices and the tier ranks and concludes nothing from them", () => {
   const complexityAnswer = (p: Page) => buildStateFaq(p.ctx, p.label).find((e) => /vary by complexity/.test(e.question))?.answer ?? "";
-  const tierFacts = (p: Page, tier: Tier) => {
-    const table = seedTable(p.category, tier);
-    const own = table.find((r) => r.code === p.code)!;
-    const mid = middle(table.map((r) => r.median));
-    return { rank: strictRank(table, own.median), of: table.length, premium: own.median / mid - 1 };
-  };
+  const O = "(\\d+)(?:st|nd|rd|th)";
+  const CLIMB = new RegExp(`^.+? records (\\$[\\d,]+) at the simple tier, (\\$[\\d,]+) at moderate and (\\$[\\d,]+) at complex, and its rank moves from ${O} of (\\d+) up to ${O}\\.$`);
+  const FALL = new RegExp(`^The three tiers record (\\$[\\d,]+), (\\$[\\d,]+) and (\\$[\\d,]+), and the state's position falls from ${O} of (\\d+) at the simple tier to ${O} at the complex tier\\.$`);
+  const FLAT = new RegExp(`^Yes: (\\$[\\d,]+) at the simple tier, (\\$[\\d,]+) at moderate and (\\$[\\d,]+) at complex, a span of ([\\d.]+)x\\. The state's rank across the tiers is ${O}, ${O} and ${O} of (\\d+), (?:a spread of (\\d+) places?|the same rank at all three tiers)\\.$`);
 
-  it("'more distinctive on contested matters' needs the contested rank and price farther from the middle than the simple ones", () => {
+  it("no page draws a conclusion from the ranks or prices: distinctive, concentrated, substantially, similar position", () => {
     let seen = 0;
     const v = collect((p) => {
       const text = complexityAnswer(p);
-      if (!/so it is more distinctive on contested matters than on straightforward ones/.test(text)) return [];
-      seen++;
-      const s = tierFacts(p, "simple");
-      const c = tierFacts(p, "complex");
+      if (text) seen++;
+      return /distinctive|concentrated|Substantially|similar position|standing|does not stand for every tier|moves the price/.test(text) ? [text] : [];
+    });
+    expect(seen).toBeGreaterThan(300);
+    expect(v).toEqual([]);
+  });
+
+  it("the prices, ranks, table size, span and spread equal the seed, and the variant follows the strict rank shift", () => {
+    const seen = { climb: 0, fall: 0, flat: 0 };
+    const v = collect((p) => {
+      const text = complexityAnswer(p);
+      const s = tierRow(p, "simple")!;
+      const m = tierRow(p, "moderate")!;
+      const c = tierRow(p, "complex")!;
+      const strict = (["simple", "moderate", "complex"] as const).map((tier) => {
+        const table = seedTable(p.category, tier);
+        return { rank: strictRank(table, table.find((r) => r.code === p.code)!.median), of: table.length };
+      });
+      const shift = strict[0]!.rank - strict[2]!.rank;
       const out: string[] = [];
-      if (!(Math.abs(c.rank - (c.of + 1) / 2) > Math.abs(s.rank - (s.of + 1) / 2))) out.push(`ranks ${s.rank}/${s.of} -> ${c.rank}/${c.of}: the contested rank is not farther from the middle`);
-      if (!(Math.abs(c.premium) > Math.abs(s.premium))) out.push(`prices ${(s.premium * 100).toFixed(1)}% -> ${(c.premium * 100).toFixed(1)}% off the midpoint: the contested price is not farther`);
+      const prices = (a: string, b: string, c3: string) => {
+        if (money(a) !== s.median || money(b) !== m.median || money(c3) !== c.median) out.push(`prices ${a}/${b}/${c3}, seed ${s.median}/${m.median}/${c.median}`);
+      };
+      const climb = text.match(CLIMB);
+      const fall = text.match(FALL);
+      const flat = text.match(FLAT);
+      if (shift >= 4) {
+        seen.climb++;
+        if (!climb) return [`expected the climb form: ${text}`];
+        prices(climb[1]!, climb[2]!, climb[3]!);
+        if (Number(climb[4]) !== strict[0]!.rank || Number(climb[5]) !== strict[0]!.of || Number(climb[6]) !== strict[2]!.rank) out.push(`ranks ${climb[4]} of ${climb[5]} up to ${climb[6]}, seed ${strict[0]!.rank} of ${strict[0]!.of} to ${strict[2]!.rank}`);
+      } else if (shift <= -4) {
+        seen.fall++;
+        if (!fall) return [`expected the fall form: ${text}`];
+        prices(fall[1]!, fall[2]!, fall[3]!);
+        if (Number(fall[4]) !== strict[0]!.rank || Number(fall[5]) !== strict[0]!.of || Number(fall[6]) !== strict[2]!.rank) out.push(`ranks ${fall[4]} of ${fall[5]} to ${fall[6]}, seed ${strict[0]!.rank} of ${strict[0]!.of} to ${strict[2]!.rank}`);
+      } else {
+        seen.flat++;
+        if (!flat) return [`expected the flat form: ${text}`];
+        prices(flat[1]!, flat[2]!, flat[3]!);
+        const ranks = strict.map((x) => x.rank);
+        if (!(c.median > s.median)) out.push("answers Yes although the complex tier does not cost more");
+        if (Number(flat[4]) !== Math.round((c.median / s.median) * 10) / 10) out.push(`span ${flat[4]}x, seed ${Math.round((c.median / s.median) * 10) / 10}x`);
+        if ([flat[5], flat[6], flat[7]].join() !== ranks.join() || Number(flat[8]) !== strict[0]!.of) out.push(`ranks ${flat[5]}/${flat[6]}/${flat[7]} of ${flat[8]}, seed ${ranks.join("/")} of ${strict[0]!.of}`);
+        if (Number(flat[9] ?? 0) !== Math.max(...ranks) - Math.min(...ranks)) out.push(`spread ${flat[9] ?? 0}, seed ${Math.max(...ranks) - Math.min(...ranks)}`);
+      }
       return out;
     });
-    expect(seen).toBeGreaterThan(20);
-    expect(v).toEqual([]);
-  });
-
-  it("the climb branch keeps stating the two ranks when it does not conclude anything", () => {
-    let withClaim = 0;
-    let withoutClaim = 0;
-    const v = collect((p) => {
-      const text = complexityAnswer(p);
-      if (!/its rank moves from/.test(text)) return [];
-      if (/more distinctive/.test(text)) withClaim++;
-      else withoutClaim++;
-      return /its rank moves from \d+(?:st|nd|rd|th) of \d+ up to \d+(?:st|nd|rd|th)[,.]/.test(text) ? [] : [text];
-    });
-    expect(withClaim).toBeGreaterThan(10);
-    expect(withoutClaim).toBeGreaterThan(10);
-    expect(v).toEqual([]);
-  });
-
-  it("'the premium carries is concentrated in straightforward matters' needs the contested premium at most half the simple one", () => {
-    let seen = 0;
-    const v = collect((p) => {
-      if (!/premium .+ carries is concentrated in straightforward matters/.test(complexityAnswer(p))) return [];
-      seen++;
-      const s = tierFacts(p, "simple").premium;
-      const c = tierFacts(p, "complex").premium;
-      return s > 0 && c <= s / 2 ? [] : [`simple ${(s * 100).toFixed(1)}% over its midpoint, complex ${(c * 100).toFixed(1)}%`];
-    });
-    expect(seen).toBeGreaterThan(20);
+    expect(seen.climb).toBeGreaterThan(20);
+    expect(seen.fall).toBeGreaterThan(20);
+    expect(seen.flat).toBeGreaterThan(100);
     expect(v).toEqual([]);
   });
 });
 
-describe("r3-truth-R3-TXT-06: 'ambiguous by N places' is the spread of the three ranks printed on the same line", () => {
+describe("r3-truth-R3-TXT-06: the tier-rank spread is the largest minus the smallest of the three ranks printed on the same line", () => {
   it("N is the largest minus the smallest of the simple, moderate and complex ranks it lists", () => {
     let seen = 0;
     const v = collect((p) => {
-      const item = assumptionItems(p.ctx, p.label).find((i) => /is ambiguous by \d+ places/.test(i));
+      const item = assumptionItems(p.ctx, p.label).find((i) => /a spread of \d+ places\.$/.test(i));
       if (!item) return [];
       seen++;
-      const m = item.match(/ambiguous by (\d+) places unless a tier is named: (\d+)(?:st|nd|rd|th) simple, (\d+)(?:st|nd|rd|th) moderate, (\d+)(?:st|nd|rd|th) complex/)!;
-      const ranks = [Number(m[2]), Number(m[3]), Number(m[4])];
+      const m = item.match(/ at the simple tier, (\d+)(?:st|nd|rd|th) at moderate and (\d+)(?:st|nd|rd|th) at complex, a spread of (\d+) places\.$/);
+      const first = item.match(/^The .+? rank is (\d+)(?:st|nd|rd|th)/);
+      if (!m || !first) return [`unrecognised: ${item}`];
+      const ranks = [Number(first[1]), Number(m[1]), Number(m[2])];
       const spread = Math.max(...ranks) - Math.min(...ranks);
       const strict = (["simple", "moderate", "complex"] as const).map((tier) => {
         const table = seedTable(p.category, tier);
         return strictRank(table, table.find((r) => r.code === p.code)!.median);
       });
       const out: string[] = [];
-      if (Number(m[1]) !== spread) out.push(`says ${m[1]} but ${ranks.join("/")} span ${spread}`);
+      if (Number(m[3]) !== spread) out.push(`says ${m[3]} but ${ranks.join("/")} span ${spread}`);
       if (ranks.join() !== strict.join()) out.push(`ranks ${ranks.join("/")} but strict ${strict.join("/")}`);
       return out;
     });
@@ -385,6 +418,7 @@ describe("r3-truth-R3-W6: the consistency sentence does not place one table's or
     const v = collect((p) => {
       const text = consistencySentence(p.ctx, p.label);
       if (!text) return [];
+      if (/inside it|is consistent|does not rank uniformly|says little/.test(text)) return [`verdict: ${text}`];
       const own = text.match(/its (\d+)(?:st|nd|rd|th)(?: of (\d+))? on /);
       return own && Number(own[1]) === p.ctx.rank && Number(own[2]) === p.ctx.rankedOutOf ? [] : [`own position in "${text}"`];
     });
@@ -396,7 +430,7 @@ describe("r3-truth-R3-W4: the cluster sentence prints the farthest peer's distan
   it("'The farthest of them sits $X' is the largest distance to a peer within three percent, and no 'few hundred' or 'densest' verdict remains", () => {
     let seen = 0;
     const v = collect((p) => {
-      const text = clusterSentence(p.ctx, p.label) ?? "";
+      const text = clusterSentence(p.ctx) ?? "";
       const out: string[] = [];
       if (/few hundred|densest/.test(text)) out.push(`verdict remains: ${text}`);
       const m = text.match(/^(\d+) tracked states \u2014 .+ among them \u2014 record a median within three percent of .+?'s (\$[\d,]+)\. The farthest of them sits (\$[\d,]+) from that figure\.$/);
@@ -416,38 +450,47 @@ describe("r3-truth-R3-W4: the cluster sentence prints the farthest peer's distan
   });
 });
 
-describe("r3-truth-R3-W5: the ten percent revision counts are attributed to one direction each", () => {
-  it("'would cross U states upward or D downward, N within reach' recomputes from the seed, and 'in either direction would cross' never appears", () => {
+describe("r3-truth-R3-W5: the ten percent counts are stated per direction and carry no reading of them", () => {
+  it("'the field holds U above and D below' recomputes from the seed, and no revision-wide or interpretive wording remains", () => {
     let seen = 0;
+    let none = 0;
     const v = collect((p) => {
       const text = sensitivitySentence(p.ctx, p.label) ?? "";
       const out: string[] = [];
-      if (/in either direction would cross/.test(text)) out.push(`one revision credited with both directions: ${text}`);
-      const m = text.match(/a ten percent revision would cross (\d+) states upward or (\d+) downward, (\d+) within reach across both directions/);
-      if (!m) return out;
-      seen++;
+      if (/revision|stable fact|propped up|lopsided|room to improve|well separated|in either direction/.test(text)) out.push(`interpretation: ${text}`);
       const own = tierRow(p, "moderate")!.median;
       const others = seedTable(p.category, "moderate").filter((r) => r.code !== p.code);
       const up = others.filter((r) => r.median > own && r.median <= own * 1.1).length;
       const down = others.filter((r) => r.median < own && r.median >= own * 0.9).length;
-      if (Number(m[1]) !== up || Number(m[2]) !== down || Number(m[3]) !== up + down) out.push(`says ${m[1]}/${m[2]}/${m[3]}, seed ${up}/${down}/${up + down}`);
-      if (up + down < 14) out.push(`branch printed for only ${up + down} states`);
+      const m = text.match(/the field holds (\d+) above and (\d+) below/);
+      if (m) {
+        seen++;
+        if (Number(m[1]) !== up || Number(m[2]) !== down) out.push(`says ${m[1]}/${m[2]}, seed ${up}/${down}`);
+      }
+      if (/no other tracked state sits within ten percent/.test(text)) {
+        none++;
+        if (up + down !== 0) out.push(`says none within ten percent, seed ${up}/${down}`);
+      } else if (text && !m) out.push(`no counts: ${text}`);
       return out;
     });
-    expect(seen).toBeGreaterThan(10);
+    expect(seen).toBeGreaterThan(300);
+    expect(none).toBeGreaterThan(0);
     expect(v).toEqual([]);
   });
 });
 
-describe("r3-truth-R3-W11: the neighbour sentence does not claim open space below a state with a crowd beneath it", () => {
-  it("'clear air beneath it' is never printed, while the bottom-edge branch still occurs", () => {
-    let edge = 0;
+describe("r3-truth-R3-W11: the neighbour sentence states the two gaps and no reading of them", () => {
+  it("no 'clear air', 'edge', 'arbitrary' or tie-break wording, while the bottom-gap branch still occurs", () => {
+    let bottom = 0;
+    let top = 0;
     const v = collect((p) => {
       const text = neighborSentence(p.ctx, p.label) ?? "";
-      if (/bottom edge of its group/.test(text)) edge++;
-      return /clear air/.test(text) ? [text] : [];
+      if (/and .+ at \$[\d,]+ is \$[\d,]+ below\.$/.test(text)) bottom++;
+      if (/is \$[\d,]+ away at \$[\d,]+\.$/.test(text)) top++;
+      return /clear air|edge of|arbitrary|tie-break|measured difference|wider/.test(text) ? [text] : [];
     });
-    expect(edge).toBeGreaterThan(10);
+    expect(bottom).toBeGreaterThan(10);
+    expect(top).toBeGreaterThan(10);
     expect(v).toEqual([]);
   });
 });
@@ -465,31 +508,33 @@ describe("r3-truth-R3-W2: the band sentence compares dollar widths and draws no 
   });
 });
 
-describe("r3-truth-R3-W7: each practice-area verdict names the metric it is measured in", () => {
-  const SPREAD_WIDE = /spread across practice areas is wide/;
-  const BY_MIDPOINT = /^Measured against each matter's own midpoint, the spread across practice areas is wide\./;
-  it("'wide', 'fan out', 'close together' and 'consistent' each carry their metric, and no page leaves the bare opposite verdicts", () => {
-    let wideAndClose = 0;
-    let wideAndConsistent = 0;
+describe("r3-truth-R3-W7: no practice-area sentence gives a verdict word that another sentence on the page can contradict", () => {
+  const VERDICT = /spread across practice areas is wide|fan out more than most|unusually close together|is consistent|does not rank uniformly|set matter by matter|close to uniform|not equally priced|ordinary even|is not an outlier|says little about|Whatever drives|travels further/;
+  const BY_MIDPOINT = /^Measured against each matter's own midpoint, /;
+
+  it("the premium, shape and consistency sentences state numbers only, and the premium names its metric", () => {
+    let premiums = 0;
+    let shapes = 0;
+    let consistencies = 0;
     const v = collect((p) => {
       const premium = premiumSentence(p.ctx) ?? "";
       const shape = stateShapeSentences(p.ctx, p.label).join(" ");
       const consistency = consistencySentence(p.ctx, p.label) ?? "";
       const out: string[] = [];
-      const wide = SPREAD_WIDE.test(premium);
-      if (wide && !BY_MIDPOINT.test(premium)) out.push(`wide spread without its metric: ${premium.slice(0, 90)}`);
-      if (/fan out more than most/.test(shape) && !/In median dollars \S.*'s practice areas fan out more than most/.test(shape)) out.push("fan out without its metric");
-      const close = /unusually close together/.test(shape);
-      if (close && !/In median dollars the practice areas sit unusually close together/.test(shape)) out.push("close together without its metric");
-      if (/set matter by matter/.test(shape)) out.push("causal tail the data cannot decide");
-      if (/is consistent across practice areas/.test(consistency)) out.push("consistency without its metric");
-      const consistent = /is consistent in rank across practice areas/.test(consistency);
-      if (wide && close) wideAndClose++;
-      if (wide && consistent) wideAndConsistent++;
+      if (premium) {
+        premiums++;
+        if (!BY_MIDPOINT.test(premium)) out.push(`premium without its metric: ${premium.slice(0, 90)}`);
+      }
+      if (/In median dollars the largest tracked median in .+ is \d+(?:\.\d+)?x the smallest, against \d+(?:\.\d+)?x for the typical state\./.test(shape)) shapes++;
+      if (/^Across practice areas .+ ranges from /.test(consistency)) consistencies++;
+      for (const [name, text] of [["premium", premium], ["shape", shape], ["consistency", consistency]] as const) {
+        if (VERDICT.test(text)) out.push(`${name} keeps a verdict: ${text.match(VERDICT)![0]}`);
+      }
       return out;
     });
-    expect(wideAndClose).toBeGreaterThan(10);
-    expect(wideAndConsistent).toBeGreaterThan(2);
+    expect(premiums).toBeGreaterThan(300);
+    expect(shapes).toBeGreaterThan(300);
+    expect(consistencies).toBeGreaterThan(300);
     expect(v).toEqual([]);
   });
 });

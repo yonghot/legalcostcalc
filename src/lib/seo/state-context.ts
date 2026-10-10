@@ -729,7 +729,7 @@ export function rankSentence(ctx: StateCostContext, matterLabel: string): string
   if (ctx.direction === "at") {
     return `${stateName} is the ${ordinal(rank)} of ${rankedOutOf} tracked states by median ${matterLabel} cost, and its ${usd(
       ctx.tiers.moderate!.median,
-    )} figure lands within a percent of the ${usd(peerMedian)} midpoint of that table — the rank is meaningful, the distance is not.`;
+    )} figure lands within a percent of the ${usd(peerMedian)} midpoint of that table.`;
   }
 
   switch (ctx.quartile) {
@@ -740,7 +740,7 @@ export function rankSentence(ctx: StateCostContext, matterLabel: string): string
     case 2:
       return `${stateName} ranks ${ordinal(rank)} of ${rankedOutOf} for ${aOrAn(matterLabel)} ${matterLabel}. Its ${usd(
         ctx.tiers.moderate!.median,
-      )} median trails the ${usd(peerMedian)} table midpoint by ${gap}, which is ${vsPeerPercent}% — close enough that a single firm's quote can straddle both figures.`;
+      )} median trails the ${usd(peerMedian)} table midpoint by ${gap}, which is ${vsPeerPercent}%.`;
     case 3:
       return `At ${ordinal(rank)} of ${rankedOutOf}, ${stateName} sits above the midpoint of the ${matterLabel} table: ${gap} more than the ${usd(
         peerMedian,
@@ -752,7 +752,7 @@ export function rankSentence(ctx: StateCostContext, matterLabel: string): string
       )} midpoint is ${gap} — ${vsPeerPercent}% — and ${
         statesHigher === 0
           ? "no state records a higher median"
-          : `only ${countStates(statesHigher)} ${statesHigher === 1 ? "records" : "record"} a higher median`
+          : `${countStates(statesHigher)} ${statesHigher === 1 ? "records" : "record"} a higher median`
       }.`;
   }
 }
@@ -770,26 +770,24 @@ export function neighborSentence(ctx: StateCostContext, matterLabel: string): st
     if (total === 0) {
       return `${neighborAbove.name} and ${neighborBelow.name} both record ${usd(
         ownMedian,
-      )}, the same figure as ${stateName}, so its place among the three is a tie-break rather than a measured difference.`;
+      )}, the same figure as ${stateName}.`;
     }
     if (total <= ownMedian * 0.04) {
       return `${neighborAbove.name} (${usd(neighborAbove.median)}) and ${neighborBelow.name} (${usd(
         neighborBelow.median,
-      )}) bracket ${stateName} inside a ${usd(total)} window — narrow enough that ${ordinal(
-        ctx.rank,
-      )} is close to arbitrary.`;
+      )}) bracket ${stateName} inside a ${usd(total)} window.`;
     }
     if (gapUp > gapDown * 2) {
       return `${neighborBelow.name} is the nearest state below at ${usd(
         neighborBelow.median,
-      )} — ${gapDown === 0 ? "the same figure" : `${usd(gapDown)} away`} — while the next state up, ${neighborAbove.name}, is a wider ${usd(
+      )} — ${gapDown === 0 ? "the same figure" : `${usd(gapDown)} away`} — while the next state up, ${neighborAbove.name}, is ${usd(
         gapUp,
-      )} step at ${usd(neighborAbove.median)}. ${stateName} therefore sits at the top edge of a band rather than in the middle of one.`;
+      )} away at ${usd(neighborAbove.median)}.`;
     }
     if (gapDown > gapUp * 2) {
-      return `${neighborAbove.name}, at ${usd(neighborAbove.median)}, is ${gapUp === 0 ? "level with" : `only ${usd(gapUp)} above`} ${stateName}, but the drop to ${neighborBelow.name} at ${usd(neighborBelow.median)} is ${usd(
+      return `${neighborAbove.name}, at ${usd(neighborAbove.median)}, is ${gapUp === 0 ? "level with" : `${usd(gapUp)} above`} ${stateName}, and ${neighborBelow.name} at ${usd(neighborBelow.median)} is ${usd(
         gapDown,
-      )} — the state sits at the bottom edge of its group.`;
+      )} below.`;
     }
     return `In the ${matterLabel} table ${stateName} falls between ${neighborBelow.name} at ${usd(
       neighborBelow.median,
@@ -810,24 +808,24 @@ export function neighborSentence(ctx: StateCostContext, matterLabel: string): st
 }
 
 /** How many peers cluster on the same figure. */
-export function clusterSentence(ctx: StateCostContext, matterLabel: string): string | null {
+export function clusterSentence(ctx: StateCostContext): string | null {
   const { clusterPeers, stateName } = ctx;
   const ownMedian = ctx.tiers.moderate!.median;
 
   if (clusterPeers.length === 0) {
     return `Within three percent of ${stateName}'s ${usd(
       ownMedian,
-    )} there is no other tracked state at all, so the figure is not part of a cluster and the rank would hold under a change of up to three percent.`;
+    )} there is no other tracked state, so the rank would hold under a change of up to three percent.`;
   }
   if (clusterPeers.length === 1) {
     return `Only one other tracked state, ${clusterPeers[0]}, records a median within three percent of ${stateName}'s ${usd(
       ownMedian,
-    )} — a pairing rather than a cluster.`;
+    )}.`;
   }
   if (clusterPeers.length <= 3) {
     return `${clusterPeers.join(", ")} record medians within three percent of ${stateName}'s ${usd(
       ownMedian,
-    )}. ${aOrAn(matterLabel, true)} ${matterLabel} quote anywhere in that group is describing effectively the same market.`;
+    )}.`;
   }
   const named = clusterPeers.slice(0, 4).join(", ");
   return `${clusterPeers.length} tracked states — ${named} among them — record a median within three percent of ${stateName}'s ${usd(
@@ -844,62 +842,34 @@ export function hourlyPositionSentence(ctx: StateCostContext, matterLabel: strin
   const rateText = `${usd(hourly)} an hour`;
 
   if (rankGap === 0) {
-    return `Ranked by hourly rate instead of by total, ${stateName} does not move: ${ordinal(
-      hourlyRank,
-    )} on both measures, at ${rateText}. Rate and total are telling the same story here.`;
+    return `Ranked by hourly rate instead of by total, ${stateName} does not move: ${ordinal(hourlyRank)} on both measures, at ${rateText}.`;
   }
   if (rankGap >= 10) {
-    return `Rate and total point in different directions. ${stateName} attorneys rank ${ordinal(
-      hourlyRank,
-    )} of ${ratedOutOf} at ${rateText}, ${rankGap} places above where the state lands on total ${matterLabel} cost (${ordinal(
-      rank,
-    )}).`;
+    return `${stateName} attorneys rank ${ordinal(hourlyRank)} of ${ratedOutOf} at ${rateText}, ${rankGap} places above where the state lands on total ${matterLabel} cost (${ordinal(rank)}).`;
   }
   if (rankGap >= 6) {
-    return `The two rankings disagree sharply. ${stateName} attorneys sit ${ordinal(
-      hourlyRank,
-    )} of ${ratedOutOf} on hourly rate at ${rateText}, but the state is only ${ordinal(
-      rank,
-    )} on total ${matterLabel} cost.`;
+    return `${stateName} attorneys sit ${ordinal(hourlyRank)} of ${ratedOutOf} on hourly rate at ${rateText}, but the state is ${ordinal(rank)} on total ${matterLabel} cost.`;
   }
   if (rankGap >= 3) {
-    return `${stateName} ranks ${ordinal(hourlyRank)} of ${ratedOutOf} on hourly rate at ${rateText} and ${ordinal(
-      rank,
-    )} on total cost — ${rankGap} places apart, enough that the rate is a slightly optimistic guide to the total.`;
+    return `${stateName} ranks ${ordinal(hourlyRank)} of ${ratedOutOf} on hourly rate at ${rateText} and ${ordinal(rank)} on total cost — ${rankGap} places apart.`;
   }
   if (rankGap > 0) {
-    return `The two measures nearly agree: ${ordinal(hourlyRank)} of ${ratedOutOf} on hourly rate at ${rateText}, ${ordinal(
-      rank,
-    )} on total cost, ${rankGap} ${rankGap === 1 ? "place" : "places"} apart.`;
+    return `${ordinal(hourlyRank)} of ${ratedOutOf} on hourly rate at ${rateText}, ${ordinal(rank)} on total cost, ${rankGap} ${rankGap === 1 ? "place" : "places"} apart.`;
   }
   if (rankGap <= -10) {
-    return `Total cost ranks far above hourly rate. ${stateName} sits ${ordinal(
-      hourlyRank,
-    )} of ${ratedOutOf} on rate at ${rateText} but ${ordinal(
-      rank,
-    )} on total ${matterLabel} cost, ${Math.abs(rankGap)} places higher.`;
+    return `${stateName} sits ${ordinal(hourlyRank)} of ${ratedOutOf} on rate at ${rateText} but ${ordinal(rank)} on total ${matterLabel} cost, ${Math.abs(rankGap)} places higher.`;
   }
   if (rankGap <= -6) {
-    return `The rate and total rankings disagree. At ${rateText} ${stateName} is only ${ordinal(
-      hourlyRank,
-    )} of ${ratedOutOf} on rate, yet ${ordinal(
-      rank,
-    )} on total ${matterLabel} cost.`;
+    return `At ${rateText} ${stateName} is ${ordinal(hourlyRank)} of ${ratedOutOf} on rate, yet ${ordinal(rank)} on total ${matterLabel} cost.`;
   }
   if (rankGap <= -3) {
-    return `On hourly rate alone ${stateName} is ${ordinal(hourlyRank)} of ${ratedOutOf} at ${rateText}, ${Math.abs(
-      rankGap,
-    )} places behind its ${ordinal(rank)} position on total cost.`;
+    return `On hourly rate alone ${stateName} is ${ordinal(hourlyRank)} of ${ratedOutOf} at ${rateText}, ${Math.abs(rankGap)} places behind its ${ordinal(rank)} position on total cost.`;
   }
-  return `Rate and total sit ${Math.abs(rankGap)} ${
-    Math.abs(rankGap) === 1 ? "place" : "places"
-  } apart — ${ordinal(hourlyRank)} of ${ratedOutOf} at ${rateText} against ${ordinal(
-    rank,
-  )} on the ${matterLabel} total — which is close enough to read as the same signal.`;
+  return `Rate and total sit ${Math.abs(rankGap)} ${Math.abs(rankGap) === 1 ? "place" : "places"} apart — ${ordinal(hourlyRank)} of ${ratedOutOf} at ${rateText} against ${ordinal(rank)} on the ${matterLabel} total.`;
 }
 
 /** Implied billable hours at the moderate tier, against the peer distribution. */
-export function hoursSentence(ctx: StateCostContext, matterLabel: string): string | null {
+export function hoursSentence(ctx: StateCostContext): string | null {
   const moderate = ctx.tiers.moderate!;
   if (!moderate.hours || !moderate.hourlyMedian) return null;
   const { peerMedianHours, stateName } = ctx;
@@ -914,16 +884,16 @@ export function hoursSentence(ctx: StateCostContext, matterLabel: string): strin
           ? ` The peer median is ${peerMedianHours} hours: ${stateName} reaches its total in ${
               peerMedianHours - hours
             } fewer implied ${hourWord(peerMedianHours - hours)}${
-              ctx.peerMedianRate !== null && moderate.hourlyMedian > ctx.peerMedianRate
-                ? `, because the rate rather than the workload carries more of it: ${usd(moderate.hourlyMedian)} an hour against a ${usd(ctx.peerMedianRate)} peer median.`
+              ctx.peerMedianRate !== null
+                ? `, at ${usd(moderate.hourlyMedian)} an hour against a ${usd(ctx.peerMedianRate)} peer median.`
                 : "."
             }`
-          : ` That rounds to the same ${peerMedianHours} hours as the peer median, so on workload ${stateName} is indistinguishable from the middle of the table at this precision.`;
+          : ` That rounds to the same ${peerMedianHours} hours as the peer median.`;
 
   if (hours >= 45) {
     return `Divide the ${usd(moderate.median)} median by the ${usd(
       moderate.hourlyMedian,
-    )} median rate and the implied workload is about ${hours} billable hours — more than a full working week of attorney time on ${aOrAn(matterLabel)} ${matterLabel}.${comparison}`;
+    )} median rate and the implied workload is about ${hours} billable hours.${comparison}`;
   }
   if (hours >= 25) {
     return `The ${usd(moderate.median)} median divided by the ${usd(
@@ -933,9 +903,9 @@ export function hoursSentence(ctx: StateCostContext, matterLabel: string): strin
   if (hours >= 12) {
     return `At ${usd(moderate.hourlyMedian)} an hour, the ${usd(
       moderate.median,
-    )} median represents about ${hours} hours of attorney time — a matter measured in days of work, not weeks.${comparison}`;
+    )} median represents about ${hours} hours of attorney time.${comparison}`;
   }
-  return `The ${usd(moderate.median)} median covers only about ${hours} ${hourWord(hours)} at the ${usd(
+  return `The ${usd(moderate.median)} median covers about ${hours} ${hourWord(hours)} at the ${usd(
     moderate.hourlyMedian,
   )} median rate, so a single added hour moves the total by ${Math.round((moderate.hourlyMedian / moderate.median) * 100)}%.${comparison}`;
 }
@@ -958,19 +928,19 @@ export function escalationSentence(ctx: StateCostContext, matterLabel: string): 
   )}`;
 
   if (hoursMultiple >= 5) {
-    return `Moving from a simple to a complex ${matterLabel} multiplies the ${stateName} total by ${costMultiple}x, and most of that is hours rather than price: ${arithmetic}, so the workload grows ${hoursMultiple}x while the rate grows ${rateMultiple}x.`;
+    return `Moving from a simple to a complex ${matterLabel} multiplies the ${stateName} total by ${costMultiple}x: ${arithmetic}, so the workload grows ${hoursMultiple}x while the rate grows ${rateMultiple}x.`;
   }
   if (hoursMultiple >= 4.4) {
-    return `The ${costMultiple}x step from the simple to the complex tier breaks down as ${hoursMultiple}x the hours against ${rateMultiple}x the rate — ${arithmetic}. Hours carry the larger part of the step, and the rate rises with them.`;
+    return `The ${costMultiple}x step from the simple to the complex tier breaks down as ${hoursMultiple}x the hours against ${rateMultiple}x the rate — ${arithmetic}.`;
   }
   if (hoursMultiple >= 3.9) {
     return `${stateName} records a ${costMultiple}x gap between its simple and complex ${matterLabel} medians. Decomposed, that is ${hoursMultiple}x the billed time at ${rateMultiple}x the rate: ${arithmetic}.`;
   }
-  return `A complex ${matterLabel} costs ${costMultiple}x a simple one in ${stateName}, and the implied workload rises under 3.9x — ${hoursMultiple}x, as ${arithmetic} — against a ${rateMultiple}x rise in the rate. Hours still carry the larger part of the increase.`;
+  return `A complex ${matterLabel} costs ${costMultiple}x a simple one in ${stateName}, and the implied workload rises under 3.9x — ${hoursMultiple}x, as ${arithmetic} — against a ${rateMultiple}x rise in the rate.`;
 }
 
 /** How the state's rank moves as complexity rises — the strongest differentiator. */
-export function trajectorySentence(ctx: StateCostContext, matterLabel: string): string | null {
+export function trajectorySentence(ctx: StateCostContext): string | null {
   const simple = ctx.tiers.simple;
   const moderate = ctx.tiers.moderate!;
   const complex = ctx.tiers.complex;
@@ -982,52 +952,27 @@ export function trajectorySentence(ctx: StateCostContext, matterLabel: string): 
   )} at complex`;
 
   if (tierRankShift >= 10) {
-    return `Rank is not stable across the tiers, and the direction matters. ${stateName} runs ${path} of ${rankedOutOf} — it climbs ${tierRankShift} places as the matter gets harder. ${tierMidpointClosing(simple, complex)}`;
+    return `${stateName} runs ${path} of ${rankedOutOf} — it climbs ${tierRankShift} places as the matter gets harder. ${tierMidpointClosing(simple, complex)}`;
   }
   if (tierRankShift >= 4) {
-    const closing =
-      moderate.rank > complex.rank
-        ? "The state's position on the headline moderate figure understates where it sits once a matter is contested."
-        : moderate.rank < complex.rank
-          ? "The moderate tier is its highest position of the three, so the headline moderate figure does not understate where the state sits once a matter is contested."
-          : "The moderate and complex tiers hold the same position, so the headline moderate figure already shows where the state sits once a matter is contested.";
-    return `${stateName} moves up the table as complexity rises: ${path}, a ${tierRankShift}-place climb. ${closing}`;
+    return `${stateName} moves up the table as complexity rises: ${path}, a climb of ${tierRankShift} places.`;
   }
   if (tierRankShift <= -10) {
-    return `The tiers rank ${stateName} very differently. It is ${path} of ${rankedOutOf} — a fall of ${Math.abs(
+    return `${stateName} is ${path} of ${rankedOutOf} — a fall of ${Math.abs(
       tierRankShift,
-    )} places as the matter becomes harder. ${
-      simple.median > simple.peerMedian
-        ? Math.abs(complex.median - complex.peerMedian) <= complex.peerMedian * 0.1
-          ? `The state is expensive to start ${aOrAn(matterLabel)} ${matterLabel} in and comparatively ordinary to finish one in.`
-          : tierMidpointClosing(simple, complex)
-        : "The simple tier already sits at or below the middle of the table, and the complex tier sits lower still."
-    }`;
+    )} places as the matter becomes harder. ${tierMidpointClosing(simple, complex)}`;
   }
   if (tierRankShift <= -4) {
-    const placement =
-      moderate.rank === simple.rank
-        ? "matches the simple tier's; the fall comes between the moderate and complex tiers."
-        : moderate.rank === complex.rank
-          ? "matches the complex tier's; the fall comes between the simple and moderate tiers."
-          : moderate.rank < simple.rank
-            ? "sits above both of the other tiers rather than between them."
-            : moderate.rank > complex.rank
-              ? "sits below both of the other tiers rather than between them."
-              : "sits between the two extremes rather than summarising them.";
-    return `Ranked tier by tier, ${stateName} slides ${Math.abs(
-      tierRankShift,
-    )} places downward: ${path}. Its headline moderate position ${placement}`;
+    return `Ranked tier by tier, ${stateName} slides ${Math.abs(tierRankShift)} places downward: ${path}.`;
   }
   const spread = ctx.tierRankSpread ?? 0;
-  if (spread >= 4) {
-    return `The rank depends on the tier read: ${path} of ${rankedOutOf}, a spread of ${spread} places between the highest and lowest of the three.`;
-  }
-  return `The ranking barely moves across tiers — ${path} of ${rankedOutOf} — so ${stateName} keeps roughly the same relative position whether the ${matterLabel} is straightforward or contested.`;
+  return `Rank by tier: ${path} of ${rankedOutOf}, ${
+    spread === 0 ? "the same rank at all three tiers" : `a spread of ${countPlaces(spread)} between the highest and lowest of the three`
+  }.`;
 }
 
 /** Whether adjacent tiers' bands overlap: a structural yes/no that differs by state. */
-export function overlapSentence(ctx: StateCostContext, matterLabel: string): string | null {
+export function overlapSentence(ctx: StateCostContext): string | null {
   const simple = ctx.tiers.simple;
   const moderate = ctx.tiers.moderate!;
   const complex = ctx.tiers.complex;
@@ -1041,9 +986,7 @@ export function overlapSentence(ctx: StateCostContext, matterLabel: string): str
       simple.high,
     )} where the moderate tier starts at ${usd(moderate.low)}, and the moderate tier reaches ${usd(
       moderate.high,
-    )} where the complex tier starts at ${usd(
-      complex.low,
-    )}. A single quoted figure can therefore belong to two different tiers, and the tier label — not the number — is what identifies which.`;
+    )} where the complex tier starts at ${usd(complex.low)}.`;
   }
   if (overlapSimpleModerate && !overlapModerateComplex) {
     return `The lower two bands run into each other — the simple tier tops out at ${usd(
@@ -1052,22 +995,18 @@ export function overlapSentence(ctx: StateCostContext, matterLabel: string): str
       moderate.low,
     )} — but there is a clear gap of ${usd(
       complex.low - moderate.high,
-    )} between the moderate ceiling of ${usd(moderate.high)} and the complex floor of ${usd(
-      complex.low,
-    )}. In ${stateName} the jump into contested work is a step, not a slope.`;
+    )} between the moderate ceiling of ${usd(moderate.high)} and the complex floor of ${usd(complex.low)}.`;
   }
   if (!overlapSimpleModerate && overlapModerateComplex) {
     return `${usd(moderate.low - simple.high)} separates the simple ceiling of ${usd(
       simple.high,
     )} from the moderate floor of ${usd(
       moderate.low,
-    )}, so the first escalation is a clean break, while the moderate and complex bands overlap from ${usd(
-      complex.low,
-    )} upward. The expensive end of a routine ${matterLabel} and the cheap end of a contested one are the same money in ${stateName}.`;
+    )}, while the moderate and complex bands overlap from ${usd(complex.low)} upward.`;
   }
   return `Neither pair of adjacent bands touches: ${usd(moderate.low - simple.high)} of clear space between the simple and moderate tiers, and ${usd(
     complex.low - moderate.high,
-  )} between the moderate and complex tiers. Every ${matterLabel} estimate for ${stateName} maps to exactly one tier, which makes the tier label unusually informative here.`;
+  )} between the moderate and complex tiers.`;
 }
 
 /** The absolute width of the quoted band, and what it buys in hours. */
@@ -1085,25 +1024,14 @@ export function bandSentence(ctx: StateCostContext): string | null {
     : "";
 
   const delta = moderate.bandWidth - peerMedianBandWidth;
-  if (peerMedianBandWidth > 0 && delta > peerMedianBandWidth * 0.15) {
-    return `In dollars the ${stateName} moderate band is wide: ${usd(moderate.low)} to ${usd(
-      moderate.high,
-    )}, a ${usd(moderate.bandWidth)} range, ${usd(delta)} wider than the peer-median band of ${usd(
-      peerMedianBandWidth,
-    )}.${hoursClause}`;
-  }
-  if (peerMedianBandWidth > 0 && delta < -peerMedianBandWidth * 0.15) {
-    return `The ${stateName} moderate band spans ${usd(moderate.low)} to ${usd(
-      moderate.high,
-    )} — ${usd(moderate.bandWidth)} — which is ${usd(
-      Math.abs(delta),
-    )} narrower than the peer-median band of ${usd(
-      peerMedianBandWidth,
-    )}.${hoursClause}`;
-  }
-  return `From ${usd(moderate.low)} to ${usd(moderate.high)} the moderate band is ${usd(
-    moderate.bandWidth,
-  )} wide, close to the ${usd(peerMedianBandWidth)} peer median.${hoursClause}`;
+  const comparison =
+    peerMedianBandWidth <= 0
+      ? ""
+      : delta === 0
+        ? `, the same as the peer-median band of ${usd(peerMedianBandWidth)}`
+        : `, which is ${usd(Math.abs(delta))} ${delta > 0 ? "wider" : "narrower"} than the peer-median band of ${usd(peerMedianBandWidth)}`;
+
+  return `The ${stateName} moderate band spans ${usd(moderate.low)} to ${usd(moderate.high)} — ${usd(moderate.bandWidth)}${comparison}.${hoursClause}`;
 }
 
 /** What the median works out to per month of the recorded timeline. */
@@ -1116,25 +1044,9 @@ export function tempoSentence(ctx: StateCostContext, matterLabel: string): strin
 
   if (complex?.durationMonths && complex.durationMonths > 0) {
     const complexPerMonth = Math.round(complex.median / complex.durationMonths);
-    if (complexPerMonth > perMonth * 1.1) {
-      return `The estimate assumes ${moderate.duration} for a moderate ${matterLabel} — a national duration for this matter and complexity, not one specific to ${stateName} — and across it the ${usd(
-        moderate.median,
-      )} median works out to roughly ${usd(perMonth)} a month. A complex ${matterLabel} is assumed to run longer, at ${
-        complex.duration
-      }, but it also runs hotter — about ${usd(
-        complexPerMonth,
-      )} a month — so the extra cost is not simply the extra calendar time.`;
-    }
-    if (complexPerMonth < perMonth * 0.9) {
-      return `The ${usd(moderate.median)} median across ${
-        moderate.duration
-      }, the national duration the estimate assumes for a moderate ${matterLabel}, is about ${usd(perMonth)} a month. A complex ${matterLabel} costs more in total but less per month — roughly ${usd(
-        complexPerMonth,
-      )} across the ${complex.duration} it assumes — because the additional cost arrives as a longer timeline rather than a heavier monthly burn.`;
-    }
-    return `Per month of elapsed time the two tiers are close: the ${usd(moderate.median)} moderate median is about ${usd(
+    return `The ${usd(moderate.median)} moderate median is about ${usd(
       perMonth,
-    )} a month across the ${moderate.duration} assumed for a moderate matter, and the ${usd(
+    )} a month across the ${moderate.duration} assumed for a moderate ${matterLabel}, and the ${usd(
       complex.median,
     )} complex median is ${usd(complexPerMonth)} a month across the ${
       complex.duration
@@ -1195,20 +1107,12 @@ export function consistencySentence(ctx: StateCostContext, matterLabel: string):
   const gap = weakestCategoryRank.rank / weakestCategoryRank.of - strongestCategoryRank.rank / strongestCategoryRank.of;
   if (gap <= 0) return null;
   const spread = Math.round(gap * 100);
-  const { top, bottom, total } = ctx.matterRankCounts;
-  const oneThird = total > 0 && (top === total || bottom === total);
 
   const ownPosition = `its ${ordinal(rank)} of ${ctx.rankedOutOf} on ${matterLabel}`;
   const best = `${ordinal(strongestCategoryRank.rank)} of ${strongestCategoryRank.of}`;
   const worst = `${ordinal(weakestCategoryRank.rank)} of ${weakestCategoryRank.of}`;
 
-  if (spread <= 10) {
-    return `${stateName} is consistent in rank across practice areas: over the matter types tracked here its position only moves between ${best} (${strongestCategoryRank.name}) and ${worst} (${weakestCategoryRank.name}), so ${ownPosition} reflects a general price level rather than something specific to this matter.`;
-  }
-  if (spread <= 28 || oneThird) {
-    return `Across practice areas ${stateName} ranges from ${best} for ${strongestCategoryRank.name} to ${worst} for ${weakestCategoryRank.name} — a spread of ${spread} percent of the table, with ${ownPosition} among the positions measured.`;
-  }
-  return `The state does not rank uniformly. ${stateName} is ${best} for ${strongestCategoryRank.name} but ${worst} for ${weakestCategoryRank.name}, a spread of ${spread} percent of the table across the matter types tracked here, so ${ownPosition} says little about what the other lines cost.`;
+  return `Across practice areas ${stateName} ranges from ${best} for ${strongestCategoryRank.name} to ${worst} for ${weakestCategoryRank.name} — a spread of ${spread} percent of the table, with ${ownPosition} among the positions measured.`;
 }
 
 /**
@@ -1217,17 +1121,16 @@ export function consistencySentence(ctx: StateCostContext, matterLabel: string):
  * state sits in the distribution, so both differ page to page.
  */
 export function sensitivitySentence(ctx: StateCostContext, matterLabel: string): string | null {
-  const { rankSensitivity, rowsWithinTenPercent, stateName, rank } = ctx;
+  const { rankSensitivity, rowsWithinTenPercent, stateName } = ctx;
   const { toPassAbove, toDropBelow } = rankSensitivity;
   if (toPassAbove === null && toDropBelow === null) return null;
 
-  const crowd = rowsWithinTenPercent.up + rowsWithinTenPercent.down;
   const { up, down } = rowsWithinTenPercent;
 
   if (toPassAbove === 0 || toDropBelow === 0) {
     return `Another tracked state records exactly ${usd(
       ctx.tiers.moderate!.median,
-    )} for ${aOrAn(matterLabel)} ${matterLabel}, so the order among the states sharing that figure is a tie-break rather than a measured difference. Within ten percent of that figure the field holds ${up} above and ${down} below.`;
+    )} for ${aOrAn(matterLabel)} ${matterLabel}. Within ten percent of that figure the field holds ${up} above and ${down} below.`;
   }
 
   const nextUp = ctx.neighborAbove?.name;
@@ -1239,24 +1142,10 @@ export function sensitivitySentence(ctx: StateCostContext, matterLabel: string):
         ? `${usd(toPassAbove)} more reaches ${nextUp}`
         : `${usd(toDropBelow!)} less reaches ${nextDown}`;
 
-  if (crowd >= 7 && down > up * 1.5) {
-    return `The states within ten percent are lopsided: ${down} below ${stateName} against ${up} above. ${moveClause}, so a downward revision would cost the state far more places than an equivalent upward one would gain — the ${ordinal(
-      rank,
-    )} position is propped up by a thin ${matterLabel} field above it and a crowded one beneath.`;
+  if (up + down === 0) {
+    return `${moveClause}, and no other tracked state sits within ten percent of the ${stateName} figure.`;
   }
-  if (crowd >= 7 && up > down * 1.5) {
-    return `Within ten percent of the ${stateName} figure there are ${up} states above and only ${down} below. ${moveClause}, which means the ranking has far more room to improve than to slip: the ${matterLabel} field is dense overhead and sparse underneath.`;
-  }
-  if (crowd >= 14) {
-    return `The ${ordinal(rank)} position is not a stable fact about ${stateName}: ${moveClause}, and a ten percent revision would cross ${up} states upward or ${down} downward, ${crowd} within reach across both directions in near-equal numbers.`;
-  }
-  if (crowd >= 7) {
-    return `${moveClause}. A ten percent revision to the underlying figure would cross ${crowd} states in total — ${up} up, ${down} down — so the rank reads better as a band than as a precise place.`;
-  }
-  if (crowd === 0) {
-    return `${moveClause}, and no other tracked state sits within ten percent of the ${stateName} figure. The position is well separated from its neighbours.`;
-  }
-  return `${moveClause}, and only ${countStates(crowd)} ${crowd === 1 ? "sits" : "sit"} within ten percent of the ${stateName} figure: ${up} above it and ${down} below. The position is comparatively well separated from its neighbours.`;
+  return `${moveClause}. Within ten percent of the ${stateName} figure the field holds ${up} above and ${down} below.`;
 }
 
 /**
@@ -1288,7 +1177,7 @@ export function assumptionItems(ctx: StateCostContext, matterLabel: string): str
     conditional.push(
       `No other tracked state's median is within three percent of ${usd(
         moderate.median,
-      )}, so the rank would hold under a revision of that size, but there is no state that close to cross-check the figure against.`,
+      )}, so the rank would hold under a revision of that size.`,
     );
   } else {
     const names =
@@ -1296,29 +1185,29 @@ export function assumptionItems(ctx: StateCostContext, matterLabel: string): str
     conditional.push(
       `${names} ${near === 1 ? "records a median" : "record medians"} within three percent of ${usd(
         moderate.median,
-      )}; no other state is close enough to corroborate it.`,
+      )}.`,
     );
   }
 
   if (ctx.rankGap !== null && Math.abs(ctx.rankGap) >= 6) {
     conditional.push(
-      `Rate and total disagree by ${Math.abs(ctx.rankGap)} places (${ordinal(
+      `Rate and total differ by ${Math.abs(ctx.rankGap)} places (${ordinal(
         ctx.hourlyRank!,
-      )} on rate against ${ordinal(ctx.rank)} on total), so the ${usd(
+      )} on rate against ${ordinal(ctx.rank)} on total): the rate is ${usd(
         moderate.hourlyMedian ?? 0,
-      )} rate alone is a poor guide to the ${usd(moderate.median)} total.`,
+      )} and the total ${usd(moderate.median)}.`,
     );
   } else if (ctx.rankGap === 0) {
     conditional.push(
-      `Rate and total both rank ${ctx.stateName} ${ordinal(
-        ctx.rank,
-      )}, which makes ${usd(moderate.hourlyMedian ?? 0)} a workable shorthand here — it is not one everywhere in our cost figures.`,
+      `Rate and total both rank ${ctx.stateName} ${ordinal(ctx.rank)}: ${usd(moderate.hourlyMedian ?? 0)} an hour and ${usd(
+        moderate.median,
+      )} in total.`,
     );
   } else if (ctx.rankGap !== null) {
     conditional.push(
       `Rate and total sit ${countPlaces(Math.abs(ctx.rankGap))} apart (${ordinal(
         ctx.hourlyRank!,
-      )} against ${ordinal(ctx.rank)}); close, but not the same measurement.`,
+      )} against ${ordinal(ctx.rank)}).`,
     );
   }
 
@@ -1326,7 +1215,7 @@ export function assumptionItems(ctx: StateCostContext, matterLabel: string): str
     conditional.push(
       `${
         moderate.low === simple.high ? usd(moderate.low) : `${usd(moderate.low)}–${usd(simple.high)}`
-      } belongs to both bands; the tier, not the figure, separates them.`,
+      } belongs to both bands.`,
     );
   } else if (simple) {
     conditional.push(
@@ -1338,23 +1227,21 @@ export function assumptionItems(ctx: StateCostContext, matterLabel: string): str
 
   if (ctx.overlapModerateComplex && complex) {
     conditional.push(
-      `The moderate band reaches ${usd(moderate.high)} while the complex band starts at ${usd(
-        complex.low,
-      )}: the same money buys different work at the two tiers.`,
+      `The moderate band reaches ${usd(moderate.high)} while the complex band starts at ${usd(complex.low)}.`,
     );
   } else if (complex) {
     conditional.push(
-      `${usd(
-        complex.low - moderate.high,
-      )} of clear space separates the moderate ceiling from the complex floor, so escalation is a jump rather than a drift.`,
+      `${usd(complex.low - moderate.high)} of clear space separates the moderate ceiling from the complex floor.`,
     );
   }
 
   if (ctx.tierRankShift !== null && Math.abs(ctx.tierRankShift) >= 8) {
     conditional.push(
-      `"The ${ctx.stateName} rank" is ambiguous by ${ctx.tierRankSpread ?? Math.abs(ctx.tierRankShift)} places unless a tier is named: ${ordinal(simple?.rank ?? ctx.rank)} simple, ${ordinal(
+      `The ${ctx.stateName} rank is ${ordinal(simple?.rank ?? ctx.rank)} at the simple tier, ${ordinal(
         ctx.rank,
-      )} moderate, ${ordinal(complex?.rank ?? ctx.rank)} complex.`,
+      )} at moderate and ${ordinal(complex?.rank ?? ctx.rank)} at complex, a spread of ${
+        ctx.tierRankSpread ?? Math.abs(ctx.tierRankShift)
+      } places.`,
     );
   }
 
@@ -1397,12 +1284,10 @@ export function assumptionItems(ctx: StateCostContext, matterLabel: string): str
     ctx.quartile >= 3
       ? `The ${usd(moderate.low)}–${usd(moderate.high)} band is a single statewide estimate for ${
           ctx.stateName
-        }, with no county-level figures behind it, so a quote above ${usd(
-          moderate.high,
-        )} is a comparison with a model rather than a finding about any county.`
+        }, with no county-level figures behind it.`
       : `The ${usd(moderate.low)}–${usd(
           moderate.high,
-        )} band is one statewide estimate with no county breakdown behind it, so a quote outside it is not by itself evidence of anything.`,
+        )} band is one statewide estimate with no county breakdown behind it.`,
     rankItem,
   ];
 
@@ -1539,7 +1424,7 @@ export function tierNeighborSentences(ctx: StateCostContext, matterLabel: string
  * end differs by state, and so does the size of the spread between them.
  */
 export function premiumSentence(ctx: StateCostContext): string | null {
-  const { highestPremium, lowestPremium, stateName } = ctx;
+  const { highestPremium, lowestPremium } = ctx;
   if (!highestPremium || !lowestPremium || highestPremium.name === lowestPremium.name) return null;
 
   const describe = (entry: { name: string; percent: number }) =>
@@ -1550,32 +1435,18 @@ export function premiumSentence(ctx: StateCostContext): string | null {
         : `${entry.name} runs ${Math.abs(entry.percent)}% below its own midpoint`;
 
   const spread = highestPremium.percent - lowestPremium.percent;
-
-  if (spread <= 8) {
-    return `The premium ${stateName} carries is close to uniform across practice areas: ${describe(
-      highestPremium,
-    )} and ${describe(
-      lowestPremium,
-    )}, only ${spread} percentage points apart. Whatever drives the state's price level applies to every matter type here at roughly the same strength.`;
-  }
-  if (spread <= 20) {
-    return `${stateName} is not equally priced in every practice area. Measured against each matter's own midpoint, ${describe(
-      highestPremium,
-    )} while ${describe(lowestPremium)} — a ${spread}-point spread between the extremes.`;
-  }
   const closing =
     highestPremium.percent > 0 && lowestPremium.percent < 0
-      ? ` A single "${stateName} is expensive" or "${stateName} is inexpensive" claim would be wrong for at least one of the matter types tracked here.`
+      ? " Some tracked matter types run above their own midpoint here and others run below."
       : lowestPremium.percent > 0
-        ? " Every tracked matter type runs above its own midpoint here, so the difference is one of degree."
+        ? " Every tracked matter type runs above its own midpoint here."
         : highestPremium.percent < 0
-          ? " Every tracked matter type runs below its own midpoint here, so the difference is one of degree."
+          ? " Every tracked matter type runs below its own midpoint here."
           : "";
-  return `Measured against each matter's own midpoint, the spread across practice areas is wide. ${describe(
-    highestPremium,
-  )[0]!.toUpperCase()}${describe(highestPremium).slice(1)}, while ${describe(
+
+  return `Measured against each matter's own midpoint, ${describe(highestPremium)} while ${describe(
     lowestPremium,
-  )} — ${spread} percentage points apart.${closing}`;
+  )} — a ${spread}-point spread between the extremes.${closing}`;
 }
 
 /**
@@ -1620,7 +1491,7 @@ export function rateGroupSentences(ctx: StateCostContext, matterLabel: string): 
     out.push(
       `No other tracked state records ${usd(
         moderate.hourlyMedian,
-      )} as its median rate, so the figure identifies ${ctx.stateName} on its own among the tracked states.`,
+      )} as its median rate.`,
     );
   } else if (ctx.sameRateStates.length <= 3) {
     const alike = ctx.sameRateSameTotal;
@@ -1641,7 +1512,7 @@ export function rateGroupSentences(ctx: StateCostContext, matterLabel: string): 
     out.push(
       `${ctx.sameRateStates.length} other states record exactly ${usd(
         moderate.hourlyMedian,
-      )} — ${ctx.sameRateStates.slice(0, 4).join(", ")} among them — so rate is a coarse instrument in this ${matterLabel} table.`,
+      )} — ${ctx.sameRateStates.slice(0, 4).join(", ")} among them.`,
     );
   }
 
@@ -1870,13 +1741,8 @@ export function stateShapeSentences(ctx: StateCostContext, matterLabel: string):
   const { internalRatio, matterRankCounts, percentile, stateName } = ctx;
 
   if (internalRatio) {
-    const diff = internalRatio.own - internalRatio.peer;
     out.push(
-      diff >= 0.4
-        ? `In median dollars ${stateName}'s practice areas fan out more than most: its largest tracked median is ${internalRatio.own}x its smallest, against ${internalRatio.peer}x for the typical state.`
-        : diff <= -0.4
-          ? `In median dollars the practice areas sit unusually close together in ${stateName} — the largest tracked median is ${internalRatio.own}x the smallest, against ${internalRatio.peer}x for the typical state — so one figure travels further across matter types here than it would elsewhere.`
-          : `The largest tracked median in ${stateName} is ${internalRatio.own}x the smallest, effectively the ${internalRatio.peer}x that the typical state records: the internal spread is ordinary even where the levels are not.`,
+      `In median dollars the largest tracked median in ${stateName} is ${internalRatio.own}x the smallest, against ${internalRatio.peer}x for the typical state.`,
     );
   }
 
@@ -1889,9 +1755,7 @@ export function stateShapeSentences(ctx: StateCostContext, matterLabel: string):
         : "";
     out.push(
       (top === total
-        ? `Every one of the ${total} ${unranked > 0 ? "ranked matter types" : `matter types tracked for ${stateName}`} places ${unranked > 0 ? stateName : "it"} in the upper third of its table, which is why the ${ordinal(
-            ctx.rank,
-          )} on ${matterLabel} is not an outlier.`
+        ? `Every one of the ${total} ${unranked > 0 ? "ranked matter types" : `matter types tracked for ${stateName}`} places ${unranked > 0 ? stateName : "it"} in the upper third of its table.`
         : bottom === total
           ? `All ${total} ${unranked > 0 ? "ranked" : "tracked"} matter types place ${stateName} in the lower third of their tables, the ${matterLabel} figure included.`
           : `${top} of ${total} ${unranked > 0 ? "ranked " : ""}matter types rank ${stateName} in the upper third, ${bottom} in the lower, ${
@@ -1912,7 +1776,6 @@ export function stateShapeSentences(ctx: StateCostContext, matterLabel: string):
 
   return out;
 }
-
 
 /**
  * What it would take to move five places in either direction, named. The states
@@ -1990,12 +1853,12 @@ export function calibrationSentence(ctx: StateCostContext, matterLabel: string):
   if (position < 0) {
     return `The ${usd(ctx.peerMedian)} table midpoint falls below the ${usd(
       moderate.low,
-    )} floor of the ${ctx.stateName} band entirely — a matter priced at the national middle would be outside anything estimated for this state.`;
+    )} floor of the ${ctx.stateName} band entirely.`;
   }
   if (position > 100) {
     return `The ${usd(ctx.peerMedian)} table midpoint sits above the ${usd(
       moderate.high,
-    )} ceiling estimated for ${ctx.stateName}, so the typical tracked state's figure is higher than anything in this state's moderate band.`;
+    )} ceiling estimated for ${ctx.stateName}.`;
   }
   return `${position}% up the ${usd(
     moderate.low,
@@ -2014,32 +1877,15 @@ export function calibrationSentence(ctx: StateCostContext, matterLabel: string):
  * neither the cost ranking nor the rate ranking: a state can be mid-table on
  * money and near the top on the amount of work its figures imply.
  */
-export function hoursRankSentence(ctx: StateCostContext, matterLabel: string): string | null {
+export function hoursRankSentence(ctx: StateCostContext): string | null {
   const moderate = ctx.tiers.moderate!;
   if (ctx.hoursRank === null || !moderate.hours) return null;
   const vsCost = ctx.hoursRank - ctx.rank;
-  const vsRate = ctx.hourlyRank === null ? null : ctx.hoursRank - ctx.hourlyRank;
+  const lead = `By implied hours ${ctx.stateName} is ${ordinal(ctx.hoursRank)} of ${ctx.ratedOutOf} at ${moderate.hours} hours`;
 
-  if (Math.abs(vsCost) <= 2 && (vsRate === null || Math.abs(vsRate) <= 2)) {
-    return `Ranked by implied hours rather than money, ${ctx.stateName} is ${ordinal(
-      ctx.hoursRank,
-    )} of ${ctx.ratedOutOf} at ${moderate.hours} hours, where cost and rate also put it.`;
-  }
-  if (vsCost < 0) {
-    return `A third ordering: by implied hours ${ctx.stateName} is ${ordinal(
-      ctx.hoursRank,
-    )} of ${ctx.ratedOutOf} at ${moderate.hours} hours, ${countPlaces(
-      Math.abs(vsCost),
-    )} above its cost rank of ${ordinal(ctx.rank)}.`;
-  }
-  if (vsCost === 0) {
-    return `By implied hours ${ctx.stateName} is ${ordinal(ctx.hoursRank)} of ${
-      ctx.ratedOutOf
-    } at ${moderate.hours} hours, the same place it holds on cost, so the ${matterLabel} total and the implied workload agree even though the hourly rate ranks differently.`;
-  }
-  return `By implied hours ${ctx.stateName} is ${ordinal(ctx.hoursRank)} of ${
-    ctx.ratedOutOf
-  } at ${moderate.hours} hours, ${countPlaces(vsCost)} below its ${ordinal(ctx.rank)} on cost.`;
+  if (vsCost < 0) return `${lead}, ${countPlaces(Math.abs(vsCost))} above its cost rank of ${ordinal(ctx.rank)}.`;
+  if (vsCost === 0) return `${lead}, the same place it holds on cost.`;
+  return `${lead}, ${countPlaces(vsCost)} below its ${ordinal(ctx.rank)} on cost.`;
 }
 
 /**
@@ -2101,16 +1947,13 @@ export function extraCalculations(ctx: StateCostContext, matterLabel: string): C
   if (simple && complex && simple.median > 0 && simple.hours && complex.hours) {
     const count = Math.round((complex.median / simple.median) * 10) / 10;
     const factor = Math.round((complex.hours / simple.hours) * 10) / 10;
-    const rateRises = (complex.hourlyMedian ?? 0) > (simple.hourlyMedian ?? 0);
     out.push({
       lead: "Contested against simple.",
       body: `At ${ctx.stateName}'s own estimates, ${usd(
         complex.median,
       )} buys ${count} matters at the ${usd(simple.median)} simple median — or, counted in time, ${
         complex.hours
-      } implied hours against ${simple.hours}, a factor of ${factor}${
-        count !== factor && rateRises ? " — the two ratios differing because the rate rises with the tier" : ""
-      }.`,
+      } implied hours against ${simple.hours}, a factor of ${factor}.`,
     });
   }
 

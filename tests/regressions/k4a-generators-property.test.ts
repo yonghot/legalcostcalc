@@ -39,7 +39,7 @@ function checkHours(p: Page, text: string | null): string[] {
   if (!first || Number(first[1]) !== h) v.push(`states ${first?.[1] ?? "no"} hours but median / rate rounds to ${h}`);
   if (!text.includes(usd(own.median)) || !text.includes(usd(own.rate))) v.push("median or rate missing");
   if (/\b1 hours\b/.test(text)) v.push("1 hours");
-  if (/full working week/.test(text) !== h >= 45) v.push(`working-week claim is ${/full working week/.test(text)} at ${h} hours`);
+  if (/full working week|days of work, not weeks|indistinguishable/.test(text)) v.push(`keeps a duration or similarity verdict the data does not decide at ${h} hours`);
   if (/retainer|flat-fee|limited-scope|tend to|normally staged/.test(text)) v.push("states a billing practice the seed does not contain");
   const added = text.match(/a single added hour moves the total by (\d+)%/);
   if (!!added !== h < 12) v.push(`single-hour claim is ${!!added} at ${h} hours`);
@@ -59,20 +59,16 @@ function checkHours(p: Page, text: string | null): string[] {
   if (h > peer.hours && !more) v.push("above the peer median without saying so");
   if (h < peer.hours && !fewer) v.push("below the peer median without saying so");
 
-  const because = /because the rate rather than the workload carries more of it/.test(text);
-  const rateAbove = own.rate > peer.rate;
-  if (because && !(h < peer.hours && rateAbove)) {
-    v.push(`attributes the fewer hours to the rate, but hours ${h} vs ${peer.hours} and rate ${usd(own.rate)} vs peer ${usd(peer.rate)}`);
+  if (/because|carries more of it|rather than the workload/.test(text)) v.push("states a cause for the hours the data cannot decide");
+  const rateClause = text.match(/in \d+ fewer implied hours?, at (\$[\d,]+) an hour against a (\$[\d,]+) peer median\./);
+  if (fewer && (!rateClause || money(rateClause[1]!) !== own.rate || money(rateClause[2]!) !== peer.rate)) {
+    v.push(`fewer hours without the two rates it rests on: ${usd(own.rate)} against peer ${usd(peer.rate)}`);
   }
-  if (!because && h < peer.hours && rateAbove) v.push("rate above the peer median and hours below, but the cause is not stated");
-  if (because) {
-    const rates = [...text.slice(text.indexOf("because")).matchAll(/\$[\d,]+/g)].map((m) => m[0]);
-    if (!rates.includes(usd(own.rate)) || !rates.includes(usd(peer.rate))) v.push("the cause is stated without the two rates it rests on");
-  }
+  if (!fewer && /an hour against a/.test(text)) v.push("a rate comparison outside the fewer-hours branch");
   return v;
 }
 
-describe("K4-a extension: hoursSentence states a cause only when the data has it", () => {
+describe("K4-a extension: hoursSentence states the hours and the two rates and no cause", () => {
   it("covers every page, and every comparison branch occurs (non-vacuous)", () => {
     expect(PAGES.length).toBe(369);
     const seen = { more: 0, fewer: 0, same: 0, fewerRateAbove: 0, fewerRateNotAbove: 0 };
@@ -90,7 +86,7 @@ describe("K4-a extension: hoursSentence states a cause only when the data has it
   });
 
   it("the stated hours, peer comparison and cause equal the recomputed relations on every page", () => {
-    expect(collect((p) => checkHours(p, hoursSentence(p.ctx, p.label)))).toEqual([]);
+    expect(collect((p) => checkHours(p, hoursSentence(p.ctx)))).toEqual([]);
   });
 
   it("positive control: the checker flags the earlier unconditional cause clause", () => {
@@ -100,11 +96,11 @@ describe("K4-a extension: hoursSentence states a cause only when the data has it
       return !!h && h < peerStats(p).hours && own.rate <= peerStats(p).rate;
     })!;
     expect(candidate).toBeDefined();
-    const clean = hoursSentence(candidate.ctx, candidate.label)!;
+    const clean = hoursSentence(candidate.ctx)!;
     expect(checkHours(candidate, clean)).toEqual([]);
-    const old = clean.replace(/ fewer implied hours?\./, (m) => `${m.slice(0, -1)}, because the rate rather than the workload carries more of it.`);
+    const old = clean.replace(/ peer median\.$/, " peer median, because the rate rather than the workload carries more of it.");
     expect(old).not.toBe(clean);
-    expect(checkHours(candidate, old).join(" ")).toMatch(/attributes the fewer hours to the rate/);
+    expect(checkHours(candidate, old).join(" ")).toMatch(/states a cause for the hours/);
   });
 });
 

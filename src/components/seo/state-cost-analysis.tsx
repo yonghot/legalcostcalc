@@ -152,7 +152,7 @@ export function StateCostAnalysis({
           sentences={[
             rankSentence(ctx, matterLabel),
             neighborSentence(ctx, matterLabel),
-            clusterSentence(ctx, matterLabel),
+            clusterSentence(ctx),
             hourlyPositionSentence(ctx, matterLabel),
           ]}
         />
@@ -215,11 +215,11 @@ export function StateCostAnalysis({
         </h3>
         <Paragraphs
           sentences={[
-            hoursSentence(ctx, matterLabel),
+            hoursSentence(ctx),
             escalationSentence(ctx, matterLabel),
             bandSentence(ctx),
             tempoSentence(ctx, matterLabel),
-            hoursRankSentence(ctx, matterLabel),
+            hoursRankSentence(ctx),
             calibrationSentence(ctx, matterLabel),
           ]}
         />
@@ -323,9 +323,9 @@ export function StateCostAnalysis({
         </h3>
         <Paragraphs
           sentences={[
-            trajectorySentence(ctx, matterLabel),
+            trajectorySentence(ctx),
             ...tierNeighborSentences(ctx, matterLabel),
-            overlapSentence(ctx, matterLabel),
+            overlapSentence(ctx),
           ]}
         />
 

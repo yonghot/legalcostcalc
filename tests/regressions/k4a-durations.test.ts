@@ -25,17 +25,8 @@ function checkTempo(p: Page, text: string | null): string[] {
   if (!text.includes(usd(m.median)) || !text.includes(usd(perMonth))) v.push(`${usd(m.median)} or ${usd(perMonth)} a month missing`);
   if (c && cm && cm > 0) {
     const cPer = Math.round(c.median / cm);
-    const hot = cPer > perMonth * 1.1;
-    const cool = cPer < perMonth * 0.9;
-    if (/runs hotter/.test(text) !== hot) v.push(`"hotter" is ${/runs hotter/.test(text)} at ${usd(cPer)} against ${usd(perMonth)} a month`);
-    if (/costs more in total but less per month/.test(text) !== cool) v.push(`"less per month" is ${/less per month/.test(text)} at ${usd(cPer)} against ${usd(perMonth)} a month`);
-    if (/are close/.test(text) !== (!hot && !cool)) v.push(`"close" is ${/are close/.test(text)} at ${usd(cPer)} against ${usd(perMonth)} a month`);
-    if (!text.includes(usd(cPer)) || !c.duration || !text.includes(c.duration)) v.push("complex per-month figure or duration missing");
-    if (/runs? longer|longer timeline/.test(text) && !(cm > mm)) v.push("says the complex tier runs longer but its duration is not longer");
-    if (/costs more in total/.test(text) && !(c.median > m.median)) v.push("says the complex tier costs more but it does not");
-    if (/because the additional cost arrives as a longer timeline/.test(text) && !(cm > mm && c.median > m.median && cool)) {
-      v.push("states the cause of the lower monthly cost without the longer, dearer tier it rests on");
-    }
+    if (/hotter|longer|less per month|because|are close|simply|heavier/.test(text)) v.push("keeps a comparative or causal claim about the complex tier");
+    if (!text.includes(usd(c.median)) || !text.includes(usd(cPer)) || !c.duration || !text.includes(c.duration)) v.push("complex median, per-month figure or duration missing");
   } else if (c && /\bcomplex\b/.test(text)) {
     v.push("describes the complex tier although its duration does not parse");
   }
@@ -60,7 +51,7 @@ function checkDurationFaq(p: Page, faq: { question: string; answer: string }[]):
 }
 
 describe("K4-a extension: durations are described as the national assumption they are", () => {
-  it("tempoSentence assumes rather than records, and its comparisons follow the figures (every page)", () => {
+  it("tempoSentence assumes rather than records, and states the per-month figures without a comparison (every page)", () => {
     expect(collect((p) => checkTempo(p, tempoSentence(p.ctx, p.label)))).toEqual([]);
   });
 
@@ -84,13 +75,11 @@ describe("K4-a extension: durations are described as the national assumption the
     for (const p of PAGES) {
       const text = tempoSentence(p.ctx, p.label);
       const hit = (name: string, re: RegExp) => text && re.test(text) && seen.set(name, (seen.get(name) ?? 0) + 1);
-      hit("hot", /runs hotter/);
-      hit("cool", /less per month/);
-      hit("close", /are close/);
+      hit("both tiers", /complex median is/);
       hit("moderate only", /^Across the/);
       if (text === null) seen.set("none", (seen.get("none") ?? 0) + 1);
     }
-    expect(["hot", "cool", "close", "moderate only", "none"].filter((n) => !seen.get(n))).toEqual([]);
+    expect(["both tiers", "moderate only", "none"].filter((n) => !seen.get(n))).toEqual([]);
   });
 
   it("positive control: the checkers flag the earlier 'the sources record' wording", () => {

@@ -3,10 +3,9 @@ import { trajectorySentence } from "@/lib/seo/state-context";
 import { PAGES, collect, seedTable, strictRank, type Page } from "./helpers/k4a-oracle";
 
 /*
- * Adversarial review round 2 (r2-truth-*): sentences whose claim the page's own numbers contradict.
+ * Adversarial review round 2 (r2-truth-*), reduced by the 2026-10-11 convergence order: the tier trajectory prints the
+ * three strict ranks and the shift and draws no relation between the moderate tier and the other two.
  */
-
-type Relation = "between" | "above-both" | "below-both" | "equals-simple" | "equals-complex";
 
 const tierRanks = (p: Page): [number, number, number] =>
   (["simple", "moderate", "complex"] as const).map((tier) => {
@@ -14,78 +13,48 @@ const tierRanks = (p: Page): [number, number, number] =>
     return strictRank(table, table.find((r) => r.code === p.code)!.median);
   }) as [number, number, number];
 
-const SLIDE = /places downward/;
-const CLIMB = /moves up the table as complexity rises/;
+const O = "(\\d+)(?:st|nd|rd|th)";
+const CLIMB = new RegExp(`moves up the table as complexity rises: ${O} at the simple tier, ${O} at moderate, ${O} at complex, a climb of (\\d+) places\\.$`);
+const SLIDE = new RegExp(`slides (\\d+) places downward: ${O} at the simple tier, ${O} at moderate, ${O} at complex\\.$`);
+const RELATION = /understates|does not understate|already shows|sits between|rather than|above both|below both|matches the (?:simple|complex)|highest position/;
 
-describe("r2-truth-TRAJ-01: the closing relation of the tier trajectory agrees with the three tier ranks", () => {
-  it("'sits between the two extremes' needs the moderate rank strictly between the simple and complex ranks", () => {
+describe("r2-truth-TRAJ-01: the tier trajectory prints the three ranks and the shift, and no relation between the tiers", () => {
+  it("no page keeps a closing relation sentence for the moderate tier", () => {
     let seen = 0;
     const v = collect((p) => {
-      if (!/sits between the two extremes/.test(trajectorySentence(p.ctx, p.label) ?? "")) return [];
-      seen++;
-      const [s, m, c] = tierRanks(p);
-      return m > Math.min(s, c) && m < Math.max(s, c) ? [] : [`ranks ${s}/${m}/${c}`];
+      const t = trajectorySentence(p.ctx) ?? "";
+      if (CLIMB.test(t) || SLIDE.test(t)) seen++;
+      return RELATION.test(t) ? [t] : [];
     });
-    expect(seen).toBeGreaterThan(0);
+    expect(seen).toBeGreaterThan(40);
     expect(v).toEqual([]);
   });
 
-  it("'understates where it sits once a matter is contested' needs the moderate rank to be a larger number than the complex rank", () => {
-    let seen = 0;
+  it("every climb and slide page prints the strict ranks of its three tiers and the shift between the simple and complex ranks", () => {
+    const counts = { climb: 0, slide: 0 };
     const v = collect((p) => {
-      if (!/understates where it sits once a matter is contested/.test(trajectorySentence(p.ctx, p.label) ?? "")) return [];
-      seen++;
+      const t = trajectorySentence(p.ctx) ?? "";
       const [s, m, c] = tierRanks(p);
-      return m > c ? [] : [`ranks ${s}/${m}/${c}`];
+      const climb = t.match(CLIMB);
+      const slide = t.match(SLIDE);
+      if (s - c >= 4 && s - c < 10) {
+        counts.climb++;
+        if (!climb) return [`ranks ${s}/${m}/${c}: no climb form in "${t}"`];
+        return [climb[1], climb[2], climb[3]].join() === [s, m, c].join() && Number(climb[4]) === s - c ? [] : [`says ${climb.slice(1, 5)} for ranks ${s}/${m}/${c}`];
+      }
+      if (c - s >= 4 && c - s < 10) {
+        counts.slide++;
+        if (!slide) return [`ranks ${s}/${m}/${c}: no slide form in "${t}"`];
+        return [slide[2], slide[3], slide[4]].join() === [s, m, c].join() && Number(slide[1]) === c - s ? [] : [`says ${slide.slice(1, 5)} for ranks ${s}/${m}/${c}`];
+      }
+      return climb || slide ? [`a climb or slide form for ranks ${s}/${m}/${c}`] : [];
     });
-    expect(seen).toBeGreaterThan(0);
+    expect(counts.climb).toBeGreaterThan(10);
+    expect(counts.slide).toBeGreaterThan(10);
     expect(v).toEqual([]);
   });
 
-  it("every page in the slide branch names the relation its tier ranks give", () => {
-    const wording: Record<Relation, RegExp> = {
-      between: /sits between the two extremes/,
-      "above-both": /sits above both of the other tiers rather than between them/,
-      "below-both": /sits below both of the other tiers rather than between them/,
-      "equals-simple": /matches the simple tier's; the fall comes between the moderate and complex tiers/,
-      "equals-complex": /matches the complex tier's; the fall comes between the simple and moderate tiers/,
-    };
-    const counts: Partial<Record<Relation, number>> = {};
-    const v = collect((p) => {
-      const t = trajectorySentence(p.ctx, p.label) ?? "";
-      if (!SLIDE.test(t)) return [];
-      const [s, m, c] = tierRanks(p);
-      const relation: Relation = m === s ? "equals-simple" : m === c ? "equals-complex" : m < s ? "above-both" : m > c ? "below-both" : "between";
-      counts[relation] = (counts[relation] ?? 0) + 1;
-      return wording[relation].test(t) ? [] : [`ranks ${s}/${m}/${c} (${relation}): ${t}`];
-    });
-    expect(counts.between).toBeGreaterThan(0);
-    expect(counts["below-both"]).toBeGreaterThan(0);
-    expect(counts["above-both"]).toBeGreaterThan(0);
-    expect(v).toEqual([]);
-  });
-
-  it("every page in the climb branch names the relation its tier ranks give", () => {
-    const wording = {
-      understates: /understates where it sits once a matter is contested/,
-      highest: /highest position of the three, so the headline moderate figure does not understate where the state sits once a matter is contested/,
-      same: /moderate and complex tiers hold the same position, so the headline moderate figure already shows where the state sits once a matter is contested/,
-    };
-    const counts: Record<string, number> = {};
-    const v = collect((p) => {
-      const t = trajectorySentence(p.ctx, p.label) ?? "";
-      if (!CLIMB.test(t)) return [];
-      const [s, m, c] = tierRanks(p);
-      const relation = m > c ? "understates" : m < c ? "highest" : "same";
-      counts[relation] = (counts[relation] ?? 0) + 1;
-      return wording[relation].test(t) ? [] : [`ranks ${s}/${m}/${c} (${relation}): ${t}`];
-    });
-    expect(counts.understates).toBeGreaterThan(0);
-    expect(counts.highest).toBeGreaterThan(0);
-    expect(v).toEqual([]);
-  });
-
-  it("the branches are exercised on constructed ranks too, ties included", () => {
+  it("constructed ranks, ties included, print the ranks and the shift and nothing about how the moderate tier relates to the others", () => {
     const base = PAGES[0]!;
     const sentence = (s: number, m: number, c: number) => {
       const t = base.ctx.tiers;
@@ -94,16 +63,12 @@ describe("r2-truth-TRAJ-01: the closing relation of the tier trajectory agrees w
         tierRankShift: s - c,
         tiers: { simple: { ...t.simple!, rank: s }, moderate: { ...t.moderate!, rank: m }, complex: { ...t.complex!, rank: c } },
       };
-      return trajectorySentence(ctx, base.label) ?? "";
+      return trajectorySentence(ctx) ?? "";
     };
-    expect(sentence(8, 11, 14)).toMatch(/sits between the two extremes/);
-    expect(sentence(8, 15, 14)).toMatch(/sits below both of the other tiers rather than between them/);
-    expect(sentence(8, 5, 14)).toMatch(/sits above both of the other tiers rather than between them/);
-    expect(sentence(8, 8, 14)).toMatch(/matches the simple tier's; the fall comes between the moderate and complex tiers/);
-    expect(sentence(8, 14, 14)).toMatch(/matches the complex tier's; the fall comes between the simple and moderate tiers/);
-    expect(sentence(14, 20, 8)).toMatch(/understates where it sits once a matter is contested/);
-    expect(sentence(14, 5, 8)).toMatch(/highest position of the three, so the headline moderate figure does not understate/);
-    expect(sentence(14, 8, 8)).toMatch(/hold the same position, so the headline moderate figure already shows/);
-    expect(sentence(14, 14, 8)).toMatch(/understates where it sits once a matter is contested/);
+    for (const [s, m, c] of [[8, 11, 14], [8, 15, 14], [8, 5, 14], [8, 8, 14], [8, 14, 14], [14, 20, 8], [14, 5, 8], [14, 8, 8], [14, 14, 8]] as const) {
+      const text = sentence(s, m, c);
+      expect(text, `${s}/${m}/${c}`).not.toMatch(RELATION);
+      expect(text, `${s}/${m}/${c}`).toMatch(s < c ? SLIDE : CLIMB);
+    }
   });
 });

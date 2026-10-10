@@ -1876,16 +1876,21 @@ export function stateShapeSentences(ctx: StateCostContext, matterLabel: string):
 
   if (matterRankCounts.total > 0) {
     const { top, bottom, total } = matterRankCounts;
+    const unranked = ctx.categoryCountInState - total;
+    const note =
+      unranked > 0
+        ? ` Of the ${ctx.categoryCountInState} matter types tracked for ${stateName}, ${unranked} ${unranked === 1 ? "is" : "are"} not ranked against other states and ${unranked === 1 ? "is" : "are"} left out of these counts.`
+        : "";
     out.push(
-      top === total
-        ? `Every one of the ${total} matter types tracked for ${stateName} places it in the upper third of its table, which is why the ${ordinal(
+      (top === total
+        ? `Every one of the ${total} ${unranked > 0 ? "ranked matter types" : `matter types tracked for ${stateName}`} places ${unranked > 0 ? stateName : "it"} in the upper third of its table, which is why the ${ordinal(
             ctx.rank,
           )} on ${matterLabel} is not an outlier.`
         : bottom === total
-          ? `All ${total} tracked matter types place ${stateName} in the lower third of their tables, the ${matterLabel} figure included.`
-          : `${top} of ${total} matter types rank ${stateName} in the upper third, ${bottom} in the lower, ${
+          ? `All ${total} ${unranked > 0 ? "ranked" : "tracked"} matter types place ${stateName} in the lower third of their tables, the ${matterLabel} figure included.`
+          : `${top} of ${total} ${unranked > 0 ? "ranked " : ""}matter types rank ${stateName} in the upper third, ${bottom} in the lower, ${
               total - top - bottom
-            } between; ${matterLabel} is ${ordinal(ctx.rank)}.`,
+            } between; ${matterLabel} is ${ordinal(ctx.rank)}.`) + note,
     );
   }
 

@@ -430,12 +430,12 @@ describe("K4-a: every other rank, tier and matter-type claim equals the computed
         out.push(`counts ${got.top}/${got.bottom}/${got.total} but strict ${top}/${bottom}/${total}`);
       }
       const text = stateShapeSentences(p.ctx, p.label).join(" ");
-      const tally = text.match(/(\d+) of (\d+) matter types rank .+? in the upper third, (\d+) in the lower, (\d+) between/);
+      const tally = text.match(/(\d+) of (\d+) (?:ranked )?matter types rank .+? in the upper third, (\d+) in the lower, (\d+) between/);
       if (tally && [top, total, bottom, total - top - bottom].join() !== [tally[1], tally[2], tally[3], tally[4]].join()) {
         out.push(`sentence says ${tally[0]}`);
       }
-      if (/Every one of the (\d+) matter types/.test(text) !== (top === total && total > 0)) out.push("upper-third claim for every matter is wrong");
-      if (/^All \d+ tracked matter types|\. All \d+ tracked matter types/.test(text) !== (bottom === total && total > 0 && top !== total)) {
+      if (/Every one of the (\d+) (?:ranked )?matter types/.test(text) !== (top === total && total > 0)) out.push("upper-third claim for every matter is wrong");
+      if (/^All \d+ (?:tracked|ranked) matter types|\. All \d+ (?:tracked|ranked) matter types/.test(text) !== (bottom === total && total > 0 && top !== total)) {
         out.push("lower-third claim for every matter is wrong");
       }
       return out;

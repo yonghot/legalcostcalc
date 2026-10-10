@@ -1,5 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { assumptionItems, hourlyPositionSentence, hoursRankSentence, hoursSentence, trajectorySentence } from "@/lib/seo/state-context";
+import { CATEGORIES } from "@/lib/constants/categories";
+import { getModerateMedianCost } from "@/lib/page-index";
+import {
+  assumptionItems,
+  categoryMixSentence,
+  consistencySentence,
+  hourlyPositionSentence,
+  hoursRankSentence,
+  hoursSentence,
+  stateShapeSentences,
+  trajectorySentence,
+} from "@/lib/seo/state-context";
 import { buildStateFaq } from "@/lib/seo/state-faq";
 import { collect, middle, money, seedTable, strictRank, tierRow, type Page, type Tier } from "./helpers/k4a-oracle";
 
@@ -224,6 +235,45 @@ describe("r3-truth-R3-TXT-06: 'ambiguous by N places' is the spread of the three
       return out;
     });
     expect(seen).toBeGreaterThan(80);
+    expect(v).toEqual([]);
+  });
+});
+
+describe("r3-truth-R3-TXT-07: one section never gives two counts of the same set of matter types", () => {
+  const counts = (p: Page) => {
+    const tracked = CATEGORIES.filter((c) => (getModerateMedianCost(p.code, c.slug) ?? 0) > 0).length;
+    const ranked = CATEGORIES.filter((c) => seedTable(c.slug, "moderate").some((r) => r.code === p.code)).length;
+    return { tracked, ranked };
+  };
+  const sectionText = (p: Page) =>
+    [stateShapeSentences(p.ctx, p.label).join(" "), categoryMixSentence(p.ctx, p.label) ?? "", consistencySentence(p.ctx, p.label) ?? ""].join(" ");
+
+  it("a number before 'matter types' is the tracked count, or the ranked count when it says ranked", () => {
+    let fewerRanked = 0;
+    const v = collect((p) => {
+      const { tracked, ranked } = counts(p);
+      if (ranked < tracked) fewerRanked++;
+      const out: string[] = [];
+      for (const m of sectionText(p).matchAll(/(\d+) (ranked |tracked )?matter types?( tracked)?/g)) {
+        const n = Number(m[1]);
+        const kind = m[2]?.trim() ?? (m[3] ? "tracked" : "unqualified");
+        const ok = kind === "ranked" ? n === ranked : kind === "tracked" ? n === tracked : n === tracked && ranked === tracked;
+        if (!ok) out.push(`"${m[0]}" with ${tracked} tracked and ${ranked} ranked`);
+      }
+      return out;
+    });
+    expect(fewerRanked).toBeGreaterThan(100);
+    expect(v).toEqual([]);
+  });
+
+  it("a state with an unranked matter type says how many, against the tracked count", () => {
+    const v = collect((p) => {
+      const { tracked, ranked } = counts(p);
+      const text = stateShapeSentences(p.ctx, p.label).join(" ");
+      const note = text.match(/Of the (\d+) matter types tracked for .+?, (\d+) (?:is|are) not ranked against other states/);
+      if (ranked === tracked) return note ? [`note on a fully ranked state: ${note[0]}`] : [];
+      return note && Number(note[1]) === tracked && Number(note[2]) === tracked - ranked ? [] : [`no accurate note for ${tracked} tracked, ${ranked} ranked: ${text}`];
+    });
     expect(v).toEqual([]);
   });
 });

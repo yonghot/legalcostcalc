@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { hourlyPositionSentence, hoursRankSentence, hoursSentence, trajectorySentence } from "@/lib/seo/state-context";
-import { collect, middle, money, seedTable, tierRow, type Page, type Tier } from "./helpers/k4a-oracle";
+import { buildStateFaq } from "@/lib/seo/state-faq";
+import { collect, middle, money, seedTable, strictRank, tierRow, type Page, type Tier } from "./helpers/k4a-oracle";
 
 /*
  * Adversarial review round 3 (r3-truth-*): sentences whose claim the page's own numbers contradict.
@@ -144,6 +145,61 @@ describe("r3-truth-R3-TXT-03 / R3C-01: the tier trajectory sentence prices each 
       return out;
     });
     expect(seen).toBeGreaterThan(30);
+    expect(v).toEqual([]);
+  });
+});
+
+describe("r3-truth-R3-TXT-04/05 and R3C-02: the complexity FAQ's 'so' conclusions follow from the tier ranks and prices it quotes", () => {
+  const complexityAnswer = (p: Page) => buildStateFaq(p.ctx, p.label).find((e) => /vary by complexity/.test(e.question))?.answer ?? "";
+  const tierFacts = (p: Page, tier: Tier) => {
+    const table = seedTable(p.category, tier);
+    const own = table.find((r) => r.code === p.code)!;
+    const mid = middle(table.map((r) => r.median));
+    return { rank: strictRank(table, own.median), of: table.length, premium: own.median / mid - 1 };
+  };
+
+  it("'more distinctive on contested matters' needs the contested rank and price farther from the middle than the simple ones", () => {
+    let seen = 0;
+    const v = collect((p) => {
+      const text = complexityAnswer(p);
+      if (!/so it is more distinctive on contested matters than on straightforward ones/.test(text)) return [];
+      seen++;
+      const s = tierFacts(p, "simple");
+      const c = tierFacts(p, "complex");
+      const out: string[] = [];
+      if (!(Math.abs(c.rank - (c.of + 1) / 2) > Math.abs(s.rank - (s.of + 1) / 2))) out.push(`ranks ${s.rank}/${s.of} -> ${c.rank}/${c.of}: the contested rank is not farther from the middle`);
+      if (!(Math.abs(c.premium) > Math.abs(s.premium))) out.push(`prices ${(s.premium * 100).toFixed(1)}% -> ${(c.premium * 100).toFixed(1)}% off the midpoint: the contested price is not farther`);
+      return out;
+    });
+    expect(seen).toBeGreaterThan(20);
+    expect(v).toEqual([]);
+  });
+
+  it("the climb branch keeps stating the two ranks when it does not conclude anything", () => {
+    let withClaim = 0;
+    let withoutClaim = 0;
+    const v = collect((p) => {
+      const text = complexityAnswer(p);
+      if (!/its rank moves from/.test(text)) return [];
+      if (/more distinctive/.test(text)) withClaim++;
+      else withoutClaim++;
+      return /its rank moves from \d+(?:st|nd|rd|th) of \d+ up to \d+(?:st|nd|rd|th)[,.]/.test(text) ? [] : [text];
+    });
+    expect(withClaim).toBeGreaterThan(10);
+    expect(withoutClaim).toBeGreaterThan(10);
+    expect(v).toEqual([]);
+  });
+
+  it("'the premium carries is concentrated in straightforward matters' needs the contested premium at most half the simple one", () => {
+    let seen = 0;
+    const v = collect((p) => {
+      if (!/premium .+ carries is concentrated in straightforward matters/.test(complexityAnswer(p))) return [];
+      seen++;
+      const s = tierFacts(p, "simple").premium;
+      const c = tierFacts(p, "complex").premium;
+      return s > 0 && c <= s / 2 ? [] : [`simple ${(s * 100).toFixed(1)}% over its midpoint, complex ${(c * 100).toFixed(1)}%`];
+    });
+    expect(seen).toBeGreaterThan(20);
     expect(v).toEqual([]);
   });
 });

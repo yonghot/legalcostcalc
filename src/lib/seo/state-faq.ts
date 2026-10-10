@@ -174,6 +174,13 @@ export function buildStateFaq(ctx: StateCostContext, matterLabel: string): FaqEn
   /* 5 — complexity, answered with the state's rank at each tier. */
   if (simple && complex && simple.rank && complex.rank) {
     const shift = ctx.tierRankShift ?? 0;
+    const middleRank = (ctx.rankedOutOf + 1) / 2;
+    const offMidpoint = (tier: typeof simple) => (tier.peerMedian > 0 ? Math.abs(tier.median / tier.peerMedian - 1) : 0);
+    const moreDistinctiveWhenContested =
+      Math.abs(complex.rank - middleRank) > Math.abs(simple.rank - middleRank) && offMidpoint(complex) > offMidpoint(simple);
+    const simpleOver = simple.peerMedian > 0 ? simple.median / simple.peerMedian - 1 : 0;
+    const complexOver = complex.peerMedian > 0 ? complex.median / complex.peerMedian - 1 : 0;
+    const premiumIsAtSimpleTier = simpleOver > 0 && complexOver <= simpleOver / 2;
     entries.push({
       question: `Does ${matterLabel} cost vary by complexity in ${stateName}?`,
       answer:
@@ -184,9 +191,9 @@ export function buildStateFaq(ctx: StateCostContext, matterLabel: string): FaqEn
               complex.median,
             )} at complex — and its rank moves from ${ordinal(simple.rank)} of ${
               ctx.rankedOutOf
-            } up to ${ordinal(
-              complex.rank,
-            )}, so it is more distinctive on contested matters than on straightforward ones.`
+            } up to ${ordinal(complex.rank)}${
+              moreDistinctiveWhenContested ? ", so it is more distinctive on contested matters than on straightforward ones" : ""
+            }.`
           : shift <= -4
             ? `Substantially. The three tiers record ${usd(simple.median)}, ${usd(
                 moderate.median,
@@ -195,7 +202,7 @@ export function buildStateFaq(ctx: StateCostContext, matterLabel: string): FaqEn
               )} of ${ctx.rankedOutOf} at the simple tier to ${ordinal(
                 complex.rank,
               )} at the complex tier${
-                simple.median > simple.peerMedian
+                premiumIsAtSimpleTier
                   ? ` — the premium ${stateName} carries is concentrated in straightforward matters`
                   : ""
               }.`

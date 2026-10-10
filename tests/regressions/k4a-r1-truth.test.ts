@@ -43,7 +43,7 @@ function descending(p: Page) {
 }
 
 describe("r1-truth-TXT-01: 'as many as N places' counts one direction", () => {
-  it("N is the larger of the states within three percent above and below, ties counting on both sides", () => {
+  it("N is the larger of the states within three percent strictly above and at or below", () => {
     const v = collect((p) => {
       const item = assumptionItems(p.ctx, p.label).find((i) => /past as many as \d+ places/.test(i));
       if (!item) return [];
@@ -52,7 +52,7 @@ describe("r1-truth-TXT-01: 'as many as N places' counts one direction", () => {
       const peers = seedTable(p.category, "moderate").filter(
         (r) => r.code !== p.code && Math.abs(r.median - own) / own <= 0.03,
       );
-      const reach = Math.max(peers.filter((r) => r.median >= own).length, peers.filter((r) => r.median <= own).length);
+      const reach = Math.max(peers.filter((r) => r.median > own).length, peers.filter((r) => r.median <= own).length);
       return stated === reach ? [] : [`says ${stated}, one direction reaches ${reach}`];
     });
     expect(v).toEqual([]);
@@ -104,7 +104,7 @@ describe("r1-truth-TXT-04: the number of places matches the states named", () =>
       const text = movementSentences(p.ctx, p.label).join(" ");
       const out: string[] = [];
       const up = text.match(/Climbing (\w+) places? would mean passing (.+?)(?: and adding |, which (?:all record|records))/);
-      const upExpected = Math.min(5, position - 1);
+      const upExpected = Math.min(5, sorted.filter((r) => r.median > ownMedian(p)!).length);
       if (upExpected > 0) {
         checked++;
         if (!up) out.push("climbing sentence missing");
@@ -113,7 +113,7 @@ describe("r1-truth-TXT-04: the number of places matches the states named", () =>
         }
       }
       const down = text.match(/(\w+) places? down means passing under (.+?)(?:, which (?:all record|records)|:)/i);
-      const downExpected = Math.min(5, sorted.length - position);
+      const downExpected = Math.min(5, sorted.filter((r) => r.code !== p.code && r.median <= ownMedian(p)!).length);
       if (downExpected > 0) {
         checked++;
         if (!down) out.push("down sentence missing");

@@ -8,11 +8,12 @@ import {
   hourlyPositionSentence,
   hoursRankSentence,
   hoursSentence,
+  movementSentences,
   stateShapeSentences,
   trajectorySentence,
 } from "@/lib/seo/state-context";
 import { buildStateFaq } from "@/lib/seo/state-faq";
-import { collect, middle, money, seedTable, strictRank, tierRow, type Page, type Tier } from "./helpers/k4a-oracle";
+import { NAME_RE, collect, middle, money, nameToCode, seedTable, strictRank, tierRow, usd, type Page, type Tier } from "./helpers/k4a-oracle";
 
 /*
  * Adversarial review round 3 (r3-truth-*): sentences whose claim the page's own numbers contradict.
@@ -274,6 +275,82 @@ describe("r3-truth-R3-TXT-07: one section never gives two counts of the same set
       if (ranked === tracked) return note ? [`note on a fully ranked state: ${note[0]}`] : [];
       return note && Number(note[1]) === tracked && Number(note[2]) === tracked - ranked ? [] : [`no accurate note for ${tracked} tracked, ${ranked} ranked: ${text}`];
     });
+    expect(v).toEqual([]);
+  });
+});
+
+describe("r3-truth-R3-W1: movement counts follow the strict rank the page prints", () => {
+  const NUMBER_WORDS: Record<string, number> = { one: 1, two: 2, three: 3, four: 4, five: 5 };
+  const nameRe = () => new RegExp(NAME_RE, "g");
+  const table = (p: Page) => seedTable(p.category, "moderate");
+  const rankWith = (p: Page, value: number) => 1 + table(p).filter((r) => r.code !== p.code && r.median > value).length;
+  const medianOf = (p: Page, name: string) => table(p).find((r) => r.code === nameToCode.get(name))!.median;
+
+  it("'Climbing N places' names N states that all record more than this state, and adding the stated sum climbs at least N", () => {
+    let seen = 0;
+    const v = collect((p) => {
+      const text = movementSentences(p.ctx, p.label).join(" ");
+      const m = text.match(/Climbing (\w+) places? would mean passing (.+?)(?: and adding (\$[\d,]+) to the|, which (?:all record|records) the same)/);
+      if (!m) return [];
+      seen++;
+      const own = tierRow(p, "moderate")!.median;
+      const names = [...m[2]!.matchAll(nameRe())].map((x) => x[1]!);
+      const out: string[] = [];
+      const n = NUMBER_WORDS[m[1]!]!;
+      if (names.length !== n) out.push(`names ${names.length} for ${n}`);
+      const tied = names.filter((name) => medianOf(p, name) <= own);
+      if (tied.length) out.push(`${tied.join(", ")} record no more than ${usd(own)}, so passing them climbs nothing`);
+      if (m[3] === undefined) out.push(`tie wording on a climb: ${m[0]}`);
+      else {
+        const target = own + money(m[3]);
+        const climbed = rankWith(p, own) - rankWith(p, target);
+        if (climbed < n) out.push(`adding ${m[3]} climbs ${climbed}, sentence says ${n}`);
+      }
+      return out;
+    });
+    expect(seen).toBeGreaterThan(300);
+    expect(v).toEqual([]);
+  });
+
+  it("'N places down' names N states that record no more than this state, and a fall beyond the stated sum drops at least N", () => {
+    let seen = 0;
+    const v = collect((p) => {
+      const text = movementSentences(p.ctx, p.label).join(" ");
+      const m = text.match(/(\w+) places? down means passing under (.+?)(?:: (a fall of more than )?(\$[\d,]+)|, which (?:all record|records) the same)/i);
+      if (!m) return [];
+      seen++;
+      const own = tierRow(p, "moderate")!.median;
+      const names = [...m[2]!.matchAll(nameRe())].map((x) => x[1]!);
+      const out: string[] = [];
+      const n = NUMBER_WORDS[m[1]!.toLowerCase()]!;
+      if (names.length !== n) out.push(`names ${names.length} for ${n}`);
+      const higher = names.filter((name) => medianOf(p, name) > own);
+      if (higher.length) out.push(`${higher.join(", ")} record more than ${usd(own)}`);
+      const drop = m[4] === undefined ? 1 : money(m[4]) + (m[3] ? 1 : 0);
+      if (m[4] === undefined && names.some((name) => medianOf(p, name) !== own)) out.push(`'same figure' wording but ${m[2]} differ`);
+      const fell = rankWith(p, own - drop) - rankWith(p, own);
+      if (fell < n) out.push(`falling ${usd(drop)} drops ${fell}, sentence says ${n}`);
+      return out;
+    });
+    expect(seen).toBeGreaterThan(300);
+    expect(v).toEqual([]);
+  });
+
+  it("'past as many as N places' is the larger of the rises a three percent revision can cause under the strict rank", () => {
+    let seen = 0;
+    const v = collect((p) => {
+      const item = assumptionItems(p.ctx, p.label).find((i) => /past as many as \d+ places/.test(i));
+      if (!item) return [];
+      seen++;
+      const stated = Number(item.match(/past as many as (\d+) places/)![1]);
+      const own = tierRow(p, "moderate")!.median;
+      const near = table(p).filter((r) => r.code !== p.code && Math.abs(r.median - own) / own <= 0.03);
+      const climb = rankWith(p, own) - rankWith(p, own * 1.03);
+      const slip = rankWith(p, own * 0.97 - 1e-9) - rankWith(p, own);
+      const reach = Math.max(near.filter((r) => r.median > own).length, near.filter((r) => r.median <= own).length);
+      return stated === reach && reach >= Math.max(climb, slip) ? [] : [`says ${stated}; up ${climb}, down ${slip}, near-based ${reach}`];
+    });
+    expect(seen).toBeGreaterThan(50);
     expect(v).toEqual([]);
   });
 });

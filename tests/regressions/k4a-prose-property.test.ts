@@ -645,7 +645,7 @@ describe("K4-a: every other rank, tier and matter-type claim equals the computed
         if (climbing[2] !== undefined && money(climbing[2]) !== Math.max(...values) - s.value) out.push("climb distance is wrong");
         if (climbing[2] === undefined && values.some((x) => x !== s.value)) out.push("'all record the same' is false above");
       }
-      const falling = move.match(/[A-Z][a-z]+ places? down means passing (?:under )?(.+?)(?:: (\$[\d,]+)|, which (?:all record|records) the same)/);
+      const falling = move.match(/[A-Z][a-z]+ places? down means passing (?:under )?(.+?)(?:: (?:a fall of more than )?(\$[\d,]+)|, which (?:all record|records) the same)/);
       if (falling) {
         const values = [...falling[1]!.matchAll(new RegExp(NAME_RE, "g"))].map((n) => valueOf(list, n[1]!)!);
         if (values.some((x) => x > s.value)) out.push("a state named as passed under records more");

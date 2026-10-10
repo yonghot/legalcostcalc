@@ -514,10 +514,12 @@ export function buildStateCostContext(
   const belowRow = descending[position];
 
   const fiveUp = descending
-    .slice(Math.max(0, position - 6), Math.max(0, position - 1))
+    .filter((row) => row.median > own.median)
+    .slice(-5)
     .map((row) => ({ name: nameOf(row.stateCode), median: row.median }));
   const fiveDown = descending
-    .slice(position, position + 5)
+    .filter((row) => row.stateCode !== stateCode && row.median <= own.median)
+    .slice(0, 5)
     .map((row) => ({ name: nameOf(row.stateCode), median: row.median }));
 
   const clusterRows = moderatePeers.filter(
@@ -528,7 +530,7 @@ export function buildStateCostContext(
   );
   const clusterPeers = [...clusterRows].sort((a, b) => b.median - a.median).map((row) => nameOf(row.stateCode));
   const clusterReach = {
-    up: clusterRows.filter((row) => row.median >= own.median).length,
+    up: clusterRows.filter((row) => row.median > own.median).length,
     down: clusterRows.filter((row) => row.median <= own.median).length,
   };
 
@@ -1924,13 +1926,9 @@ export function movementSentences(ctx: StateCostContext, matterLabel: string): s
     const target = up[0]!;
     const upNames = up.map((state) => state.name).join(", ");
     out.push(
-      target.median === moderate.median
-        ? `Climbing ${places(up.length)} would mean passing ${upNames}, which ${up.length === 1 ? "records" : "all record"} the same ${usd(
-            moderate.median,
-          )} as ${ctx.stateName}, so the position moves without the figure changing.`
-        : `Climbing ${places(up.length)} would mean passing ${upNames} and adding ${usd(
-            target.median - moderate.median,
-          )} to the ${usd(moderate.median)} estimate here.`,
+      `Climbing ${places(up.length)} would mean passing ${upNames} and adding ${usd(
+        target.median - moderate.median,
+      )} to the ${usd(moderate.median)} estimate here.`,
     );
   } else {
     out.push(
@@ -1949,7 +1947,7 @@ export function movementSentences(ctx: StateCostContext, matterLabel: string): s
         ? `${lead} down means passing under ${downNames}, which ${down.length === 1 ? "records" : "all record"} the same ${usd(
             moderate.median,
           )} as ${ctx.stateName}.`
-        : `${lead} down means passing under ${downNames}: ${usd(moderate.median - target.median)}.`,
+        : `${lead} down means passing under ${downNames}: a fall of more than ${usd(moderate.median - target.median)}.`,
     );
   } else {
     out.push(

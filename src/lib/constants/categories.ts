@@ -13,17 +13,17 @@ export const CATEGORIES: CategoryInfo[] = [
       {
         questionTemplate: "What is the difference between contested and uncontested divorce in {state}?",
         answerTemplate:
-          "An uncontested divorce in {state} is when both spouses agree on all terms (property, custody, support) and is significantly cheaper. A contested divorce involves disputes requiring court hearings and attorney negotiations, substantially increasing legal costs.",
+          "An uncontested divorce in {state} is when both spouses agree on all terms (property, custody, support). A contested divorce involves disputes over those terms that require court hearings or attorney negotiations.",
       },
       {
         questionTemplate: "What does a self-represented (pro se) divorce cost in {state} compared with one handled by an attorney?",
         answerTemplate:
-          "In a self-represented (pro se) divorce in {state} no attorney fees are billed, while court filing fees and other non-attorney charges, such as service of process or a document-preparation charge, still apply. When an attorney is hired, attorney fees are added and rise with the number of disputed issues (property, custody, support); the estimates on this page rise from the simple tier to the complex tier. This information is for general awareness only and is not legal advice.",
+          "In a self-represented (pro se) divorce in {state} no attorney fees are billed, while court filing fees and other non-attorney charges, such as service of process or a document-preparation charge, still apply. When an attorney is hired, attorney fees are added; the estimates on this page rise from the simple tier to the complex tier. This information is for general awareness only and is not legal advice.",
       },
     ],
     costFormationNotes: [
-      "Divorce costs form around two variables that compound each other: how much the spouses disagree on, and how many separate issues (property division, child custody, child support, alimony) are in dispute. An uncontested divorce with no minor children and no real estate can resolve with a single court filing fee and a document-preparation charge. Once custody or asset division is contested, cost accumulates from discovery (formal document exchange), mediation sessions billed hourly, and — in the most complex cases — expert witnesses such as forensic accountants (business or investment valuation) and custody evaluators.",
-      "Attorney billing in divorce is typically hourly rather than flat-fee, because the number of court appearances and negotiation rounds is not knowable in advance. A retainer is paid upfront and drawn down as the attorney bills time; complex cases often require replenishing the retainer more than once. Court filing fees and mediation fees are set by the state or county and apply regardless of which attorney is hired.",
+      "The issues that can be in dispute in a divorce are property division, child custody, child support and alimony. An uncontested divorce with no minor children and no real estate can involve a single court filing fee and a document-preparation charge. Where custody or asset division is contested, the work can include discovery (formal document exchange), mediation sessions billed hourly and, in some cases, expert witnesses such as forensic accountants (business or investment valuation) and custody evaluators.",
+      "Attorneys in divorce matters may bill hourly against a retainer, which is paid upfront and drawn down as the attorney bills time. Court filing fees and mediation fees are separate from attorney fees.",
     ],
   },
   {
@@ -38,17 +38,17 @@ export const CATEGORIES: CategoryInfo[] = [
       {
         questionTemplate: "What are the total costs beyond attorney fees for a DUI in {state}?",
         answerTemplate:
-          "Beyond attorney fees, DUI costs in {state} typically include court fines, alcohol education programs, license reinstatement fees, increased insurance premiums (often for 3-5 years), ignition interlock device costs, and possible towing/impound fees. Total out-of-pocket costs often exceed the attorney fee alone.",
+          "Beyond attorney fees, DUI costs in {state} can include court fines, alcohol education programs, license reinstatement fees, increased insurance premiums, ignition interlock device costs, and towing or impound fees.",
       },
       {
         questionTemplate: "Is a first-time DUI in {state} a misdemeanor or felony?",
         answerTemplate:
-          "How a first-time DUI in {state} is classified (as a misdemeanor, as a lesser traffic offense, or, with aggravating factors such as very high BAC, accidents with injuries or minors in the vehicle, as a felony) depends on {state} law and the facts of the case. The classification significantly affects legal costs. This is general information only, not legal advice.",
+          "How a first-time DUI in {state} is classified (as a misdemeanor, as a lesser traffic offense, or, with aggravating factors such as very high BAC, accidents with injuries or minors in the vehicle, as a felony) depends on {state} law and the facts of the case. The classification affects legal costs. This is general information only, not legal advice.",
       },
     ],
     costFormationNotes: [
-      "DUI/DWI legal cost has two layers that are easy to underestimate: the attorney fee itself, and the non-attorney costs that follow a conviction or plea. The attorney fee is driven mainly by whether the case goes to trial (far more hours billed) or resolves through a plea agreement, plus complicating factors like BAC level, prior offenses, or an accident with injuries. Many DUI attorneys charge a flat fee for a straightforward first offense and switch to hourly billing once the case becomes contested.",
-      "Beyond the attorney, a DUI case typically layers on court fines, a state-mandated alcohol education or treatment program, license reinstatement fees, and — for many drivers — an ignition interlock device with ongoing monthly costs. Insurance premium increases are not a one-time legal cost but often the largest total expense over a 3-5 year period following conviction, which is why the figures on this page reflect legal defense costs specifically, not the lifetime cost of a conviction.",
+      "DUI/DWI legal cost has two parts: the attorney fee, and the non-attorney costs that can follow a conviction or plea. The attorney fee can differ depending on whether the case goes to trial or resolves through a plea agreement, and on factors such as BAC level, prior offenses, or an accident with injuries.",
+      "Beyond the attorney, a DUI case can add court fines, an alcohol education or treatment program, license reinstatement fees, and an ignition interlock device with ongoing monthly costs. Insurance premium increases are not a one-time legal cost; the figures on this page reflect legal defense costs specifically, not the lifetime cost of a conviction.",
     ],
   },
   {
@@ -63,7 +63,7 @@ export const CATEGORIES: CategoryInfo[] = [
       {
         questionTemplate: "How do contingency fees work for personal injury cases in {state}?",
         answerTemplate:
-          "Most personal injury lawyers in {state} work on contingency, meaning you pay nothing upfront. The attorney receives a percentage (typically 33-40%) of any settlement or verdict. If you lose, you generally owe no attorney fees, though you may still owe court costs and expenses.",
+          "The cost data on this page expresses the attorney fee in a personal injury matter as a percentage of any settlement or verdict (a contingency fee) rather than an hourly bill. Whether court costs and expenses are owed if there is no recovery depends on the fee agreement.",
       },
       {
         questionTemplate: "What is the statute of limitations for personal injury in {state}?",
@@ -72,8 +72,8 @@ export const CATEGORIES: CategoryInfo[] = [
       },
     ],
     costFormationNotes: [
-      "Personal injury cost formation works differently from most other legal matters because the attorney fee is usually contingent — a percentage of any settlement or verdict rather than an hourly bill. That percentage typically rises if the case proceeds to litigation or trial rather than settling early, since more attorney hours and case costs are involved. If there is no recovery, the client generally owes no attorney fee, though case costs (filing fees, expert reports) may still apply depending on the retainer agreement.",
-      "Separate from the attorney's percentage, a personal injury case accumulates its own case costs: expert witness fees (medical experts, accident reconstructionists), records requests, deposition transcription, and court filing fees if a lawsuit is filed. Simple claims that settle directly with an insurer before litigation avoid most of these costs; complex cases involving disputed liability, multiple parties, or serious injury typically require the full expert and litigation cost stack.",
+      "In a personal injury matter the attorney fee is a percentage of any settlement or verdict rather than an hourly bill. Case costs (filing fees, expert reports) are separate from that percentage, and whether they are owed if there is no recovery depends on the retainer agreement. A claim can resolve through a settlement agreement or through a verdict after trial.",
+      "Separate from the attorney's percentage, a personal injury case can carry its own case costs: expert witness fees (medical experts, accident reconstructionists), records requests, deposition transcription, and court filing fees if a lawsuit is filed. A claim that settles with an insurer before litigation does not involve court filing fees.",
     ],
   },
   {
@@ -88,7 +88,7 @@ export const CATEGORIES: CategoryInfo[] = [
       {
         questionTemplate: "What is the difference between Chapter 7 and Chapter 13 bankruptcy costs in {state}?",
         answerTemplate:
-          "Chapter 7 (liquidation) bankruptcy in {state} generally costs less in attorney fees since it is a shorter process. Chapter 13 (repayment plan) requires ongoing attorney involvement over 3-5 years, making it more expensive. Federal filing fees differ between the two chapters as well.",
+          "Chapter 7 is a liquidation bankruptcy and Chapter 13 is a repayment-plan bankruptcy that runs over 3-5 years. Attorney fees and federal filing fees can differ between the two chapters. Both are filed in federal bankruptcy court.",
       },
       {
         questionTemplate: "Which courses are required with a bankruptcy filing in {state}, and are they part of the attorney fee?",
@@ -97,8 +97,8 @@ export const CATEGORIES: CategoryInfo[] = [
       },
     ],
     costFormationNotes: [
-      "Bankruptcy cost formation splits along the two most common filing types. Chapter 7 (liquidation) is a shorter federal process, so attorney fees are usually charged as a flat fee covering the whole case. Chapter 13 (repayment plan) requires the attorney to stay involved for the full 3-5 year repayment period, so the fee is higher and is often split into an upfront portion plus ongoing amounts paid through the repayment plan itself.",
-      "On top of the attorney fee, every filer pays a federal court filing fee (set by statute, the same nationwide regardless of state) plus mandatory credit counseling and debtor education course fees. Case complexity within either chapter — multiple creditors, contested exemptions, business assets, or a means-test dispute — adds attorney hours beyond the base flat fee, which is why complex-case costs run well above the simple-case median shown on this page.",
+      "Bankruptcy estimates cover the two common filing types. Chapter 7 (liquidation) is a federal process with no repayment period. Chapter 13 (repayment plan) runs over a 3-5 year repayment period, during which attorney fees can be split into an upfront portion plus amounts paid through the repayment plan itself.",
+      "On top of the attorney fee, a filer pays a federal court filing fee (set by statute, the same nationwide) plus credit counseling and debtor education course fees. Case complexity within either chapter — multiple creditors, contested exemptions, business assets, or a means-test dispute — can add attorney hours; the complex-tier estimates on this page are shown next to the simple-tier ones.",
     ],
   },
   {
@@ -113,17 +113,17 @@ export const CATEGORIES: CategoryInfo[] = [
       {
         questionTemplate: "How do attorney fees fit into real estate closing costs in {state}?",
         answerTemplate:
-          "Attorney fees are one line within total closing costs in {state}, alongside title search and title insurance, appraisal, recording fees, and any survey. Some states require an attorney to be present at closing and others do not, so whether that line appears at all varies by state. Where an attorney is involved, a standard residential closing is often priced as a flat fee and a complicated one is billed hourly. This is general information, not legal advice.",
+          "Attorney fees are one line within total closing costs in {state}, alongside title search and title insurance, appraisal, recording fees, and any survey. Some states require an attorney to be present at closing and others do not, so whether that line appears at all varies by state. This is general information, not legal advice.",
       },
       {
         questionTemplate: "What closing costs does a buyer typically pay in {state}?",
         answerTemplate:
-          "Buyers in {state} typically pay closing costs including title insurance, appraisal fees, home inspection, loan origination fees, and attorney fees. Total closing costs generally range from 2-5% of the purchase price, though this varies by property value and transaction complexity.",
+          "Closing costs for a buyer in {state} can include title insurance, appraisal fees, home inspection, loan origination fees, and attorney fees.",
       },
     ],
     costFormationNotes: [
-      "Real estate closing legal costs form mainly around whether the transaction is a standard residential purchase or one complicated by title problems, a short sale, new construction, or commercial elements. In a simple closing, the attorney's role is largely contract review, title coordination, and attending closing itself, which supports flat-fee pricing. Complications — a title defect that needs curing, a dispute between buyer and seller, or financing contingencies falling through — shift the engagement to hourly billing and add attorney hours.",
-      "Attorney fees are only one line item inside total closing costs. Title search and title insurance, appraisal, recording fees, and any survey costs are set largely by the transaction's price and the title company or county, not by which attorney is hired. Attorneys in some states are required participants at closing while in others their involvement is optional but still commonly used to review the purchase contract before signing.",
+      "A real estate closing is the point at which ownership of a property transfers from the seller to the buyer. A closing can be a standard residential purchase or one involving title problems, a short sale, new construction, or commercial elements. In a closing, the attorney's role can include contract review, title coordination, and attending the closing itself. A title defect that needs curing, a dispute between buyer and seller, or financing contingencies falling through can add attorney hours.",
+      "Attorney fees are one line item inside total closing costs, next to title search and title insurance, appraisal, recording fees, and any survey costs. In some states an attorney is a required participant at closing; in others their involvement is optional.",
     ],
   },
   {
@@ -138,17 +138,17 @@ export const CATEGORIES: CategoryInfo[] = [
       {
         questionTemplate: "What is the difference between a will and a trust in {state}?",
         answerTemplate:
-          "A will is simpler and cheaper to create but goes through probate after death. A revocable living trust costs more upfront but avoids probate, provides privacy, and can reduce estate settlement time. The right choice depends on your estate size, family situation, and {state} probate laws.",
+          "A will takes effect through probate after death. A revocable living trust is a document drafted during life that can hold assets outside probate. How each is handled depends on {state} probate law.",
       },
       {
         questionTemplate: "How much does probate cost in {state}?",
         answerTemplate:
-          "Probate costs in {state} typically include court filing fees, attorney fees (often a percentage of estate value or hourly), executor fees, and appraisal costs. Simple estates may cost a few thousand dollars, while complex estates can cost significantly more. Probate duration and cost vary by state law.",
+          "Probate costs in {state} can include court filing fees, attorney fees (billed hourly or as a percentage of estate value), executor fees, and appraisal costs. Probate is the court process that validates a will and settles an estate, and its duration and cost vary by state law.",
       },
     ],
     costFormationNotes: [
-      "Estate planning and probate cost formation depends on which side of death the work happens on. Planning documents drafted while someone is alive — a will, a revocable living trust, powers of attorney — are usually flat-fee, priced by document complexity and whether a trust (which avoids probate but requires more drafting) is involved rather than a simple will alone. Probate, which happens after death when an estate moves through court, is billed differently: often hourly or as a percentage of the estate's value, and its cost tracks estate size and how many beneficiaries or disputes are involved.",
-      "The biggest cost driver in probate specifically is whether the estate is contested. An estate with a clear will, cooperative beneficiaries, and no significant debts moves through simple probate with predictable court filing fees, executor fees, and appraisal costs. A contested estate — disputed will validity, disagreements among heirs, or complex assets like a business — adds litigation-style hourly billing on top of the base probate costs, which is why complex-case figures on this page run substantially above the simple-case median.",
+      "Estate planning work happens in two phases: planning documents drafted while someone is alive — a will, a revocable living trust, powers of attorney — and probate, which happens after death when an estate moves through court. A will states how a person's property is to be distributed after death, and a trust is a separate document from a will. Probate can be billed hourly or as a percentage of the estate's value.",
+      "Probate can involve court filing fees, executor fees, which are paid to the person who administers the estate, and appraisal costs. A contested estate — disputed will validity, disagreements among heirs, or complex assets like a business — can add litigation-style hourly billing on top of those probate costs.",
     ],
   },
   {
@@ -163,17 +163,17 @@ export const CATEGORIES: CategoryInfo[] = [
       {
         questionTemplate: "What is the difference between a public defender and a private attorney in {state}?",
         answerTemplate:
-          "If you cannot afford a private attorney in {state}, you may qualify for a court-appointed public defender at no cost. Private attorneys generally offer more availability, smaller caseloads, and more resources, but at significantly higher cost. Eligibility for a public defender depends on income level.",
+          "A defendant in {state} who cannot afford a private attorney may qualify for a court-appointed public defender at no cost. Eligibility for a public defender depends on income level.",
       },
       {
         questionTemplate: "Do criminal defense attorneys in {state} charge flat fees or hourly rates?",
         answerTemplate:
-          "Criminal defense attorneys in {state} use both fee structures. Simple misdemeanors often have flat fees, while felonies and complex cases are typically billed hourly or with a retainer plus hourly arrangement. Trial cases cost significantly more than cases resolved through plea negotiations.",
+          "Criminal defense attorneys in {state} represent people charged with a crime. They can charge a flat fee or bill hourly, and some use a retainer drawn down at an hourly rate. The estimates on this page rise from the simple tier to the complex tier.",
       },
     ],
     costFormationNotes: [
-      "Criminal defense costs form primarily around charge severity and how the case resolves. A misdemeanor that ends in a straightforward plea negotiation is the least expensive scenario and is often billed as a flat fee, since the attorney can reasonably predict the hours involved. A felony charge, multiple counts, or a case that proceeds to trial multiplies the work substantially — pretrial motions, evidence review, witness preparation, and the trial itself — which is why most complex criminal defense engagements move to hourly billing or a large retainer with hourly drawdown.",
-      "Court-appointed public defenders are available at no direct cost to defendants who qualify financially, which is why the figures on this page reflect private attorney costs specifically. Private representation typically offers more attorney time per case and can be worth it for serious charges, but the actual price a defendant pays scales directly with case complexity and whether the matter is resolved pretrial or goes to trial.",
+      "Criminal defense work depends on the charge and on how the case resolves, whether through a plea negotiation or at trial. A criminal case can include an arraignment, pretrial motions, plea negotiations, a trial, and sentencing. Misdemeanor charges and felony charges are classified separately under state law. An attorney's work at each stage can include evidence review, witness preparation, and court appearances, and a case with multiple counts, or one that proceeds to trial, can involve all of these stages.",
+      "Court-appointed public defenders are available at no direct cost to defendants who qualify financially. A public defender is an attorney appointed by the court to represent such a defendant. The figures on this page reflect private attorney costs.",
     ],
   },
   {
@@ -188,17 +188,17 @@ export const CATEGORIES: CategoryInfo[] = [
       {
         questionTemplate: "What government filing fees are required in addition to attorney fees for immigration in {state}?",
         answerTemplate:
-          "USCIS filing fees are set federally and apply regardless of state. Common fees include adjustment of status, naturalization, and work permit applications. These fees change periodically and can total hundreds to thousands of dollars on top of attorney fees. Check USCIS.gov for current fee schedules.",
+          "USCIS filing fees are set federally and apply regardless of state. Fees apply to applications such as adjustment of status, naturalization, and work permits. These fees change periodically; check USCIS.gov for current fee schedules.",
       },
       {
         questionTemplate: "What drives the attorney cost of a green card application from {state}?",
         answerTemplate:
-          "Attorney cost for a green card application depends mainly on the type of case. A straightforward family-based petition with no complicating history is often billed as a flat fee, while employment-based petitions, waivers, and removal defense involve more attorney hours preparing evidence and responding to government requests, which is reflected in the moderate and complex figures on this page. USCIS filing fees are separate from attorney fees and are set federally, not by {state}. This is general information, not legal advice.",
+          "The attorney cost of a green card application varies by the type of case, such as a family-based petition, an employment-based petition, a waiver, or removal defense; the simple, moderate and complex figures on this page are separate estimates. USCIS filing fees are separate from attorney fees and are set federally, not by {state}. This is general information, not legal advice.",
       },
     ],
     costFormationNotes: [
-      "Immigration legal costs form around two separate line items that are easy to conflate: the attorney's fee for their work, and USCIS (or other federal agency) filing fees, which are set nationally and apply no matter which attorney — or no attorney — handles the case. A straightforward family-based petition with no complicating history is the lowest-cost scenario and is often billed as a flat fee. Employment-based petitions, waivers, or removal defense involve substantially more attorney hours preparing evidence and responding to government requests, which is reflected in the moderate and complex figures on this page.",
-      "Because filing fees are federal and state-independent, cost differences between states for immigration matters come almost entirely from local attorney market rates rather than from any difference in the underlying legal process. Cases that draw a Request for Evidence, involve a prior denial, or require appearing before an immigration judge add attorney hours (and sometimes additional filing fees) well beyond the base petition cost.",
+      "Immigration legal costs have two separate line items: the attorney's fee, and USCIS (or other federal agency) filing fees, which are set nationally and apply whether or not an attorney handles the case. Employment-based petitions, waivers, and removal defense can involve preparing evidence and responding to government requests.",
+      "Filing fees are federal and do not differ by state. Cases that draw a Request for Evidence, involve a prior denial, or require appearing before an immigration judge can add attorney hours and, in some cases, additional filing fees. A Request for Evidence is a request from USCIS for additional documents supporting an application, and removal proceedings take place before an immigration judge.",
     ],
   },
 ];

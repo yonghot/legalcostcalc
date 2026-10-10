@@ -19,7 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
     // informational title): the page IS the comparison tool.
     title: "Divorce Cost by State Calculator",
     description:
-      "Compare estimated divorce costs across all 50 states and DC — uncontested vs. contested, with typical attorney fee ranges. Free, sourced, and dated.",
+      "Compare estimated divorce costs across all 50 states and DC — uncontested vs. contested, with a median estimate for each state. Free, sourced, and dated.",
     path: "/divorce-cost-by-state",
   });
 }
@@ -71,11 +71,11 @@ export default function DivorceCostByStatePage() {
           </h1>
           <p className="mt-3 max-w-3xl text-lg text-slate-600">
             Compare estimated divorce costs across all 50 states and the District of
-            Columbia. Figures below show typical total cost ranges for an{" "}
+            Columbia. Figures below show the median estimated total cost for an{" "}
             <strong className="font-semibold text-slate-800">uncontested</strong> divorce
             (both spouses agree on terms) versus a{" "}
             <strong className="font-semibold text-slate-800">contested</strong> divorce
-            (disputed terms requiring court hearings and negotiation).
+            (disputed terms).
           </p>
 
           <AuthorByline
@@ -100,14 +100,11 @@ export default function DivorceCostByStatePage() {
             page). The{" "}
             <strong className="font-medium text-slate-800">uncontested</strong> figure
             reflects the &ldquo;simple&rdquo; complexity tier — spouses in agreement on
-            property division, custody, and support, typically resolved through document
-            preparation and a single court filing. The{" "}
+            property division, custody, and support. The{" "}
             <strong className="font-medium text-slate-800">contested</strong> figure
-            reflects the &ldquo;complex&rdquo; tier — disputed terms requiring discovery,
-            multiple hearings, and often expert witnesses, which is why the range runs
-            substantially higher. This is general cost information only, not legal
-            advice — actual costs vary by attorney, court, and the specific facts of a
-            case.
+            reflects the &ldquo;complex&rdquo; tier — disputed terms. This is general
+            cost information only, not legal advice — actual costs vary by attorney,
+            court, and the specific facts of a case.
           </p>
         </div>
       </section>
@@ -138,32 +135,29 @@ export default function DivorceCostByStatePage() {
               </h3>
               <p className="mt-1 text-sm text-slate-600">
                 An uncontested divorce means both spouses agree on all major terms —
-                property division, custody, and support — and is typically resolved with
-                paperwork and a single filing. A contested divorce involves disputes that
-                require court hearings, discovery, and negotiation, which substantially
-                increases attorney time and total cost.
+                property division, custody, and support. A contested divorce involves
+                disputes over those terms. The table above shows the median estimate for
+                each tier in every state.
               </p>
             </div>
             <div>
               <h3 className="font-medium text-slate-900">
-                Why do divorce costs vary so much by state?
+                Where do the state divorce figures come from?
               </h3>
               <p className="mt-1 text-sm text-slate-600">
-                In practice, attorney hourly rates, court filing fees, and required steps
-                (e.g., parenting classes or mediation) differ by state and county. The
-                figures here are modeled from national guides and rate surveys, so they show
-                each state&apos;s modeled range and hourly rate rather than a count of its
-                local court fees. Open a state page for its range, hourly rate, and sources.
+                The figures here are modeled from national guides and rate surveys, so they
+                show each state&apos;s modeled range and hourly rate rather than a count of
+                its local court fees. Open a state page for its range, hourly rate, and
+                sources.
               </p>
             </div>
             <div>
               <h3 className="font-medium text-slate-900">
-                Can I estimate my own divorce cost more precisely?
+                Is there a calculator for a single state?
               </h3>
               <p className="mt-1 text-sm text-slate-600">
-                Yes — use the <DivorceHubFaqLink /> to select your state and case
-                complexity for a more specific estimated range, including hourly rate and
-                typical duration.
+                Yes — use the <DivorceHubFaqLink /> to select a state and case complexity
+                for its estimated range, including hourly rate and assumed duration.
               </p>
             </div>
           </div>

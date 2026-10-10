@@ -48,13 +48,13 @@ export function DivorceHubTable({ rows }: DivorceHubTableProps) {
               scope="col"
               className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500"
             >
-              Uncontested (typical)
+              Uncontested (median)
             </th>
             <th
               scope="col"
               className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500"
             >
-              Contested (typical)
+              Contested (median)
             </th>
             <th scope="col" className="px-4 py-3">
               <span className="sr-only">View details</span>

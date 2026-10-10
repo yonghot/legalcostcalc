@@ -6,7 +6,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import "./helpers/render";
 import { renderPage } from "./helpers/render";
 import PrivacyPage from "@/app/privacy/page";
-import { ConsentNotice } from "@/components/consent/cookie-consent-banner";
+import { ConsentNotice, moveFocusInto } from "@/components/consent/cookie-consent-banner";
 import {
   CMP_WAIT_MS,
   CONSENT_KEY,
@@ -231,5 +231,95 @@ describe("K14-c: wiring and the privacy policy", () => {
     const text = visibleText(html);
     expect(text).toMatch(/has not opened within two seconds[^.]*notice of ours[^.]*Decline button and no Accept button/i);
     expect(CMP_WAIT_MS).toBe(2000);
+  });
+});
+
+describe("K14-c follow-up (r1-contract-F2): repeated clicks never stack a second consent UI", () => {
+  const cmpLoads = (win: Record<string, unknown>, show: () => void) => {
+    const fc = win.googlefc as FakeFc;
+    fc.showRevocationMessage = show;
+    fc.callbackQueue!.forEach((fn) => fn());
+  };
+
+  it("a second click inside the wait leaves no callback that opens the CMP over our notice", () => {
+    const show = vi.fn();
+    const { win, modes } = visit("XX");
+    openManageConsent();
+    vi.advanceTimersByTime(1000);
+    openManageConsent();
+    vi.advanceTimersByTime(CMP_WAIT_MS - 1000 + 100);
+    expect(modes).toEqual(["decline-only"]);
+    cmpLoads(win, show);
+    expect(show).not.toHaveBeenCalled();
+  });
+
+  it("a click while our notice is open queues no CMP callback", () => {
+    const show = vi.fn();
+    const { win, modes } = visit("XX");
+    openManageConsent();
+    vi.advanceTimersByTime(CMP_WAIT_MS);
+    vi.advanceTimersByTime(3000);
+    openManageConsent();
+    vi.advanceTimersByTime(10 * CMP_WAIT_MS);
+    expect(modes).toEqual(["decline-only"]);
+    cmpLoads(win, show);
+    expect(show).not.toHaveBeenCalled();
+  });
+
+  it("after the notice is answered, a click reaches a CMP that has loaded since", () => {
+    const show = vi.fn();
+    const { win } = visit("XX");
+    openManageConsent();
+    vi.advanceTimersByTime(CMP_WAIT_MS);
+    expect(answerNotice("decline-only", "declined")).toBe(true);
+    cmpLoads(win, show);
+    expect(show).not.toHaveBeenCalled();
+    (win.googlefc as FakeFc).callbackQueue = { push: (fn: () => void) => fn() } as unknown as Array<() => void>;
+    openManageConsent();
+    expect(show).toHaveBeenCalledTimes(1);
+  });
+
+  it("an EEA visitor who clicks twice before the CMP loads gets one revocation message", () => {
+    const show = vi.fn();
+    const { win } = visit("DE");
+    openManageConsent();
+    openManageConsent();
+    cmpLoads(win, show);
+    expect(show).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("K14-c follow-up (r1-contract-F1): the notice takes focus and gives it back", () => {
+  it("the dialog is focusable and its message is its accessible description", () => {
+    for (const mode of ["decline-only", "full"] as const) {
+      const html = notice(mode);
+      expect(html).toContain('tabindex="-1"');
+      const id = html.match(/aria-describedby="([^"]+)"/)?.[1];
+      expect(id).toBeTruthy();
+      expect(html).toContain(`<p id="${id}"`);
+    }
+  });
+
+  it("moveFocusInto focuses the dialog and its cleanup returns focus to the opener while it is still in the page", () => {
+    const dialog = { focus: vi.fn() };
+    const opener = { focus: vi.fn(), isConnected: true };
+    const restore = moveFocusInto(dialog as unknown as HTMLElement, opener as unknown as HTMLElement);
+    expect(dialog.focus).toHaveBeenCalledTimes(1);
+    expect(opener.focus).not.toHaveBeenCalled();
+    restore();
+    expect(opener.focus).toHaveBeenCalledTimes(1);
+  });
+
+  it("an opener that left the page or never existed is not focused and nothing throws", () => {
+    const dialog = { focus: vi.fn() };
+    const gone = { focus: vi.fn(), isConnected: false };
+    moveFocusInto(dialog as unknown as HTMLElement, gone as unknown as HTMLElement)();
+    expect(gone.focus).not.toHaveBeenCalled();
+    expect(() => moveFocusInto(null, null)()).not.toThrow();
+  });
+
+  it("the notice component runs moveFocusInto on mount", () => {
+    const banner = readFileSync(join(__dirname, "..", "..", "src/components/consent/cookie-consent-banner.tsx"), "utf8");
+    expect(banner).toMatch(/useEffect\(\(\) => moveFocusInto\(\w+\.current, document\.activeElement as HTMLElement \| null\), \[\]\)/);
   });
 });

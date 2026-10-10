@@ -134,9 +134,17 @@ export function subscribeConsentReopen(onOpen: () => void): () => void {
   return () => window.removeEventListener("consentReopen", handler);
 }
 
+interface ManageRequest {
+  opened: boolean;
+  fellBack: boolean;
+}
+
+const manageRequests = new WeakMap<object, ManageRequest>();
+
 export function answerNotice(mode: NoticeMode | null, value: ConsentChoice): boolean {
   if (mode === null || (mode === "decline-only" && value !== "declined")) return false;
   persistConsent(value);
+  manageRequests.delete(window);
   return true;
 }
 
@@ -163,19 +171,22 @@ export function openManageConsent() {
     w.googlefc = w.googlefc || {};
     const fc = w.googlefc;
     fc.callbackQueue = fc.callbackQueue || [];
-    let opened = false;
-    let fellBack = false;
+    // One request at a time: a second click's own callback would open the CMP over the notice the first click's timer shows.
+    const pending = manageRequests.get(w);
+    if (pending && !pending.opened) return;
+    const request: ManageRequest = { opened: false, fellBack: false };
+    manageRequests.set(w, request);
     fc.callbackQueue.push(() => {
       // A CMP that loads after our notice opened must not add a second consent UI.
       const live = w.googlefc;
-      if (fellBack || !live || typeof live.showRevocationMessage !== "function") return;
-      opened = true;
+      if (request.fellBack || !live || typeof live.showRevocationMessage !== "function") return;
+      request.opened = true;
       live.showRevocationMessage();
     });
-    if (!opened && hasDeclineOnlyFallback(country)) {
+    if (!request.opened && hasDeclineOnlyFallback(country)) {
       setTimeout(() => {
-        if (opened || typeof window === "undefined") return;
-        fellBack = true;
+        if (request.opened || typeof window === "undefined") return;
+        request.fellBack = true;
         window.dispatchEvent(new CustomEvent(DECLINE_ONLY_EVENT));
       }, CMP_WAIT_MS);
     }

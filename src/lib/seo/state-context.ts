@@ -133,8 +133,10 @@ export interface StateCostContext {
   neighborBelow: PeerState | null;
   /** Peer states whose moderate median is within 3% of this one's. */
   clusterPeers: string[];
-  /** Peers within 3% on each side of this median; a tie counts on both sides. */
+  /** Peers within 3%: up = strictly above this median, down = at or below it. */
   clusterReach: { up: number; down: number };
+  /** Dollar distance from this median to the farthest peer within 3%. */
+  clusterSpan: number;
   /** Rank by moderate-tier median hourly rate (1 = highest rate). */
   hourlyRank: number | null;
   /** States with a moderate-tier hourly rate: the denominator of hourlyRank and hoursRank. */
@@ -533,6 +535,7 @@ export function buildStateCostContext(
     up: clusterRows.filter((row) => row.median > own.median).length,
     down: clusterRows.filter((row) => row.median <= own.median).length,
   };
+  const clusterSpan = clusterRows.reduce((far, row) => Math.max(far, Math.abs(row.median - own.median)), 0);
 
   const hourlyRank = rankIn(moderatePeers, stateCode, "hourlyMedian");
 
@@ -616,6 +619,7 @@ export function buildStateCostContext(
     neighborBelow: belowRow ? { name: nameOf(belowRow.stateCode), median: belowRow.median } : null,
     clusterPeers,
     clusterReach,
+    clusterSpan,
     hourlyRank,
     ratedOutOf: rated.length,
     rankGap: hourlyRank === null ? null : rank - hourlyRank,
@@ -785,7 +789,7 @@ export function neighborSentence(ctx: StateCostContext, matterLabel: string): st
     if (gapDown > gapUp * 2) {
       return `${neighborAbove.name}, at ${usd(neighborAbove.median)}, is ${gapUp === 0 ? "level with" : `only ${usd(gapUp)} above`} ${stateName}, but the drop to ${neighborBelow.name} at ${usd(neighborBelow.median)} is ${usd(
         gapDown,
-      )} — the state sits at the bottom edge of its group, with clear air beneath it.`;
+      )} — the state sits at the bottom edge of its group.`;
     }
     return `In the ${matterLabel} table ${stateName} falls between ${neighborBelow.name} at ${usd(
       neighborBelow.median,
@@ -828,7 +832,7 @@ export function clusterSentence(ctx: StateCostContext, matterLabel: string): str
   const named = clusterPeers.slice(0, 4).join(", ");
   return `${clusterPeers.length} tracked states — ${named} among them — record a median within three percent of ${stateName}'s ${usd(
     ownMedian,
-  )}. The figure sits in the densest part of the ${matterLabel} distribution, where a rank change of several places costs only a few hundred dollars.`;
+  )}. The farthest of them sits ${usd(ctx.clusterSpan)} from that figure.`;
 }
 
 /** Rate rank against total rank — the two do not move together. */
@@ -1067,7 +1071,7 @@ export function overlapSentence(ctx: StateCostContext, matterLabel: string): str
 }
 
 /** The absolute width of the quoted band, and what it buys in hours. */
-export function bandSentence(ctx: StateCostContext, matterLabel: string): string | null {
+export function bandSentence(ctx: StateCostContext): string | null {
   const moderate = ctx.tiers.moderate!;
   const { peerMedianBandWidth, stateName } = ctx;
   if (moderate.bandWidth <= 0) return null;
@@ -1095,7 +1099,7 @@ export function bandSentence(ctx: StateCostContext, matterLabel: string): string
       Math.abs(delta),
     )} narrower than the peer-median band of ${usd(
       peerMedianBandWidth,
-    )}, so quoted ${matterLabel} figures cluster more tightly here than in most tracked states.${hoursClause}`;
+    )}.${hoursClause}`;
   }
   return `From ${usd(moderate.low)} to ${usd(moderate.high)} the moderate band is ${usd(
     moderate.bandWidth,
@@ -1199,7 +1203,7 @@ export function consistencySentence(ctx: StateCostContext, matterLabel: string):
   const worst = `${ordinal(weakestCategoryRank.rank)} of ${weakestCategoryRank.of}`;
 
   if (spread <= 10) {
-    return `${stateName} is consistent across practice areas: over the matter types tracked here its position only moves between ${best} (${strongestCategoryRank.name}) and ${worst} (${weakestCategoryRank.name}), so ${ownPosition} reflects a general price level rather than something specific to this matter.`;
+    return `${stateName} is consistent in rank across practice areas: over the matter types tracked here its position only moves between ${best} (${strongestCategoryRank.name}) and ${worst} (${weakestCategoryRank.name}), so ${ownPosition} reflects a general price level rather than something specific to this matter.`;
   }
   if (spread <= 28 || oneThird) {
     return `Across practice areas ${stateName} ranges from ${best} for ${strongestCategoryRank.name} to ${worst} for ${weakestCategoryRank.name} — a spread of ${spread} percent of the table, with ${ownPosition} among the positions measured.`;
@@ -1244,7 +1248,7 @@ export function sensitivitySentence(ctx: StateCostContext, matterLabel: string):
     return `Within ten percent of the ${stateName} figure there are ${up} states above and only ${down} below. ${moveClause}, which means the ranking has far more room to improve than to slip: the ${matterLabel} field is dense overhead and sparse underneath.`;
   }
   if (crowd >= 14) {
-    return `The ${ordinal(rank)} position is not a stable fact about ${stateName}: ${moveClause}, and a ten percent revision in either direction would cross ${crowd} states, ${up} above and ${down} below in near-equal numbers.`;
+    return `The ${ordinal(rank)} position is not a stable fact about ${stateName}: ${moveClause}, and a ten percent revision would cross ${up} states upward or ${down} downward, ${crowd} within reach across both directions in near-equal numbers.`;
   }
   if (crowd >= 7) {
     return `${moveClause}. A ten percent revision to the underlying figure would cross ${crowd} states in total — ${up} up, ${down} down — so the rank reads better as a band than as a precise place.`;
@@ -1567,7 +1571,7 @@ export function premiumSentence(ctx: StateCostContext): string | null {
         : highestPremium.percent < 0
           ? " Every tracked matter type runs below its own midpoint here, so the difference is one of degree."
           : "";
-  return `The spread across practice areas is wide. ${describe(
+  return `Measured against each matter's own midpoint, the spread across practice areas is wide. ${describe(
     highestPremium,
   )[0]!.toUpperCase()}${describe(highestPremium).slice(1)}, while ${describe(
     lowestPremium,
@@ -1869,9 +1873,9 @@ export function stateShapeSentences(ctx: StateCostContext, matterLabel: string):
     const diff = internalRatio.own - internalRatio.peer;
     out.push(
       diff >= 0.4
-        ? `${stateName}'s practice areas fan out more than most: its largest tracked median is ${internalRatio.own}x its smallest, against ${internalRatio.peer}x for the typical state. Prices here are set matter by matter rather than by one statewide level.`
+        ? `In median dollars ${stateName}'s practice areas fan out more than most: its largest tracked median is ${internalRatio.own}x its smallest, against ${internalRatio.peer}x for the typical state.`
         : diff <= -0.4
-          ? `The practice areas sit unusually close together in ${stateName} — the largest tracked median is ${internalRatio.own}x the smallest, against ${internalRatio.peer}x for the typical state — so one figure travels further across matter types here than it would elsewhere.`
+          ? `In median dollars the practice areas sit unusually close together in ${stateName} — the largest tracked median is ${internalRatio.own}x the smallest, against ${internalRatio.peer}x for the typical state — so one figure travels further across matter types here than it would elsewhere.`
           : `The largest tracked median in ${stateName} is ${internalRatio.own}x the smallest, effectively the ${internalRatio.peer}x that the typical state records: the internal spread is ordinary even where the levels are not.`,
     );
   }

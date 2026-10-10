@@ -217,7 +217,7 @@ export function StateCostAnalysis({
           sentences={[
             hoursSentence(ctx, matterLabel),
             escalationSentence(ctx, matterLabel),
-            bandSentence(ctx, matterLabel),
+            bandSentence(ctx),
             tempoSentence(ctx, matterLabel),
             hoursRankSentence(ctx, matterLabel),
             calibrationSentence(ctx, matterLabel),

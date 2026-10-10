@@ -244,7 +244,7 @@ describe("K4-a extension: escalation, overlap, band, calibration and extra calcu
   });
 
   it("bandSentence states the width, the peer comparison and the hours it implies (every page)", () => {
-    expect(collect((p) => checkBand(p, bandSentence(p.ctx, p.label)))).toEqual([]);
+    expect(collect((p) => checkBand(p, bandSentence(p.ctx)))).toEqual([]);
   });
 
   it("calibrationSentence positions the midpoint inside, below or above the band as the figures do (every page)", () => {
@@ -271,7 +271,7 @@ describe("K4-a extension: escalation, overlap, band, calibration and extra calcu
       hit("overlap lower", ov, /lower two bands/);
       hit("overlap upper", ov, /clean break/);
       hit("overlap neither", ov, /Neither pair/);
-      const band = bandSentence(p.ctx, p.label);
+      const band = bandSentence(p.ctx);
       hit("band wide", band, /is wide:/);
       hit("band narrow", band, /narrower than/);
       hit("band close", band, /close to the/);

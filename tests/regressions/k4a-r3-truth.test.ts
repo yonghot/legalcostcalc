@@ -3,12 +3,17 @@ import { CATEGORIES } from "@/lib/constants/categories";
 import { getModerateMedianCost } from "@/lib/page-index";
 import {
   assumptionItems,
+  bandSentence,
   categoryMixSentence,
+  clusterSentence,
   consistencySentence,
   hourlyPositionSentence,
   hoursRankSentence,
   hoursSentence,
   movementSentences,
+  neighborSentence,
+  premiumSentence,
+  sensitivitySentence,
   stateShapeSentences,
   trajectorySentence,
 } from "@/lib/seo/state-context";
@@ -383,6 +388,108 @@ describe("r3-truth-R3-W6: the consistency sentence does not place one table's or
       const own = text.match(/its (\d+)(?:st|nd|rd|th)(?: of (\d+))? on /);
       return own && Number(own[1]) === p.ctx.rank && Number(own[2]) === p.ctx.rankedOutOf ? [] : [`own position in "${text}"`];
     });
+    expect(v).toEqual([]);
+  });
+});
+
+describe("r3-truth-R3-W4: the cluster sentence prints the farthest peer's distance instead of a dollar verdict", () => {
+  it("'The farthest of them sits $X' is the largest distance to a peer within three percent, and no 'few hundred' or 'densest' verdict remains", () => {
+    let seen = 0;
+    const v = collect((p) => {
+      const text = clusterSentence(p.ctx, p.label) ?? "";
+      const out: string[] = [];
+      if (/few hundred|densest/.test(text)) out.push(`verdict remains: ${text}`);
+      const m = text.match(/^(\d+) tracked states \u2014 .+ among them \u2014 record a median within three percent of .+?'s (\$[\d,]+)\. The farthest of them sits (\$[\d,]+) from that figure\.$/);
+      if (!m) return text && Number(text.match(/^(\d+) tracked states/)?.[1] ?? 0) >= 4 ? [...out, `no farthest clause: ${text}`] : out;
+      seen++;
+      const own = tierRow(p, "moderate")!.median;
+      const peers = seedTable(p.category, "moderate").filter((r) => r.code !== p.code && Math.abs(r.median - own) / own <= 0.03);
+      const far = Math.max(...peers.map((r) => Math.abs(r.median - own)));
+      if (Number(m[1]) !== peers.length) out.push(`says ${m[1]} states, seed has ${peers.length}`);
+      if (money(m[2]!) !== own) out.push(`own ${m[2]} but ${own}`);
+      if (money(m[3]!) !== far) out.push(`farthest ${m[3]} but ${far}`);
+      if (far > Math.floor(own * 0.03)) out.push(`farthest ${far} exceeds the three percent window of ${own}`);
+      return out;
+    });
+    expect(seen).toBeGreaterThan(150);
+    expect(v).toEqual([]);
+  });
+});
+
+describe("r3-truth-R3-W5: the ten percent revision counts are attributed to one direction each", () => {
+  it("'would cross U states upward or D downward, N within reach' recomputes from the seed, and 'in either direction would cross' never appears", () => {
+    let seen = 0;
+    const v = collect((p) => {
+      const text = sensitivitySentence(p.ctx, p.label) ?? "";
+      const out: string[] = [];
+      if (/in either direction would cross/.test(text)) out.push(`one revision credited with both directions: ${text}`);
+      const m = text.match(/a ten percent revision would cross (\d+) states upward or (\d+) downward, (\d+) within reach across both directions/);
+      if (!m) return out;
+      seen++;
+      const own = tierRow(p, "moderate")!.median;
+      const others = seedTable(p.category, "moderate").filter((r) => r.code !== p.code);
+      const up = others.filter((r) => r.median > own && r.median <= own * 1.1).length;
+      const down = others.filter((r) => r.median < own && r.median >= own * 0.9).length;
+      if (Number(m[1]) !== up || Number(m[2]) !== down || Number(m[3]) !== up + down) out.push(`says ${m[1]}/${m[2]}/${m[3]}, seed ${up}/${down}/${up + down}`);
+      if (up + down < 14) out.push(`branch printed for only ${up + down} states`);
+      return out;
+    });
+    expect(seen).toBeGreaterThan(10);
+    expect(v).toEqual([]);
+  });
+});
+
+describe("r3-truth-R3-W11: the neighbour sentence does not claim open space below a state with a crowd beneath it", () => {
+  it("'clear air beneath it' is never printed, while the bottom-edge branch still occurs", () => {
+    let edge = 0;
+    const v = collect((p) => {
+      const text = neighborSentence(p.ctx, p.label) ?? "";
+      if (/bottom edge of its group/.test(text)) edge++;
+      return /clear air/.test(text) ? [text] : [];
+    });
+    expect(edge).toBeGreaterThan(10);
+    expect(v).toEqual([]);
+  });
+});
+
+describe("r3-truth-R3-W2: the band sentence compares dollar widths and draws no clustering conclusion from them", () => {
+  it("no page says the quoted figures 'cluster more tightly', and the narrow branch still occurs", () => {
+    let narrow = 0;
+    const v = collect((p) => {
+      const text = bandSentence(p.ctx) ?? "";
+      if (/narrower than the peer-median band/.test(text)) narrow++;
+      return /cluster|more tightly/.test(text) ? [text] : [];
+    });
+    expect(narrow).toBeGreaterThan(50);
+    expect(v).toEqual([]);
+  });
+});
+
+describe("r3-truth-R3-W7: each practice-area verdict names the metric it is measured in", () => {
+  const SPREAD_WIDE = /spread across practice areas is wide/;
+  const BY_MIDPOINT = /^Measured against each matter's own midpoint, the spread across practice areas is wide\./;
+  it("'wide', 'fan out', 'close together' and 'consistent' each carry their metric, and no page leaves the bare opposite verdicts", () => {
+    let wideAndClose = 0;
+    let wideAndConsistent = 0;
+    const v = collect((p) => {
+      const premium = premiumSentence(p.ctx) ?? "";
+      const shape = stateShapeSentences(p.ctx, p.label).join(" ");
+      const consistency = consistencySentence(p.ctx, p.label) ?? "";
+      const out: string[] = [];
+      const wide = SPREAD_WIDE.test(premium);
+      if (wide && !BY_MIDPOINT.test(premium)) out.push(`wide spread without its metric: ${premium.slice(0, 90)}`);
+      if (/fan out more than most/.test(shape) && !/In median dollars \S.*'s practice areas fan out more than most/.test(shape)) out.push("fan out without its metric");
+      const close = /unusually close together/.test(shape);
+      if (close && !/In median dollars the practice areas sit unusually close together/.test(shape)) out.push("close together without its metric");
+      if (/set matter by matter/.test(shape)) out.push("causal tail the data cannot decide");
+      if (/is consistent across practice areas/.test(consistency)) out.push("consistency without its metric");
+      const consistent = /is consistent in rank across practice areas/.test(consistency);
+      if (wide && close) wideAndClose++;
+      if (wide && consistent) wideAndConsistent++;
+      return out;
+    });
+    expect(wideAndClose).toBeGreaterThan(10);
+    expect(wideAndConsistent).toBeGreaterThan(2);
     expect(v).toEqual([]);
   });
 });

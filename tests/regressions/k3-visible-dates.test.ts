@@ -42,9 +42,9 @@ describe("K3: a state page's dates all come from its cost family record", () => 
     const raw = await renderPage(StateCategoryPage, { state: "california", slug: "divorce-cost" } as never);
     const html = text(raw);
     expect(fam.basis).toBe("content-changed");
-    expect(fam.date).toBe("2026-10-08");
+    expect(fam.date).toBe("2026-10-10");
     expect(html).toContain("Updated October 2026");
-    expect(html).toContain("Updated October 8, 2026");
+    expect(html).toContain("Updated October 10, 2026");
     expect(html).not.toMatch(OLD_DATE);
     expect(html).not.toMatch(/Data verified|Last verified|Verified (?:June|October)/);
     expect(html).not.toMatch(/As of (?:June|October)/);

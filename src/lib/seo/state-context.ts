@@ -969,7 +969,13 @@ export function trajectorySentence(ctx: StateCostContext, matterLabel: string): 
     return `Rank is not stable across the tiers, and the direction matters. ${stateName} runs ${path} of ${rankedOutOf} — it climbs ${tierRankShift} places as the matter gets harder. Straightforward ${matterLabel} work is estimated at ordinary prices here; contested work is not.`;
   }
   if (tierRankShift >= 4) {
-    return `${stateName} moves up the table as complexity rises: ${path}, a ${tierRankShift}-place climb. The state's position on the headline moderate figure understates where it sits once a matter is contested.`;
+    const closing =
+      moderate.rank > complex.rank
+        ? "The state's position on the headline moderate figure understates where it sits once a matter is contested."
+        : moderate.rank < complex.rank
+          ? "The moderate tier is its highest position of the three, so the headline moderate figure does not understate where the state sits once a matter is contested."
+          : "The moderate and complex tiers hold the same position, so the headline moderate figure already shows where the state sits once a matter is contested.";
+    return `${stateName} moves up the table as complexity rises: ${path}, a ${tierRankShift}-place climb. ${closing}`;
   }
   if (tierRankShift <= -10) {
     return `The tiers rank ${stateName} very differently. It is ${path} of ${rankedOutOf} — a fall of ${Math.abs(
@@ -981,9 +987,19 @@ export function trajectorySentence(ctx: StateCostContext, matterLabel: string): 
     }`;
   }
   if (tierRankShift <= -4) {
+    const placement =
+      moderate.rank === simple.rank
+        ? "matches the simple tier's; the fall comes between the moderate and complex tiers."
+        : moderate.rank === complex.rank
+          ? "matches the complex tier's; the fall comes between the simple and moderate tiers."
+          : moderate.rank < simple.rank
+            ? "sits above both of the other tiers rather than between them."
+            : moderate.rank > complex.rank
+              ? "sits below both of the other tiers rather than between them."
+              : "sits between the two extremes rather than summarising them.";
     return `Ranked tier by tier, ${stateName} slides ${Math.abs(
       tierRankShift,
-    )} places downward: ${path}. Its headline moderate position sits between the two extremes rather than summarising them.`;
+    )} places downward: ${path}. Its headline moderate position ${placement}`;
   }
   const spread = ctx.tierRankSpread ?? 0;
   if (spread >= 4) {

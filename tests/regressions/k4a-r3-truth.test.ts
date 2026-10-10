@@ -354,3 +354,35 @@ describe("r3-truth-R3-W1: movement counts follow the strict rank the page prints
     expect(v).toEqual([]);
   });
 });
+
+describe("r3-truth-R3-W6: the consistency sentence does not place one table's ordinal 'inside' another table's range", () => {
+  it("'inside it' needs the page's own ordinal between the two printed ordinals", () => {
+    let seen = 0;
+    const v = collect((p) => {
+      const text = consistencySentence(p.ctx, p.label);
+      if (!text) return [];
+      seen++;
+      const out: string[] = [];
+      const range = text.match(/ranges from (\d+)(?:st|nd|rd|th) of \d+ for .+? to (\d+)(?:st|nd|rd|th) of \d+ for /);
+      const inside = text.match(/with its (\d+)(?:st|nd|rd|th)(?: of \d+)? on .+? inside it/);
+      if (inside && range) {
+        const [lo, hi] = [Math.min(Number(range[1]), Number(range[2])), Math.max(Number(range[1]), Number(range[2]))];
+        if (!(Number(inside[1]) >= lo && Number(inside[1]) <= hi)) out.push(`own ${inside[1]} is not between ${range[1]} and ${range[2]}`);
+        if (Number(range[1]) > Number(range[2])) out.push(`range printed larger first: ${range[1]} to ${range[2]}`);
+      }
+      return out;
+    });
+    expect(seen).toBeGreaterThan(300);
+    expect(v).toEqual([]);
+  });
+
+  it("the page's own position is printed with its table size, in every branch", () => {
+    const v = collect((p) => {
+      const text = consistencySentence(p.ctx, p.label);
+      if (!text) return [];
+      const own = text.match(/its (\d+)(?:st|nd|rd|th)(?: of (\d+))? on /);
+      return own && Number(own[1]) === p.ctx.rank && Number(own[2]) === p.ctx.rankedOutOf ? [] : [`own position in "${text}"`];
+    });
+    expect(v).toEqual([]);
+  });
+});

@@ -100,7 +100,7 @@ describe("r1-truth-TXT-04: the number of places matches the states named", () =>
   it("'Climbing N places' and 'N places down' name exactly N states", () => {
     let checked = 0;
     const v = collect((p) => {
-      const { sorted, position } = descending(p);
+      const { sorted } = descending(p);
       const text = movementSentences(p.ctx, p.label).join(" ");
       const out: string[] = [];
       const up = text.match(/Climbing (\w+) places? would mean passing (.+?)(?: and adding |, which (?:all record|records))/);

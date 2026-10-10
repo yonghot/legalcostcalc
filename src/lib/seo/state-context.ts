@@ -1194,7 +1194,7 @@ export function consistencySentence(ctx: StateCostContext, matterLabel: string):
   const { top, bottom, total } = ctx.matterRankCounts;
   const oneThird = total > 0 && (top === total || bottom === total);
 
-  const ownPosition = `its ${ordinal(rank)} on ${matterLabel}`;
+  const ownPosition = `its ${ordinal(rank)} of ${ctx.rankedOutOf} on ${matterLabel}`;
   const best = `${ordinal(strongestCategoryRank.rank)} of ${strongestCategoryRank.of}`;
   const worst = `${ordinal(weakestCategoryRank.rank)} of ${weakestCategoryRank.of}`;
 
@@ -1202,7 +1202,7 @@ export function consistencySentence(ctx: StateCostContext, matterLabel: string):
     return `${stateName} is consistent across practice areas: over the matter types tracked here its position only moves between ${best} (${strongestCategoryRank.name}) and ${worst} (${weakestCategoryRank.name}), so ${ownPosition} reflects a general price level rather than something specific to this matter.`;
   }
   if (spread <= 28 || oneThird) {
-    return `Across practice areas ${stateName} ranges from ${best} for ${strongestCategoryRank.name} to ${worst} for ${weakestCategoryRank.name} — a spread of ${spread} percent of the table, with ${ownPosition} inside it.`;
+    return `Across practice areas ${stateName} ranges from ${best} for ${strongestCategoryRank.name} to ${worst} for ${weakestCategoryRank.name} — a spread of ${spread} percent of the table, with ${ownPosition} among the positions measured.`;
   }
   return `The state does not rank uniformly. ${stateName} is ${best} for ${strongestCategoryRank.name} but ${worst} for ${weakestCategoryRank.name}, a spread of ${spread} percent of the table across the matter types tracked here, so ${ownPosition} says little about what the other lines cost.`;
 }

@@ -137,23 +137,23 @@ export default async function StateCategoryPage({ params }: PageProps) {
       ? buildStateFaq(faqContext, categoryInfo.displayName.toLowerCase())
       : [];
 
+  const collectingFaq = [
+    costs.length === 0 && {
+      question: `How much does ${aOrAn(categoryInfo.displayName)} ${categoryInfo.displayName.toLowerCase()} cost in ${stateInfo.name}?`,
+      answer: `Cost data for ${categoryInfo.displayName.toLowerCase()} in ${stateInfo.name} is currently being collected.`,
+    },
+    !costs.some((c) => c.hourlyRate.median > 0) && {
+      question: `How much does ${aOrAn(categoryInfo.displayName)} ${categoryInfo.displayName.toLowerCase()} lawyer charge per hour in ${stateInfo.name}?`,
+      answer: `Hourly rate data for ${stateInfo.name} is currently being collected.`,
+    },
+    !costs.some((c) => c.typicalDuration) && {
+      question: `How long does ${aOrAn(categoryInfo.displayName)} ${categoryInfo.displayName.toLowerCase()} take in ${stateInfo.name}?`,
+      answer: `Duration data for ${categoryInfo.displayName.toLowerCase()} in ${stateInfo.name} is currently being collected.`,
+    },
+  ].filter((entry): entry is { question: string; answer: string } => entry !== false);
+
   const faqQuestions = [
-    ...(dataDrivenFaq.length > 0
-      ? dataDrivenFaq
-      : [
-          {
-            question: `How much does ${aOrAn(categoryInfo.displayName)} ${categoryInfo.displayName.toLowerCase()} cost in ${stateInfo.name}?`,
-            answer: `Cost data for ${categoryInfo.displayName.toLowerCase()} in ${stateInfo.name} is currently being collected.`,
-          },
-          {
-            question: `How much does ${aOrAn(categoryInfo.displayName)} ${categoryInfo.displayName.toLowerCase()} lawyer charge per hour in ${stateInfo.name}?`,
-            answer: `Hourly rate data for ${stateInfo.name} is currently being collected.`,
-          },
-          {
-            question: `How long does ${aOrAn(categoryInfo.displayName)} ${categoryInfo.displayName.toLowerCase()} take in ${stateInfo.name}?`,
-            answer: `Duration data for ${categoryInfo.displayName.toLowerCase()} in ${stateInfo.name} is currently being collected.`,
-          },
-        ]),
+    ...(dataDrivenFaq.length > 0 ? dataDrivenFaq : collectingFaq),
     // Category-specific unique FAQ questions
     ...(categoryInfo.faqTemplates ?? []).map((t) => ({
       question: t.questionTemplate.replace(/\{state\}/g, stateInfo.name),

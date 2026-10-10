@@ -43,7 +43,7 @@ export const CATEGORIES: CategoryInfo[] = [
       {
         questionTemplate: "Is a first-time DUI in {state} a misdemeanor or felony?",
         answerTemplate:
-          "In most cases, a first-time DUI in {state} is charged as a misdemeanor, though aggravating factors (very high BAC, accidents with injuries, minors in the vehicle) can elevate charges. Misdemeanor vs. felony classification significantly affects legal costs. This is general information only, not legal advice.",
+          "How a first-time DUI in {state} is classified (as a misdemeanor, as a lesser traffic offense, or, with aggravating factors such as very high BAC, accidents with injuries or minors in the vehicle, as a felony) depends on {state} law and the facts of the case. The classification significantly affects legal costs. This is general information only, not legal advice.",
       },
     ],
     costFormationNotes: [

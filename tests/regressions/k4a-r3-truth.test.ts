@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { hourlyPositionSentence, hoursRankSentence, hoursSentence, trajectorySentence } from "@/lib/seo/state-context";
+import { assumptionItems, hourlyPositionSentence, hoursRankSentence, hoursSentence, trajectorySentence } from "@/lib/seo/state-context";
 import { buildStateFaq } from "@/lib/seo/state-faq";
 import { collect, middle, money, seedTable, strictRank, tierRow, type Page, type Tier } from "./helpers/k4a-oracle";
 
@@ -200,6 +200,30 @@ describe("r3-truth-R3-TXT-04/05 and R3C-02: the complexity FAQ's 'so' conclusion
       return s > 0 && c <= s / 2 ? [] : [`simple ${(s * 100).toFixed(1)}% over its midpoint, complex ${(c * 100).toFixed(1)}%`];
     });
     expect(seen).toBeGreaterThan(20);
+    expect(v).toEqual([]);
+  });
+});
+
+describe("r3-truth-R3-TXT-06: 'ambiguous by N places' is the spread of the three ranks printed on the same line", () => {
+  it("N is the largest minus the smallest of the simple, moderate and complex ranks it lists", () => {
+    let seen = 0;
+    const v = collect((p) => {
+      const item = assumptionItems(p.ctx, p.label).find((i) => /is ambiguous by \d+ places/.test(i));
+      if (!item) return [];
+      seen++;
+      const m = item.match(/ambiguous by (\d+) places unless a tier is named: (\d+)(?:st|nd|rd|th) simple, (\d+)(?:st|nd|rd|th) moderate, (\d+)(?:st|nd|rd|th) complex/)!;
+      const ranks = [Number(m[2]), Number(m[3]), Number(m[4])];
+      const spread = Math.max(...ranks) - Math.min(...ranks);
+      const strict = (["simple", "moderate", "complex"] as const).map((tier) => {
+        const table = seedTable(p.category, tier);
+        return strictRank(table, table.find((r) => r.code === p.code)!.median);
+      });
+      const out: string[] = [];
+      if (Number(m[1]) !== spread) out.push(`says ${m[1]} but ${ranks.join("/")} span ${spread}`);
+      if (ranks.join() !== strict.join()) out.push(`ranks ${ranks.join("/")} but strict ${strict.join("/")}`);
+      return out;
+    });
+    expect(seen).toBeGreaterThan(80);
     expect(v).toEqual([]);
   });
 });

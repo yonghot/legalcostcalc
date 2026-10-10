@@ -168,7 +168,7 @@ function checkAssumptionItem(p: Page, f: AssumptionFacts, name: string, mt: RegE
       const sr = strictRank(seedTable(p.category, "simple"), s!.median);
       const cr = strictRank(seedTable(p.category, "complex"), c!.median);
       nameIn(1);
-      if (num(2) !== Math.abs(sr - cr) || num(3) !== sr || num(4) !== f.rank || num(5) !== cr) v.push(`says ${mt[0]!.slice(0, 90)} but the strict tier ranks are ${sr}, ${f.rank}, ${cr}`);
+      if (num(2) !== Math.max(sr, f.rank, cr) - Math.min(sr, f.rank, cr) || num(3) !== sr || num(4) !== f.rank || num(5) !== cr) v.push(`says ${mt[0]!.slice(0, 90)} but the strict tier ranks are ${sr}, ${f.rank}, ${cr}`);
       break;
     }
     case "hours35":

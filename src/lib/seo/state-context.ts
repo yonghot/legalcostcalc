@@ -1346,9 +1346,7 @@ export function assumptionItems(ctx: StateCostContext, matterLabel: string): str
 
   if (ctx.tierRankShift !== null && Math.abs(ctx.tierRankShift) >= 8) {
     conditional.push(
-      `"The ${ctx.stateName} rank" is ambiguous by ${Math.abs(
-        ctx.tierRankShift,
-      )} places unless a tier is named: ${ordinal(simple?.rank ?? ctx.rank)} simple, ${ordinal(
+      `"The ${ctx.stateName} rank" is ambiguous by ${ctx.tierRankSpread ?? Math.abs(ctx.tierRankShift)} places unless a tier is named: ${ordinal(simple?.rank ?? ctx.rank)} simple, ${ordinal(
         ctx.rank,
       )} moderate, ${ordinal(complex?.rank ?? ctx.rank)} complex.`,
     );

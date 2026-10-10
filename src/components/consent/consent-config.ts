@@ -4,6 +4,11 @@ export const CONSENT_KEY = "cookie_consent";
 export const COUNTRY_COOKIE = "visitor_country";
 
 export type ConsentValue = "accepted" | "declined" | null;
+export type ConsentChoice = "accepted" | "declined";
+export type NoticeMode = "full" | "decline-only";
+
+export const CMP_WAIT_MS = 2000;
+export const DECLINE_ONLY_EVENT = "consentDeclineOnly";
 
 export const OPT_IN_COUNTRIES = new Set<string>([
   "AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR",
@@ -63,6 +68,10 @@ function isKnownCountry(country: string): boolean {
   return /^[A-Z]{2}$/.test(country) && country !== "XX";
 }
 
+export function hasDeclineOnlyFallback(country: string): boolean {
+  return !requiresOptIn(country) && !isKnownCountry(country);
+}
+
 type GtagArgs = ["consent", "update", Record<string, unknown>];
 
 // Window.dataLayer / Window.gtag are declared globally in src/types/window.d.ts.
@@ -104,7 +113,7 @@ function applyConsentChange(country: string, value: "accepted" | "declined") {
     denyConsent();
     return;
   }
-  if (bannerMode(country) === "own") grantConsent();
+  if (manageConsentAction(country) === "banner") grantConsent();
 }
 
 export function initConsent(): () => void {
@@ -125,6 +134,22 @@ export function subscribeConsentReopen(onOpen: () => void): () => void {
   return () => window.removeEventListener("consentReopen", handler);
 }
 
+export function answerNotice(mode: NoticeMode | null, value: ConsentChoice): boolean {
+  if (mode === null || (mode === "decline-only" && value !== "declined")) return false;
+  persistConsent(value);
+  return true;
+}
+
+export function subscribeConsentNotice(onOpen: (mode: NoticeMode) => void): () => void {
+  const stopFull = subscribeConsentReopen(() => onOpen("full"));
+  const onDeclineOnly = () => onOpen("decline-only");
+  window.addEventListener(DECLINE_ONLY_EVENT, onDeclineOnly);
+  return () => {
+    stopFull();
+    window.removeEventListener(DECLINE_ONLY_EVENT, onDeclineOnly);
+  };
+}
+
 interface GoogleFc {
   callbackQueue?: Array<() => void>;
   showRevocationMessage?: () => void;
@@ -132,12 +157,28 @@ interface GoogleFc {
 
 export function openManageConsent() {
   if (typeof window === "undefined") return;
-  if (manageConsentAction(getVisitorCountry()) === "cmp") {
+  const country = getVisitorCountry();
+  if (manageConsentAction(country) === "cmp") {
     const w = window as Window & { googlefc?: GoogleFc };
     w.googlefc = w.googlefc || {};
     const fc = w.googlefc;
     fc.callbackQueue = fc.callbackQueue || [];
-    fc.callbackQueue.push(() => w.googlefc?.showRevocationMessage?.());
+    let opened = false;
+    let fellBack = false;
+    fc.callbackQueue.push(() => {
+      // A CMP that loads after our notice opened must not add a second consent UI.
+      const live = w.googlefc;
+      if (fellBack || !live || typeof live.showRevocationMessage !== "function") return;
+      opened = true;
+      live.showRevocationMessage();
+    });
+    if (!opened && hasDeclineOnlyFallback(country)) {
+      setTimeout(() => {
+        if (opened || typeof window === "undefined") return;
+        fellBack = true;
+        window.dispatchEvent(new CustomEvent(DECLINE_ONLY_EVENT));
+      }, CMP_WAIT_MS);
+    }
     return;
   }
   window.dispatchEvent(new CustomEvent("consentReopen"));

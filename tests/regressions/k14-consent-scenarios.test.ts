@@ -65,7 +65,12 @@ const granted = (calls: unknown[][]) =>
 const denied = (calls: unknown[][]) =>
   updates(calls).filter((c) => (c[2] as Record<string, string>).ad_storage === "denied");
 
+beforeEach(() => {
+  vi.useFakeTimers();
+});
+
 afterEach(() => {
+  vi.useRealTimers();
   vi.unstubAllGlobals();
 });
 

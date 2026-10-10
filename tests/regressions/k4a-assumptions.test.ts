@@ -121,7 +121,9 @@ function checkAssumptionItem(p: Page, f: AssumptionFacts, name: string, mt: RegE
   };
   switch (name) {
     case "cluster4":
-      if (num(1) !== f.near.length || num(5) !== f.near.length) v.push(`says ${num(1)} / ${num(5)} states are within three percent, ${f.near.length} are`);
+      const reach = Math.max(f.near.filter((r) => r.median >= f.own).length, f.near.filter((r) => r.median <= f.own).length);
+      if (num(1) !== f.near.length) v.push(`says ${num(1)} states are within three percent, ${f.near.length} are`);
+      if (num(5) !== reach) v.push(`says a revision could pass ${num(5)} places, one direction reaches ${reach}`);
       if (amt(2) !== f.own) v.push("median differs from the page's");
       if (amt(3) !== Math.round(f.own * 0.03)) v.push(`three percent of ${usd(f.own)} is ${usd(f.own * 0.03)}, not ${mt[3]}`);
       nameIn(4);

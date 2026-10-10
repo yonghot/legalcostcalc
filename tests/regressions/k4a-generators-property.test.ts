@@ -139,10 +139,10 @@ function checkSimpleBlock(p: Page, body: string | undefined): string[] {
     }
   }
   if (perMonth) {
-    const step = body.match(/The (\$[\d,]+) step to the moderate tier raises the implied hours from (\d+) to (\d+), (\d+) more, at the moderate tier's own (\$[\d,]+) rate\./);
-    if (!step) v.push("the step to the moderate tier is not stated with its own hours and rate");
-    else if (money(step[1]!) !== moneyGap || Number(step[2]) !== sH || Number(step[3]) !== mH || Number(step[4]) !== hourGap || money(step[5]!) !== m.rate) {
-      v.push(`step clause ${step[0]} differs from ${usd(moneyGap)}, ${sH} to ${mH}, ${hourGap} more at ${usd(m.rate)}`);
+    const step = body.match(/The (\$[\d,]+) step to the moderate tier takes the implied hours from (\d+) at (\$[\d,]+) to (\d+) at (\$[\d,]+)\./);
+    if (!step) v.push("the step to the moderate tier is not stated with its own hours and rates");
+    else if (money(step[1]!) !== moneyGap || Number(step[2]) !== sH || money(step[3]!) !== s.rate || Number(step[4]) !== mH || money(step[5]!) !== m.rate) {
+      v.push(`step clause ${step[0]} differs from ${usd(moneyGap)}, ${sH} at ${usd(s.rate)} to ${mH} at ${usd(m.rate)}`);
     }
   } else {
     const step = body.match(/— (\d+) fewer than the moderate tier's (\d+), and (\$[\d,]+) less\./);
@@ -356,7 +356,7 @@ describe("K4-a extension: calculationBlocks arithmetic, shares and sums equal th
     expect(silent).not.toBe(roundedBody);
     expect(checkWorkBlock(roundedPage, silent).join(" ")).toMatch(/without saying so|do not add up/);
 
-    const simplePage = find(/more/, /^Simple tier\.$/);
+    const simplePage = find(/step to the moderate tier/, /^Simple tier\.$/);
     const simpleBody = blockBody(calculationBlocks(simplePage.ctx, simplePage.label), /^Simple tier\.$/)!;
     const m = tierRow(simplePage, "moderate")!;
     const s = tierRow(simplePage, "simple")!;

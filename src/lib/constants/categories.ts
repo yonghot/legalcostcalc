@@ -18,7 +18,7 @@ export const CATEGORIES: CategoryInfo[] = [
       {
         questionTemplate: "What does a self-represented (pro se) divorce cost in {state} compared with one handled by an attorney?",
         answerTemplate:
-          "A self-represented (pro se) divorce in {state} reduces the cost to court filing fees and any document-preparation charge, because no attorney fees are billed. When an attorney is hired, attorney fees are added and rise with the number of disputed issues (property, custody, support); the estimates on this page rise from the simple tier to the complex tier. This information is for general awareness only and is not legal advice.",
+          "In a self-represented (pro se) divorce in {state} no attorney fees are billed, while court filing fees and other non-attorney charges, such as service of process or a document-preparation charge, still apply. When an attorney is hired, attorney fees are added and rise with the number of disputed issues (property, custody, support); the estimates on this page rise from the simple tier to the complex tier. This information is for general awareness only and is not legal advice.",
       },
     ],
     costFormationNotes: [

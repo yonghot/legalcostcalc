@@ -194,16 +194,28 @@ export function buildStateFaq(ctx: StateCostContext, matterLabel: string): FaqEn
                 simple.rank,
               )} of ${ctx.rankedOutOf} at the simple tier to ${ordinal(
                 complex.rank,
-              )} at the complex tier — the premium ${stateName} carries is concentrated in straightforward matters.`
+              )} at the complex tier${
+                simple.median > simple.peerMedian
+                  ? ` — the premium ${stateName} carries is concentrated in straightforward matters`
+                  : ""
+              }.`
             : `Yes: ${usd(simple.median)} at the simple tier, ${usd(
                 moderate.median,
               )} at moderate and ${usd(complex.median)} at complex, a span of ${
                 ctx.costMultiple ?? 0
-              }x. ${stateName} holds a similar position at every tier — ${ordinal(
-                simple.rank,
-              )}, ${ordinal(moderate.rank ?? ctx.rank)} and ${ordinal(complex.rank)} of ${
-                ctx.rankedOutOf
-              } — so complexity moves the price without moving the state's standing.`,
+              }x. ${
+                (ctx.tierRankSpread ?? 0) >= 4
+                  ? `The state's rank depends on the tier — ${ordinal(simple.rank)}, ${ordinal(
+                      moderate.rank ?? ctx.rank,
+                    )} and ${ordinal(complex.rank)} of ${ctx.rankedOutOf}, a spread of ${
+                      ctx.tierRankSpread
+                    } places — so the headline figure does not stand for every tier.`
+                  : `${stateName} holds a similar position at every tier — ${ordinal(
+                      simple.rank,
+                    )}, ${ordinal(moderate.rank ?? ctx.rank)} and ${ordinal(complex.rank)} of ${
+                      ctx.rankedOutOf
+                    } — so complexity moves the price without moving the state's standing.`
+              }`,
     });
   }
 

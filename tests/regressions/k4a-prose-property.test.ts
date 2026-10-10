@@ -483,13 +483,13 @@ describe("K4-a: every other rank, tier and matter-type claim equals the computed
       const text = consistencySentence(p.ctx, p.label);
       if (!text) return [];
       const out: string[] = [];
-      const allRanks = CATEGORIES.flatMap((c) => {
+      const fractions = CATEGORIES.flatMap((c) => {
         const s = standing(rows(c.slug, "moderate"), p.code);
-        return s ? [s.rank] : [];
+        return s ? [s.rank / s.of] : [];
       });
-      const mentions = [...text.matchAll(/(\d+)(?:st|nd|rd|th)(?: of \d+)? (?:\(|for )/g)].map((m) => Number(m[1]));
-      if (mentions[0] !== Math.min(...allRanks) || mentions[1] !== Math.max(...allRanks)) {
-        out.push(`strongest/weakest ${mentions} but strict ${Math.min(...allRanks)}/${Math.max(...allRanks)}`);
+      const mentions = [...text.matchAll(/(\d+)(?:st|nd|rd|th) of (\d+) (?:\(|for )/g)].map((m) => Number(m[1]) / Number(m[2]));
+      if (mentions[0] !== Math.min(...fractions) || mentions[1] !== Math.max(...fractions)) {
+        out.push(`strongest/weakest ${mentions} but the lowest and highest position in their own tables are ${Math.min(...fractions)}/${Math.max(...fractions)}`);
       }
       for (const m of text.matchAll(/(\d+)(?:st|nd|rd|th)(?: of (\d+))? (?:\(|for )([A-Za-z /]+?)(?:\)| but| to|,| —|\s*$)/g)) {
         const c = CATEGORIES.find((x) => x.displayName === m[3]!.trim());
@@ -638,14 +638,14 @@ describe("K4-a: every other rank, tier and matter-type claim equals the computed
         }
       }
       const move = movementSentences(p.ctx, p.label).join(" ");
-      const climbing = move.match(/Climbing five places would mean passing (.+?)(?: and adding (\$[\d,]+) to the|, which all record the same)/);
+      const climbing = move.match(/Climbing \w+ places? would mean passing (.+?)(?: and adding (\$[\d,]+) to the|, which (?:all record|records) the same)/);
       if (climbing) {
         const values = [...climbing[1]!.matchAll(new RegExp(NAME_RE, "g"))].map((n) => valueOf(list, n[1]!)!);
         if (values.some((x) => x < s.value)) out.push("a state named as passed from below records less");
         if (climbing[2] !== undefined && money(climbing[2]) !== Math.max(...values) - s.value) out.push("climb distance is wrong");
         if (climbing[2] === undefined && values.some((x) => x !== s.value)) out.push("'all record the same' is false above");
       }
-      const falling = move.match(/Five places down means passing (?:under )?(.+?)(?:: (\$[\d,]+)|, which all record the same)/);
+      const falling = move.match(/[A-Z][a-z]+ places? down means passing (?:under )?(.+?)(?:: (\$[\d,]+)|, which (?:all record|records) the same)/);
       if (falling) {
         const values = [...falling[1]!.matchAll(new RegExp(NAME_RE, "g"))].map((n) => valueOf(list, n[1]!)!);
         if (values.some((x) => x > s.value)) out.push("a state named as passed under records more");

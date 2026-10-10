@@ -705,6 +705,16 @@ const tierMidpointGap = (median: number, midpoint: number, mode: "over-under" | 
   return `${usd(gap)} ${median >= midpoint ? "over" : "under"} the ${usd(midpoint)} tier midpoint`;
 };
 
+const tierMidpointGapClause = (tier: TierFacts) => {
+  const gap = tier.median - tier.peerMedian;
+  if (Math.round(Math.abs(gap)) === 0) return `exactly on its ${usd(tier.peerMedian)} tier midpoint`;
+  const pct = tier.peerMedian > 0 ? Math.round(Math.abs(gap / tier.peerMedian) * 100) : 0;
+  return `${usd(Math.abs(gap))} (${pct}%) ${gap > 0 ? "over" : "under"} its ${usd(tier.peerMedian)} tier midpoint`;
+};
+
+const tierMidpointClosing = (simple: TierFacts, complex: TierFacts) =>
+  `Against the tier midpoints, the simple tier is ${tierMidpointGapClause(simple)} and the complex tier is ${tierMidpointGapClause(complex)}.`;
+
 /** Where the state sits in the table, and by how much. */
 export function rankSentence(ctx: StateCostContext, matterLabel: string): string {
   const { stateName, rank, rankedOutOf, peerMedian, vsPeerPercent, dollarsFromPeerMedian, statesHigher, statesLower } = ctx;
@@ -966,7 +976,7 @@ export function trajectorySentence(ctx: StateCostContext, matterLabel: string): 
   )} at complex`;
 
   if (tierRankShift >= 10) {
-    return `Rank is not stable across the tiers, and the direction matters. ${stateName} runs ${path} of ${rankedOutOf} — it climbs ${tierRankShift} places as the matter gets harder. Straightforward ${matterLabel} work is estimated at ordinary prices here; contested work is not.`;
+    return `Rank is not stable across the tiers, and the direction matters. ${stateName} runs ${path} of ${rankedOutOf} — it climbs ${tierRankShift} places as the matter gets harder. ${tierMidpointClosing(simple, complex)}`;
   }
   if (tierRankShift >= 4) {
     const closing =
@@ -982,7 +992,9 @@ export function trajectorySentence(ctx: StateCostContext, matterLabel: string): 
       tierRankShift,
     )} places as the matter becomes harder. ${
       simple.median > simple.peerMedian
-        ? `The state is expensive to start ${aOrAn(matterLabel)} ${matterLabel} in and comparatively ordinary to finish one in.`
+        ? Math.abs(complex.median - complex.peerMedian) <= complex.peerMedian * 0.1
+          ? `The state is expensive to start ${aOrAn(matterLabel)} ${matterLabel} in and comparatively ordinary to finish one in.`
+          : tierMidpointClosing(simple, complex)
         : "The simple tier already sits at or below the middle of the table, and the complex tier sits lower still."
     }`;
   }

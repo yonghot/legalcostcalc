@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { hourlyPositionSentence, hoursRankSentence, hoursSentence } from "@/lib/seo/state-context";
-import { collect, middle, tierRow, seedTable, type Page } from "./helpers/k4a-oracle";
+import { hourlyPositionSentence, hoursRankSentence, hoursSentence, trajectorySentence } from "@/lib/seo/state-context";
+import { collect, middle, money, seedTable, tierRow, type Page, type Tier } from "./helpers/k4a-oracle";
 
 /*
  * Adversarial review round 3 (r3-truth-*): sentences whose claim the page's own numbers contradict.
@@ -89,6 +89,61 @@ describe("r3-truth-R3-TXT-02: the rate-versus-total sentence states no cause the
       const text = hourlyPositionSentence(p.ctx, p.label);
       return text && /\b(?:because|reflect|a sign|explain|rather than)\b/.test(text) ? [text] : [];
     });
+    expect(v).toEqual([]);
+  });
+});
+
+describe("r3-truth-R3-TXT-03 / R3C-01: the tier trajectory sentence prices each tier against its own midpoint", () => {
+  const midpointOf = (p: Page, tier: Tier) => middle(seedTable(p.category, tier).map((r) => r.median));
+  const offBy = (p: Page, tier: Tier) => Math.abs(tierRow(p, tier)!.median - midpointOf(p, tier)) / midpointOf(p, tier);
+  const CLIMB_BIG = /Rank is not stable across the tiers/;
+  const FALL_BIG = /The tiers rank .+ very differently/;
+
+  it("'ordinary' and 'is not' claims about a tier need that tier within ten percent of its midpoint (or not)", () => {
+    let seen = 0;
+    const v = collect((p) => {
+      const text = trajectorySentence(p.ctx, p.label) ?? "";
+      const out: string[] = [];
+      if (CLIMB_BIG.test(text)) seen++;
+      if (/estimated at ordinary prices here; contested work is not/.test(text)) {
+        if (!(offBy(p, "simple") <= 0.1)) out.push(`simple tier is ${Math.round(offBy(p, "simple") * 100)}% off its midpoint`);
+        if (!(offBy(p, "complex") > 0.1)) out.push(`complex tier is ${Math.round(offBy(p, "complex") * 100)}% off its midpoint`);
+      }
+      if (/comparatively ordinary to finish/.test(text) && !(offBy(p, "complex") <= 0.1)) {
+        out.push(`complex tier is ${Math.round(offBy(p, "complex") * 100)}% off its midpoint`);
+      }
+      return out;
+    });
+    expect(seen).toBeGreaterThan(20);
+    expect(v).toEqual([]);
+  });
+
+  it("every large-shift page states each tier's gap to its midpoint as the seed rows give it", () => {
+    const clause = (text: string, tier: "simple" | "complex") =>
+      text.match(new RegExp(String.raw`the ${tier} tier is (?:exactly on|(\$[\d,]+) \((\d+)%\) (over|under)) its (\$[\d,]+) tier midpoint`));
+    let seen = 0;
+    const v = collect((p) => {
+      const text = trajectorySentence(p.ctx, p.label) ?? "";
+      if (!CLIMB_BIG.test(text) && !(FALL_BIG.test(text) && !/comparatively ordinary to finish|already sits at or below/.test(text))) return [];
+      seen++;
+      const out: string[] = [];
+      for (const tier of ["simple", "complex"] as const) {
+        const m = clause(text, tier);
+        if (!m) {
+          out.push(`no ${tier} midpoint clause: ${text}`);
+          continue;
+        }
+        const own = tierRow(p, tier)!.median;
+        const mid = midpointOf(p, tier);
+        const gap = Math.round(Math.abs(own - mid));
+        if (money(m[4]!) !== mid) out.push(`${tier}: midpoint ${m[4]} but ${mid}`);
+        if (m[1] === undefined ? gap !== 0 : money(m[1]) !== gap || Number(m[2]) !== Math.round((Math.abs(own - mid) / mid) * 100) || m[3] !== (own > mid ? "over" : "under")) {
+          out.push(`${tier}: ${m[0]} but own ${own} midpoint ${mid}`);
+        }
+      }
+      return out;
+    });
+    expect(seen).toBeGreaterThan(30);
     expect(v).toEqual([]);
   });
 });

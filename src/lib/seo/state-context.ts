@@ -837,14 +837,14 @@ export function hourlyPositionSentence(ctx: StateCostContext, matterLabel: strin
       hourlyRank,
     )} of ${ratedOutOf} at ${rateText}, ${rankGap} places above where the state lands on total ${matterLabel} cost (${ordinal(
       rank,
-    )}) — on these figures, high rates are not accompanied by high totals.`;
+    )}).`;
   }
   if (rankGap >= 6) {
     return `The two rankings disagree sharply. ${stateName} attorneys sit ${ordinal(
       hourlyRank,
     )} of ${ratedOutOf} on hourly rate at ${rateText}, but the state is only ${ordinal(
       rank,
-    )} on total ${matterLabel} cost — the estimates imply fewer billed hours than the rate alone would produce.`;
+    )} on total ${matterLabel} cost.`;
   }
   if (rankGap >= 3) {
     return `${stateName} ranks ${ordinal(hourlyRank)} of ${ratedOutOf} on hourly rate at ${rateText} and ${ordinal(
@@ -857,18 +857,18 @@ export function hourlyPositionSentence(ctx: StateCostContext, matterLabel: strin
     )} on total cost, ${rankGap} ${rankGap === 1 ? "place" : "places"} apart.`;
   }
   if (rankGap <= -10) {
-    return `The total is doing something the rate does not explain. ${stateName} sits ${ordinal(
+    return `Total cost ranks far above hourly rate. ${stateName} sits ${ordinal(
       hourlyRank,
     )} of ${ratedOutOf} on rate at ${rateText} but ${ordinal(
       rank,
-    )} on total ${matterLabel} cost, ${Math.abs(rankGap)} places higher — a sign that the estimates assume longer matters rather than higher prices.`;
+    )} on total ${matterLabel} cost, ${Math.abs(rankGap)} places higher.`;
   }
   if (rankGap <= -6) {
-    return `Hourly rate does not explain this state's position. At ${rateText} ${stateName} is only ${ordinal(
+    return `The rate and total rankings disagree. At ${rateText} ${stateName} is only ${ordinal(
       hourlyRank,
     )} of ${ratedOutOf} on rate, yet ${ordinal(
       rank,
-    )} on total ${matterLabel} cost — the totals reflect billed hours accumulating, not an unusually high rate.`;
+    )} on total ${matterLabel} cost.`;
   }
   if (rankGap <= -3) {
     return `On hourly rate alone ${stateName} is ${ordinal(hourlyRank)} of ${ratedOutOf} at ${rateText}, ${Math.abs(

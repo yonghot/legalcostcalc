@@ -1,8 +1,8 @@
 // @vitest-environment node
 // K19-D changed-URL IndexNow (contracts.md K19-D, K22). Template from D:\ClaudeCode\AppFarm\scripts\templates.
 // Copy to tests/regressions/indexnow-delta.test.ts and edit ONLY the CONFIG block; scripts/indexnow.mjs is indexnow-delta.mjs unchanged.
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { spawnSync } from "node:child_process";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { spawn } from "node:child_process";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
@@ -86,6 +86,18 @@ function build(sitemapBody: string | null, files: Record<string, string> = {}) {
     writeFileSync(path.join(app, rel), body);
   }
   return dir;
+}
+
+type CliResult = { status: number | null; stdout: string };
+
+function cli(cwd: string, env: Env): Promise<CliResult> {
+  return new Promise((resolve, reject) => {
+    const child = spawn(process.execPath, [CONFIG.script], { cwd, env: env as NodeJS.ProcessEnv });
+    let stdout = "";
+    child.stdout.on("data", (chunk: Buffer) => (stdout += chunk.toString()));
+    child.on("error", reject);
+    child.on("close", (status) => resolve({ status, stdout }));
+  });
 }
 
 async function exec(cwd: string, env: Env, fetchImpl: typeof fetch = guardedFetch) {
@@ -290,18 +302,29 @@ describe("K19 — local and preview builds never submit", () => {
     expect(out).toMatch(/^indexnow: skipped \((not a production build|INDEXNOW_KEY unset)\)$/);
   });
 
-  it("the postbuild CLI always exits 0", () => {
+  // Only the exit code needs a real subprocess. Both spawns run once, in parallel, before the test:
+  // a spawn inside the test hit the 5 s test timeout under a full parallel suite (Launch, Dental 2026-10-10).
+  const cliRuns: { local?: CliResult; prod?: CliResult } = {};
+  beforeAll(async () => {
     const env: Env = {};
     for (const [k, v] of Object.entries(process.env)) if (!k.startsWith("INDEXNOW_") && k !== "VERCEL_ENV") env[k] = v;
-    const cwd = build(null);
-    const cli = (extra: Env) =>
-      spawnSync(process.execPath, [CONFIG.script], { cwd, env: { ...env, ...extra } as NodeJS.ProcessEnv, encoding: "utf8", timeout: 15_000 });
-    const local = cli({});
-    expect(local.status).toBe(0);
-    expect(local.stdout).toMatch(/skipped \(not a production build\)/);
-    const prod = cli({ VERCEL_ENV: "production", INDEXNOW_KEY: KEY, INDEXNOW_PROD_ORIGIN: "http://127.0.0.1:9", INDEXNOW_ENDPOINT: "http://127.0.0.1:9/indexnow" });
-    expect(prod.status).toBe(0);
-    expect(prod.stdout).toMatch(/skipped \(new sitemap unreadable: /);
+    const cwd = mkdtempSync(path.join(tmpdir(), "indexnow-cli-"));
+    mkdirSync(path.join(cwd, ".next", "server", "app"), { recursive: true });
+    try {
+      [cliRuns.local, cliRuns.prod] = await Promise.all([
+        cli(cwd, { ...env }),
+        cli(cwd, { ...env, VERCEL_ENV: "production", INDEXNOW_KEY: KEY, INDEXNOW_PROD_ORIGIN: "http://127.0.0.1:9", INDEXNOW_ENDPOINT: "http://127.0.0.1:9/indexnow" }),
+      ]);
+    } finally {
+      rmSync(cwd, { recursive: true, force: true });
+    }
+  });
+
+  it("the postbuild CLI always exits 0", () => {
+    expect(cliRuns.local?.status).toBe(0);
+    expect(cliRuns.local?.stdout).toMatch(/skipped \(not a production build\)/);
+    expect(cliRuns.prod?.status).toBe(0);
+    expect(cliRuns.prod?.stdout).toMatch(/skipped \(new sitemap unreadable: /);
   });
 
   it("the K22 guard rejects and records a non-local request (positive control)", async () => {

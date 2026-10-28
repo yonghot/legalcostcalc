@@ -1,7 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { renderPage } from "./helpers/render";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { renderPage, setPathname } from "./helpers/render";
+import RootLayout from "@/app/layout";
 import { INDEXABLE_PAGES, PAGE_INDEX } from "@/lib/page-index";
 import { INDEXED_PAGES, createIndexPolicy, isIndexable } from "@/lib/index-policy";
 import policyData from "@/data/index-policy.json";
@@ -165,12 +168,18 @@ const KEPT_SAMPLE = [
 ];
 const LOADER = '<script id="adsense-loader"';
 
+async function inLayout(entry: (typeof PAGE_INDEX)[number]): Promise<string> {
+  setPathname(entry.path);
+  const page = await StateCategoryPage({ params: Promise.resolve(slugParams(entry)) });
+  return renderToStaticMarkup(createElement(RootLayout, null, page));
+}
+
 describe("K8: rendered pages under the shipped policy", () => {
   it.each(NOINDEXED_SAMPLE)("%s stays reachable, has no ad loader, and its hubs still link it", async (path) => {
     const entry = PAGE_INDEX.find((p) => p.path === path)!;
     expect(entry.hasUniqueData, path).toBe(true);
     expect(KEPT.has(path), path).toBe(false);
-    const html = await renderPage(StateCategoryPage as never, slugParams(entry) as never);
+    const html = await inLayout(entry);
     expect(html).toContain("<h1");
     expect(html).not.toContain(LOADER);
     expect(html).not.toContain("adsbygoogle.js");
@@ -182,7 +191,7 @@ describe("K8: rendered pages under the shipped policy", () => {
 
   it.each(KEPT_SAMPLE)("%s keeps exactly one ad loader", async (path) => {
     const entry = PAGE_INDEX.find((p) => p.path === path)!;
-    const html = await renderPage(StateCategoryPage as never, slugParams(entry) as never);
+    const html = await inLayout(entry);
     expect(html.split(LOADER).length - 1).toBe(1);
   });
 

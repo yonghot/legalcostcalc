@@ -7,7 +7,6 @@ import type { Metadata } from "next";
 import { Disclaimer, DisclaimerNote } from "@/components/shared/disclaimer";
 import { PublishedBy } from "@/components/shared/published-by";
 import { PUBLISHER } from "@/lib/constants/publisher";
-import { AdsenseLoader } from "@/components/ads/adsense-loader";
 import { buildMeta } from "@/lib/seo";
 
 export const metadata: Metadata = buildMeta({
@@ -26,7 +25,6 @@ const ADS_SETTINGS_URL = "https://adssettings.google.com";
 export default function PrivacyPage() {
   return (
     <div>
-      <AdsenseLoader />
       <section className="bg-gradient-to-b from-teal-50 to-white py-16 sm:py-20">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <DisclaimerNote />

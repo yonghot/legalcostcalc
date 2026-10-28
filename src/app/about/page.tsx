@@ -8,7 +8,6 @@ import { Shield, Database, Scale, RefreshCw } from "lucide-react";
 import { buildMeta } from "@/lib/seo";
 import { PublishedBy } from "@/components/shared/published-by";
 import { PUBLISHER } from "@/lib/constants/publisher";
-import { AdsenseLoader } from "@/components/ads/adsense-loader";
 
 export const metadata: Metadata = buildMeta({
   title: "About LegalCostCalc: Our Data Sources & Methodology",
@@ -35,7 +34,6 @@ export default function AboutPage() {
 
   return (
     <div>
-      <AdsenseLoader />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: safeJsonLd(schema) }}

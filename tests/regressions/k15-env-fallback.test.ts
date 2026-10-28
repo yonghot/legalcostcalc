@@ -3,9 +3,9 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import "./helpers/render";
+import { setPathname } from "./helpers/render";
 import { firstConfigured, resolveAdsenseClient } from "@/lib/env";
-import { AdsenseLoader } from "@/components/ads/adsense-loader";
+import RootLayout from "@/app/layout";
 
 const PUBLIC_ID = "ca-pub-1378312299412437";
 
@@ -15,7 +15,8 @@ afterEach(() => {
 });
 
 function loaderMarkup(): string {
-  return renderToStaticMarkup(createElement(AdsenseLoader));
+  setPathname("/");
+  return renderToStaticMarkup(createElement(RootLayout, null, null));
 }
 
 async function layoutAdsenseMeta(): Promise<unknown> {

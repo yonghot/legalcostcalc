@@ -11,7 +11,6 @@ import { INDEXABLE_PAGES, getModerateMedianCost } from "@/lib/page-index";
 import { STATES } from "@/lib/constants/states";
 import { buildMeta } from "@/lib/seo";
 import { FOCUS_RING } from "@/lib/utils/styles";
-import { AdsenseLoader } from "@/components/ads/adsense-loader";
 import { PopularPages } from "@/components/seo/popular-pages";
 import { GuideAndCompareLine } from "@/components/seo/guide-and-compare-line";
 import { topTrafficPages } from "@/lib/top-traffic";
@@ -64,7 +63,6 @@ export default async function CategoryHubPage({ params }: PageProps) {
 
   return (
     <div>
-      <AdsenseLoader />
       <BreadcrumbSchema
         items={[
           { name: "Home", href: "/" },

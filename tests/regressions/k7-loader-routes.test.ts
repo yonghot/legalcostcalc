@@ -112,8 +112,8 @@ const EXCLUDED: Array<[string, string, () => ReactNode | Promise<ReactNode>]> = 
   ],
   ["404 (not-found)", "/texas/not-a-real-cost", () => NotFound()],
   [
-    "error boundary",
-    "/california/divorce-cost",
+    "error boundary (the gate is by path, so an eligible path keeps the document-level loader)",
+    "/search",
     () => createElement(ErrorBoundary, { error: new Error("boom"), reset: () => {} }),
   ],
   [
@@ -138,32 +138,32 @@ describe("K7: every page route is classified for the AdSense loader", () => {
     for (const r of [...INCLUDE_ROUTES, ...EXCLUDE_ROUTES]) expect(routes, r).toContain(r);
   });
 
-  it("included routes render <AdsenseLoader /> in the page (or its layout), excluded routes never reference it", () => {
+  it("no page or route-level layout mounts the loader; the route gate decides (see ad-eligibility-parity)", () => {
     for (const file of PAGE_FILES) {
-      const route = routeOf(file);
       const layout = join(dirname(file), "layout.tsx");
-      const source = read(file) + (existsSync(layout) ? read(layout) : "");
-      if (INCLUDE_ROUTES.includes(route)) {
-        expect(source, route).toMatch(/<AdsenseLoader\b/);
-      } else {
-        expect(source, route).not.toMatch(/AdsenseLoader|adsense-loader|adsbygoogle/);
-      }
+      const routeLayout = existsSync(layout) && dirname(file) !== APP_DIR ? read(layout) : "";
+      expect(read(file) + routeLayout, routeOf(file)).not.toMatch(/AdsenseLoader|adsense-loader|adsbygoogle/);
     }
   });
 
-  it("not-found, error and the root layout never render the loader", () => {
-    for (const file of ["layout.tsx", "not-found.tsx", "error.tsx"]) {
+  it("not-found and error never render the loader", () => {
+    for (const file of ["not-found.tsx", "error.tsx"]) {
       expect(read(join(APP_DIR, file)), file).not.toMatch(/AdsenseLoader|id="adsense-loader"|adsbygoogle\.js/);
     }
   });
 
-  it("only page files render the loader, so shared chrome cannot leak it into excluded routes", () => {
+  it("only the root layout renders the loader, in <head> after the Consent Mode defaults script", () => {
     const users = walk(join(ROOT, "src"))
       .filter((f) => /\.(tsx|ts)$/.test(f))
       .filter((f) => /<AdsenseLoader\b/.test(read(f)))
-      .map((f) => relative(join(ROOT, "src"), f).split(sep).join("/"))
-      .sort();
-    for (const u of users) expect(u, u).toMatch(/^app\/.*(page|layout)\.tsx$/);
+      .map((f) => relative(join(ROOT, "src"), f).split(sep).join("/"));
+    expect(users).toEqual(["app/layout.tsx"]);
+    const layout = read(join(APP_DIR, "layout.tsx"));
+    const defaultsAt = layout.indexOf('id="consent-mode-defaults"');
+    const loaderAt = layout.indexOf("<AdsenseLoader");
+    expect(defaultsAt).toBeGreaterThan(layout.indexOf("<head>"));
+    expect(loaderAt).toBeGreaterThan(defaultsAt);
+    expect(loaderAt).toBeLessThan(layout.indexOf("</head>"));
   });
 });
 
@@ -177,13 +177,14 @@ describe("K7: rendered output (RootLayout composed with each page)", () => {
     vi.resetModules();
   });
 
-  it.each(INCLUDED)("%s renders exactly one loader, after the Consent Mode defaults", async (path, page) => {
+  it.each(INCLUDED)("%s renders exactly one loader, inside <head> after the Consent Mode defaults", async (path, page) => {
     const html = await inLayout(path, page());
     expect(loaderCount(html)).toBe(1);
     expect(html).toContain("adsbygoogle.js?client=ca-pub-2222222222222222");
     const defaultsAt = html.indexOf('id="consent-mode-defaults"');
     expect(defaultsAt).toBeGreaterThan(-1);
     expect(defaultsAt).toBeLessThan(html.indexOf(PRESENT));
+    expect(html.indexOf(PRESENT)).toBeLessThan(html.indexOf("</head>"));
   });
 
   it.each(EXCLUDED)("%s renders no loader", async (_label, path, page) => {
@@ -192,11 +193,12 @@ describe("K7: rendered output (RootLayout composed with each page)", () => {
     expect(html).not.toContain('id="adsense-loader"');
   });
 
-  it("the loader is not inside <head>, so React cannot hoist it above the Consent Mode defaults", async () => {
+  it("the loader stays after the Consent Mode defaults inside <head> (the onLoad prop keeps React from hoisting it)", async () => {
     const html = await inLayout("/", HomePage());
     const head = html.slice(html.indexOf("<head"), html.indexOf("</head>"));
-    expect(head).toContain('id="consent-mode-defaults"');
-    expect(head).not.toContain("adsbygoogle.js");
+    expect(head.indexOf('id="consent-mode-defaults"')).toBeGreaterThan(-1);
+    expect(head.indexOf("adsbygoogle.js")).toBeGreaterThan(head.indexOf('id="consent-mode-defaults"'));
+    expect(html.slice(html.indexOf("<body"))).not.toContain("adsbygoogle.js");
   });
 
   it("an indexable instance renders the loader and an instance outside an injected keep list does not", async () => {

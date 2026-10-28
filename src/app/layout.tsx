@@ -5,7 +5,9 @@ import { ConsentedAnalytics } from "@/components/consent/consented-analytics";
 import { AnalyticsInit } from "@/components/consent/analytics-init";
 import { FeedbackWidget } from "@/components/shared/feedback-widget";
 import { WebVitalsReporter } from "@/components/shared/web-vitals-reporter";
+import { AdsenseLoader } from "@/components/ads/adsense-loader";
 import { resolveAdsenseClient } from "@/lib/env";
+import { buildAdEligibilityRules } from "@/lib/ad-eligibility-rules";
 import { CONSENT_DEFAULT_SCRIPT } from "@/lib/consent/default-script";
 import { HOME_DESCRIPTION } from "@/lib/constants/benchmarks";
 import "./globals.css";
@@ -78,10 +80,12 @@ export default function RootLayout({
         {/*
           Consent Mode v2 defaults, region-scoped: EEA/UK/CH denied (Google's
           certified CMP governs there), everywhere else granted. Must stay a
-          server-rendered inline script ahead of every Google script; the AdSense
-          loader is rendered by content pages in the body so it always follows.
+          server-rendered inline script ahead of every Google script, including
+          the AdSense loader that follows it here (its route gate lives in
+          lib/ad-eligibility-rules.ts).
         */}
         <script id="consent-mode-defaults">{CONSENT_DEFAULT_SCRIPT}</script>
+        <AdsenseLoader client={resolveAdsenseClient()} rules={buildAdEligibilityRules()} />
       </head>
       <body
         className="min-h-screen bg-white font-sans text-slate-900 antialiased"

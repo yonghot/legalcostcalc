@@ -34,7 +34,6 @@ import { RecentCalculations } from "@/components/shared/recent-calculations";
 import { HomePublisherContent } from "@/components/seo/home-publisher-content";
 import { HomeAnswer } from "@/components/seo/home-answer";
 import { HOME_DESCRIPTION } from "@/lib/constants/benchmarks";
-import { AdsenseLoader } from "@/components/ads/adsense-loader";
 import { PopularPages } from "@/components/seo/popular-pages";
 import { topTrafficPages } from "@/lib/top-traffic";
 import { NextSteps } from "@/components/calculator/next-steps";
@@ -65,7 +64,6 @@ export default function HomePage() {
 
   return (
     <div>
-      <AdsenseLoader />
       <OrganizationSchema />
       <SoftwareApplicationSchema
         name="LegalCostCalc — Legal Cost Calculator"

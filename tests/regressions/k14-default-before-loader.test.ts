@@ -89,8 +89,7 @@ describe("K14: the Consent Mode default is region-scoped and precedes the loader
       expect(defaultsAt, path).toBeGreaterThan(-1);
       expect(loaderAt, path).toBeGreaterThan(-1);
       expect(defaultsAt, path).toBeLessThan(loaderAt);
-      expect(defaultsAt, path).toBeLessThan(html.indexOf("</head>"));
-      expect(html.slice(html.indexOf("<head"), html.indexOf("</head>"))).not.toContain("adsbygoogle");
+      expect(loaderAt, path).toBeLessThan(html.indexOf("</head>"));
     }
   });
 });

@@ -332,7 +332,7 @@ export function StateCostAnalysis({
         <div className="mt-4 overflow-x-auto">
           <table className="w-full border-collapse text-sm">
             <caption className="pb-2 text-left text-sm text-slate-600">
-              {stateName} by tier, against each tier&apos;s midpoint
+              {stateName}{" "}by tier, against each tier&apos;s midpoint
             </caption>
             <thead>
               <tr className="border-b border-slate-200 text-left text-slate-500">
@@ -569,7 +569,7 @@ export function StateCostAnalysis({
           </p>
         )}
         <p className="mt-3 text-xs text-slate-500">
-          {dateRecord && <>{dateLabel(dateRecord)}. </>}Filing fees change on the {stateName} court&apos;s own
+          {dateRecord && <>{dateLabel(dateRecord)}. </>}Filing fees change on the {stateName}{" "}court&apos;s own
           schedule; billing models are covered in the{" "}
           <Link href="/how-legal-fees-work" className="font-medium text-teal-700 underline hover:text-teal-800">
             legal fees guide

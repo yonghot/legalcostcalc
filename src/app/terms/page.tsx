@@ -48,7 +48,7 @@ export default function TermsPage() {
               </h2>
               <p className="mt-2 leading-relaxed">
                 By accessing or using{" "}
-                <strong>legalcostcalc.co</strong> (the
+                <strong>legalcostcalc.co</strong>{" "}(the
                 &quot;Site&quot;), you agree to be bound by these Terms of
                 Service (&quot;Terms&quot;). If you do not agree, do not use the
                 Site.{" "}

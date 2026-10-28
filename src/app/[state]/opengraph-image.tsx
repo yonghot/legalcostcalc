@@ -126,7 +126,7 @@ export default async function OGImage({
         )}
 
         <p style={{ fontSize: "22px", color: "#475569", textAlign: "center" }}>
-          {categoryCount} matter types compared &middot; Sourced &amp; dated estimates
+          {categoryCount}{" "}matter types compared &middot; Sourced &amp; dated estimates
         </p>
         {asOfLabel && (
           <p style={{ fontSize: "16px", color: "#94A3B8", marginTop: "8px" }}>{asOfLabel}</p>

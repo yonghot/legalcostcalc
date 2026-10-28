@@ -96,10 +96,10 @@ export default function DivorceCostByStatePage() {
             a divorce costs, Clio&apos;s lawyer-rate comparison and the U.S. Bureau of Labor
             Statistics page on lawyers (see the &ldquo;Sources&rdquo; list on each state
             page). The{" "}
-            <strong className="font-medium text-slate-800">uncontested</strong> figure
+            <strong className="font-medium text-slate-800">uncontested</strong>{" "}figure
             reflects the &ldquo;simple&rdquo; complexity tier — spouses in agreement on
             property division, custody, and support. The{" "}
-            <strong className="font-medium text-slate-800">contested</strong> figure
+            <strong className="font-medium text-slate-800">contested</strong>{" "}figure
             reflects the &ldquo;complex&rdquo; tier — disputed terms. This is general
             cost information only, not legal advice — actual costs vary by attorney,
             court, and the specific facts of a case.

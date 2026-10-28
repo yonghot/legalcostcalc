@@ -100,7 +100,7 @@ export default function OGImage() {
         )}
 
         <p style={{ fontSize: "20px", color: "#475569", textAlign: "center" }}>
-          {categoryRows.length} matter types &middot; State-by-state estimates &middot; Sourced &amp; dated data
+          {categoryRows.length}{" "}matter types &middot; State-by-state estimates &middot; Sourced &amp; dated data
         </p>
         {asOfLabel && (
           <p style={{ fontSize: "16px", color: "#94A3B8", marginTop: "8px" }}>{asOfLabel}</p>

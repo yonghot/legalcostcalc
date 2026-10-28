@@ -56,7 +56,7 @@ export default function PrivacyPage() {
                   collect payment details. Cost lookups you run are not tied to your identity.
                 </li>
                 <li>
-                  <strong>Messages you send us.</strong> If you use the contact form, we receive
+                  <strong>Messages you send us.</strong>{" "}If you use the contact form, we receive
                   the name, email address, and message you enter. If you use the feedback widget,
                   we receive your message, the feedback type, an optional email address, the page
                   URL you were on, and your browser&apos;s user agent (added by our server). We
@@ -69,7 +69,7 @@ export default function PrivacyPage() {
                   .
                 </li>
                 <li>
-                  <strong>Calculator inputs.</strong> The category, state, and case-complexity
+                  <strong>Calculator inputs.</strong>{" "}The category, state, and case-complexity
                   selections you make in the cost calculator are sent to our servers only to
                   request matching cost ranges. The Settlement Net Estimator&apos;s gross
                   settlement, contingency percentage, and case-cost figures are processed
@@ -110,7 +110,7 @@ export default function PrivacyPage() {
               </p>
               <ul className="mt-2 list-disc space-y-1 pl-5 leading-relaxed">
                 <li>
-                  <strong>EEA, UK, and Switzerland (opt-in).</strong> In the European Economic Area
+                  <strong>EEA, UK, and Switzerland (opt-in).</strong>{" "}In the European Economic Area
                   (EEA), the United Kingdom, and Switzerland, advertising and analytics storage are
                   denied by default. Google&apos;s consent message, not a banner of our own, asks
                   for your choice. Until you accept, we tell Google not to use cookies or personal
@@ -256,7 +256,7 @@ export default function PrivacyPage() {
                   for details.
                 </li>
                 <li>
-                  <strong>On your device.</strong> The cookies and browser storage
+                  <strong>On your device.</strong>{" "}The cookies and browser storage
                   entries listed above stay on your device until they expire or you
                   clear your browser&apos;s site data. The &quot;Clear my calculator
                   data&quot; link in the footer removes the calculator entries.
@@ -395,7 +395,7 @@ export default function PrivacyPage() {
                   <strong>Right to withdraw consent.</strong> Where processing
                   is based on your consent (e.g., accepting advertising cookies),
                   you may withdraw that consent at any time through the{" "}
-                  <strong>Manage Consent</strong> link in the site footer, which
+                  <strong>Manage Consent</strong>{" "}link in the site footer, which
                   reopens Google&apos;s consent message, without affecting the
                   lawfulness of prior processing.
                 </li>
@@ -457,10 +457,10 @@ export default function PrivacyPage() {
                   of inaccurate personal information we maintain.
                 </li>
                 <li>
-                  <strong>Right to opt out of sale or sharing.</strong> You
+                  <strong>Right to opt out of sale or sharing.</strong>{" "}You
                   have the right to opt out of the &quot;sale&quot; or
                   &quot;sharing&quot; of your personal information. We do{" "}
-                  <strong>not</strong> sell personal information. However, the
+                  <strong>not</strong>{" "}sell personal information. However, the
                   delivery of personalized advertising by Google AdSense may
                   constitute &quot;sharing&quot; of personal data for
                   cross-context behavioral advertising under CPRA. Because US

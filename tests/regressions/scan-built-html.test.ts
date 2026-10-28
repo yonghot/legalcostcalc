@@ -162,9 +162,17 @@ function edit(dir: string, rel: string, change: (html: string) => string): void 
   writeFileSync(file, change(readFileSync(file, "utf8")));
 }
 
-const LOADER = '<div hidden><script id="adsense-loader" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1"></script></div>';
+const LOADER = '<script id="adsense-loader" async="" crossorigin="anonymous" src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1"></script>';
+const LOADER_TAG = /<script id="adsense-loader"[\s\S]*?<\/script>/;
+const DEFAULTS_TAG = /<script id="consent-mode-defaults">[\s\S]*?<\/script>/;
 const hit = (result: ScanResult, check: string, page: string) =>
   result.violations.some((v) => v.check === check && v.page === page);
+
+function loaderOf(html: string): string {
+  const tag = html.match(LOADER_TAG);
+  expect(tag, "the fixture renders a loader").not.toBeNull();
+  return tag![0];
+}
 
 describe("scan-built-html: the real render of the fixed code passes", () => {
   it("scans the rendered pages with zero violations and the expected K8 split", async () => {
@@ -173,6 +181,7 @@ describe("scan-built-html: the real render of the fixed code passes", () => {
     expect(result.violations).toEqual([]);
     expect(result.ok).toBe(true);
     expect(result.stats).toMatchObject({
+      pagesWithLoader: 22,
       templates: 5,
       templatesInSitemap: 3,
       templatesWithLoader: 3,
@@ -210,9 +219,7 @@ describe("scan-built-html: positive controls (each defect is caught)", () => {
   });
 
   it("a kept template without its loader", async () => {
-    const r = await mutated((d) =>
-      edit(d, "california/divorce-cost.html", (h) => h.replace(/<div hidden(?:="")?><script id="adsense-loader"[\s\S]*?<\/script><\/div>/, "")),
-    );
+    const r = await mutated((d) => edit(d, "california/divorce-cost.html", (h) => h.replace(LOADER_TAG, "")));
     expect(hit(r, "loader", "/california/divorce-cost")).toBe(true);
   });
 
@@ -248,11 +255,61 @@ describe("scan-built-html: positive controls (each defect is caught)", () => {
     expect(hit(r, "consent-order", "/about")).toBe(true);
   });
 
-  it("the loader hoisted into <head>", async () => {
+  it("the loader in <body>, after </head>, is rejected (the order must be defaults, loader, </head>)", async () => {
     const r = await mutated((d) =>
-      edit(d, "about.html", (h) => h.replace("</head>", `<script id="adsense-loader" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=x"></script></head>`)),
+      edit(d, "about.html", (h) => {
+        const tag = loaderOf(h);
+        return h.replace(tag, "").replace("</body>", `${tag}</body>`);
+      }),
     );
-    expect(hit(r, "consent-order", "/about") || hit(r, "loader", "/about")).toBe(true);
+    expect(hit(r, "consent-order", "/about")).toBe(true);
+  });
+
+  it("the loader ahead of the Consent Mode defaults inside <head>", async () => {
+    const r = await mutated((d) =>
+      edit(d, "about.html", (h) => {
+        const tag = loaderOf(h);
+        return h.replace(tag, "").replace(DEFAULTS_TAG, (defaults) => `${tag}${defaults}`);
+      }),
+    );
+    expect(hit(r, "consent-order", "/about")).toBe(true);
+  });
+
+  it("a second loader on a loader route", async () => {
+    const r = await mutated((d) => edit(d, "about.html", (h) => h.replace("</head>", `${LOADER}</head>`)));
+    expect(hit(r, "loader", "/about")).toBe(true);
+  });
+
+  it("a loader tag that is not an async adsbygoogle.js script", async () => {
+    const r = await mutated((d) => edit(d, "about.html", (h) => h.replace(loaderOf(h), loaderOf(h).replace(' async=""', ""))));
+    expect(hit(r, "loader", "/about")).toBe(true);
+  });
+
+  it("a loader on an excluded noindexed template placed correctly in <head> is still rejected", async () => {
+    const r = await mutated((d) => edit(d, "ohio/estate-planning-cost.html", (h) => h.replace("</head>", `${LOADER}</head>`)));
+    expect(hit(r, "loader", "/ohio/estate-planning-cost")).toBe(true);
+  });
+
+  it.each([
+    ["a state name glued to the next word by a comment marker", "<p>Alabama<!-- -->by tier, against each tier</p>"],
+    ["a closing strong glued to a lowercase word", "<p>We do <strong>not</strong>sell personal information.</p>"],
+    ["a closing strong glued to a capitalised sentence", "<ul><li><strong>Messages you send us.</strong>If you use the form</li></ul>"],
+    ["a closing strong glued to a parenthesis", "<p>by using <strong>the site</strong>(the Site), you agree</p>"],
+    ["a known joined word", "<p>This holds only afteryou have looked</p>"],
+  ])("glued words: %s", async (_name, markup) => {
+    const r = await mutated((d) => edit(d, "terms.html", (h) => h.replace("</body>", `${markup}</body>`)));
+    expect(hit(r, "glue", "/terms")).toBe(true);
+  });
+
+  it.each([
+    ["words separated by a space around a comment marker", "<p>Median of <!-- -->Alabama<!-- --> is <!-- -->$3,400</p>"],
+    ["a currency sign before a comment marker", "<p>$<!-- -->3,400 and <strong>bold</strong> text</p>"],
+    ["a numbered badge before a heading word", '<p><span class="badge">1</span>Start from published figures</p>'],
+    ["a closing strong before punctuation", "<p>see <strong>this</strong>, then that</p>"],
+    ["glued words inside a script", "<script>var s='Alabama<!-- -->by tier</strong>sell'</script>"],
+  ])("not glue: %s", async (_name, markup) => {
+    const r = await mutated((d) => edit(d, "terms.html", (h) => h.replace("</body>", `${markup}</body>`)));
+    expect(r.violations).toEqual([]);
   });
 
   it("a hidden Suspense segment", async () => {

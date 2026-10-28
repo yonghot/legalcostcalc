@@ -66,6 +66,31 @@ function visibleText(html) {
     .replace(/\s+/g, " ");
 }
 
+// Next/SWC drops the leading space of JSX text after {expr} or a closing tag in some shapes; the built HTML then shows a comment marker or a closing inline tag glued to the next word.
+const GLUE_MARKUP_RULES = [
+  /[A-Za-z0-9.,)]{2,}(?:<!-- -->|<\/(?:em|strong|a|span|b|i|code)>)[a-z(]/g,
+  /[.!?:;)]<\/(?:em|strong|b|i|code|a)>[A-Za-z0-9(]/g,
+];
+const JOINED_WORDS = /\b(?:afteryou|onlyafter|Consentlink|notsell|(?:uncontested|contested)figure)\b|[a-z]by tier, against each tier|[a-z]court's own schedule/g;
+
+export function findGlue(html) {
+  const markup = html.replace(/<(script|style)\b[\s\S]*?<\/\1>/gi, "");
+  const around = (text, at, len) => text.slice(Math.max(0, at - 30), at + len + 30).replace(/\s+/g, " ");
+  const hits = [];
+  for (const rule of GLUE_MARKUP_RULES) {
+    for (const m of markup.matchAll(rule)) hits.push(around(markup, m.index ?? 0, m[0].length));
+  }
+  const tight = markup
+    .replace(/<!-- -->/g, "")
+    .replace(/<\/?(?:em|strong|a|span|b|i|code|small|sup|sub|mark)\b[^>]*>/g, "")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&#x27;|&#39;|&apos;/g, "'")
+    .replace(/\s+/g, " ");
+  for (const m of tight.matchAll(JOINED_WORDS)) hits.push(around(tight, m.index ?? 0, m[0].length));
+  return hits;
+}
+
 const wordCount = (text) => text.split(/\s+/).filter((w) => /[A-Za-z0-9]/.test(w)).length;
 
 function attr(tag, name) {
@@ -144,7 +169,7 @@ export function scanBuiltHtml({ appDir, expect = DEFAULT_EXPECT, samples = SAMPL
     for (const m of readFileSync(sitemapFile, "utf8").matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/g)) sitemapPaths.add(pathOf(m[1]));
   }
 
-  const stats = { pages: pages.length, templates: 0, templatesInSitemap: 0, templatesWithLoader: 0, templatesNoindex: 0, stateHubs: stateHubs.size, categoryHubs: categoryHubs.size, embedFrames: 0 };
+  const stats = { pages: pages.length, pagesWithLoader: 0, templates: 0, templatesInSitemap: 0, templatesWithLoader: 0, templatesNoindex: 0, stateHubs: stateHubs.size, categoryHubs: categoryHubs.size, embedFrames: 0 };
   const pageByRoute = new Map();
 
   for (const page of pages) {
@@ -191,14 +216,21 @@ export function scanBuiltHtml({ appDir, expect = DEFAULT_EXPECT, samples = SAMPL
       add("loader", route, `expected ${wantLoader} loader(s), found ${loaderCount} (adsbygoogle.js x${libCount})`);
     }
 
+    if (loaderCount > 0) stats.pagesWithLoader += 1;
     if (loaderCount > 0) {
       const defaultsAt = html.indexOf('id="consent-mode-defaults"');
       const loaderAt = html.indexOf('id="adsense-loader"');
       const headEnd = html.indexOf("</head>");
       if (defaultsAt < 0 || defaultsAt > loaderAt) add("consent-order", route, "Consent Mode defaults are missing or come after the loader");
-      else if (headEnd >= 0 && defaultsAt > headEnd) add("consent-order", route, "Consent Mode defaults are not in <head>");
-      if (headEnd >= 0 && loaderAt < headEnd) add("consent-order", route, "the loader is inside <head>, where React can hoist it above the defaults");
+      if (headEnd < 0 || loaderAt > headEnd) add("consent-order", route, "the loader is outside <head>; it must follow the Consent Mode defaults inside <head>");
+      const loaderTag = html.slice(html.lastIndexOf("<", loaderAt), html.indexOf(">", loaderAt) + 1);
+      if (!/^<script\b/.test(loaderTag) || !/\basync\b/.test(loaderTag) || !/\bsrc="https:\/\/pagead2\.googlesyndication\.com\/pagead\/js\/adsbygoogle\.js\?client=ca-pub-\d+"/.test(loaderTag)) {
+        add("loader", route, `the loader tag is not an async adsbygoogle.js script: ${loaderTag.slice(0, 120)}`);
+      }
     }
+
+    const glue = findGlue(html);
+    for (const hitText of glue.slice(0, 6)) add("glue", route, `words joined without a space: "${hitText}"`);
 
     const hidden = (html.match(HIDDEN_SEGMENT) ?? []).length;
     if (hidden > 0) add("hidden-segment", route, `${hidden} hidden Suspense segment(s) (<div hidden id="S:n">) hold content out of the visible tree`);
@@ -284,7 +316,7 @@ function main() {
     console.log(JSON.stringify(result, null, 2));
   } else {
     const s = result.stats;
-    console.log(`scan-built-html: ${s.pages ?? 0} pages, ${s.templates ?? 0} templates (${s.templatesInSitemap ?? 0} in the sitemap, ${s.templatesNoindex ?? 0} noindex), ${s.stateHubs ?? 0} state hubs, ${s.categoryHubs ?? 0} category hubs, ${s.embedFrames ?? 0} embed frames`);
+    console.log(`scan-built-html: ${s.pages ?? 0} pages, ${s.pagesWithLoader ?? 0} with the loader, ${s.templates ?? 0} templates (${s.templatesInSitemap ?? 0} in the sitemap, ${s.templatesNoindex ?? 0} noindex), ${s.stateHubs ?? 0} state hubs, ${s.categoryHubs ?? 0} category hubs, ${s.embedFrames ?? 0} embed frames`);
     for (const v of result.violations.slice(0, 200)) console.log(`FAIL [${v.check}] ${v.page}: ${v.detail}`);
     if (result.violations.length > 200) console.log(`... ${result.violations.length - 200} more`);
     console.log(result.ok ? "scan-built-html: OK" : `scan-built-html: ${result.violations.length} violation(s)`);

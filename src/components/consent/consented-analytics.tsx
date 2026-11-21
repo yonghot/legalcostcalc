@@ -27,6 +27,7 @@
 
 import { useEffect } from "react";
 import { resolveGaId } from "@/lib/env";
+import { decideGaLoad } from "@/lib/ga-gate";
 import { initConsent } from "./consent-config";
 
 function injectScript(src: string, attrs: Record<string, string> = {}) {
@@ -52,34 +53,21 @@ function injectScript(src: string, attrs: Record<string, string> = {}) {
  * CMP/consent flow or Consent Mode v2 defaults, which already run upstream.
  */
 function resolveGaLoadDecision(): { shouldLoad: boolean; debugMode: boolean } {
-  if (typeof window === "undefined") return { shouldLoad: false, debugMode: false };
-
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://legalcostcalc.co";
-  let canonicalHost: string;
-  try {
-    canonicalHost = new URL(appUrl).hostname;
-  } catch {
-    canonicalHost = "legalcostcalc.co";
-  }
-
-  const currentHost = window.location.hostname;
-  const isCanonicalHost =
-    currentHost === canonicalHost || currentHost === `www.${canonicalHost}`;
-  const isProductionEnv = process.env.NEXT_PUBLIC_VERCEL_ENV === "production";
-
-  const allowed = isProductionEnv && isCanonicalHost;
-  if (allowed) return { shouldLoad: true, debugMode: false };
-
-  const debugEnabled = process.env.NEXT_PUBLIC_GA_DEBUG === "1";
-  return { shouldLoad: debugEnabled, debugMode: debugEnabled };
+  // NEXT_PUBLIC_* reads stay literal here so the bundler inlines them; decideGaLoad (lib/ga-gate.ts) is the tested rule.
+  return decideGaLoad({
+    appUrl: process.env.NEXT_PUBLIC_APP_URL,
+    vercelEnv: process.env.NEXT_PUBLIC_VERCEL_ENV,
+    gaDebug: process.env.NEXT_PUBLIC_GA_DEBUG,
+    hostname: typeof window === "undefined" ? undefined : window.location.hostname,
+  });
 }
 
 /** Inject the GA4 loader (env-guarded, idempotent). */
 function loadScripts() {
   // The AdSense loader is NOT injected here. The AdsenseLoader component
-  // renders it into the server HTML of content pages (CODE-02): an
-  // effect-injected script is invisible to AdSense's site review and to Auto
-  // ads. Consent Mode v2 defaults in the layout head still run first.
+  // renders it into the root layout <head> (CODE-02): an effect-injected
+  // script is invisible to AdSense's site review and to Auto ads. Consent
+  // Mode v2 defaults in the layout head still run first.
 
   const gaId = resolveGaId();
 

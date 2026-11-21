@@ -158,6 +158,12 @@ export function subscribeConsentNotice(onOpen: (mode: NoticeMode) => void): () =
   };
 }
 
+// The CMP arrives only through the AdSense loader; a page without it can never open Google's message.
+function loaderOnPage(): boolean {
+  if (typeof document === "undefined" || typeof document.querySelector !== "function") return true;
+  return document.querySelector('script[src*="adsbygoogle.js"]') !== null;
+}
+
 interface GoogleFc {
   callbackQueue?: Array<() => void>;
   showRevocationMessage?: () => void;
@@ -183,7 +189,7 @@ export function openManageConsent() {
       request.opened = true;
       live.showRevocationMessage();
     });
-    if (!request.opened && hasDeclineOnlyFallback(country)) {
+    if (!request.opened && (hasDeclineOnlyFallback(country) || !loaderOnPage())) {
       setTimeout(() => {
         if (request.opened || typeof window === "undefined") return;
         request.fellBack = true;

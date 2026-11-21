@@ -32,7 +32,7 @@ function loadedFc(show: () => void): FakeFc {
   return { showRevocationMessage: show, callbackQueue: { push: (fn: () => void) => fn() } as unknown as Array<() => void> };
 }
 
-function visit(country: string, googlefc?: FakeFc) {
+function visit(country: string, googlefc?: FakeFc, loaderOnPage?: boolean) {
   const gtagCalls: unknown[][] = [];
   const store = new Map<string, string>();
   const win = new EventTarget() as EventTarget & Record<string, unknown>;
@@ -40,7 +40,10 @@ function visit(country: string, googlefc?: FakeFc) {
   win.gtag = (...args: unknown[]) => void gtagCalls.push(args);
   if (googlefc) win.googlefc = googlefc;
   vi.stubGlobal("window", win);
-  vi.stubGlobal("document", { cookie: `other=1; visitor_country=${country}` });
+  vi.stubGlobal("document", {
+    cookie: `other=1; visitor_country=${country}`,
+    ...(loaderOnPage === undefined ? {} : { querySelector: () => (loaderOnPage ? {} : null) }),
+  });
   vi.stubGlobal("localStorage", {
     getItem: (key: string) => store.get(key) ?? null,
     setItem: (key: string, value: string) => void store.set(key, value),
@@ -144,6 +147,28 @@ describe("K14-c: Manage consent with an unknown country is never a dead control"
     const { win, modes } = visit(country);
     openManageConsent();
     expect((win.googlefc as FakeFc).callbackQueue).toHaveLength(1);
+    expect(vi.getTimerCount()).toBe(0);
+    vi.advanceTimersByTime(10 * CMP_WAIT_MS);
+    expect(modes).toEqual([]);
+  });
+
+  it.each(EEA)("%s on a page with no AdSense loader: the CMP can never arrive, so the link ends in our decline-only notice, which only denies", (country) => {
+    const { gtagCalls, modes } = visit(country, undefined, false);
+    initConsent();
+    openManageConsent();
+    expect(vi.getTimerCount()).toBe(1);
+    vi.advanceTimersByTime(CMP_WAIT_MS);
+    expect(modes).toEqual(["decline-only"]);
+    expect(answerNotice("decline-only", "accepted")).toBe(false);
+    expect(grantedIn(gtagCalls)).toEqual([]);
+    expect(answerNotice("decline-only", "declined")).toBe(true);
+    expect(grantedIn(gtagCalls)).toEqual([]);
+    expect(updates(gtagCalls)).toHaveLength(1);
+  });
+
+  it.each(EEA)("%s on a page that carries the loader: still no fallback notice, no timer", (country) => {
+    const { modes } = visit(country, undefined, true);
+    openManageConsent();
     expect(vi.getTimerCount()).toBe(0);
     vi.advanceTimersByTime(10 * CMP_WAIT_MS);
     expect(modes).toEqual([]);

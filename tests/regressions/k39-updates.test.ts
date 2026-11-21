@@ -93,9 +93,21 @@ describe("K39: feed, page and sitemap agree", () => {
       expect(html).toContain(`id="${u.id}"`);
       expect(html).toContain(`dateTime="${u.date}"`);
       expect(html).toContain(formatDate(u.date, "day"));
-      for (const sha of u.commits) expect(html).toContain(sha);
     }
     expect(html).toContain('href="/updates/feed.xml"');
+  });
+
+  it("K2: page and feed describe what changed, never commit hashes or repo paths", async () => {
+    const html = await renderPage(UpdatesPage);
+    const xml = buildUpdatesFeed();
+    for (const out of [html, xml]) {
+      expect(out).not.toMatch(/\bCommits?:/);
+      for (const u of SITE_UPDATES) {
+        for (const sha of u.commits) expect(out).not.toContain(sha);
+        for (const f of u.files) expect(out).not.toContain(f.path);
+      }
+    }
+    expect(html.replace(/<p class="mt-2 leading/, `<p>Commits: ${SITE_UPDATES[0]!.commits[0]}</p><p class="mt-2 leading`)).toMatch(/\bCommits?:/);
   });
 
   it("entry wording matches what the cited commits did (fresh review 2026-11-22 W1-W3)", () => {

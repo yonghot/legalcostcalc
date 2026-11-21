@@ -5,6 +5,7 @@
 - 원인: 배포된 /updates 항목 문구가 인용 커밋보다 넓거나 좁게 말했다. W1 "footer links"(89c635a는 홈·주/매터 페이지의 형제 링크 블록 삭제, 푸터 아님), W2 "Outside the EEA"(동의 지역 목록은 EEA+UK+CH 32개 코드), W3 "per-page record"(content-dates.json은 페이지 그룹(패밀리) 단위). S1 증거 마커 "evidence"가 JSON 키라 공허했다.
 - 조치: src/lib/site-updates.ts 문구 3곳 정정, 마커를 '"basis": "content-changed"'로.
 - 회귀 테스트: tests/regressions/k39-updates.test.ts에 문구 단언 1건 추가(옛 문구면 실패), 8/8 통과.
+- K2(리더 지시): 화면의 "Commits: <해시>; <파일 경로>" 줄(항목 6개)과 메타 설명 "with the commits that show each one"을 제거 — 해시·경로는 site-updates.ts 증거 필드(테스트 전용)와 PROGRESS에만. Atom 요약은 원래 본문만. 테스트: 페이지·피드에 해시·경로·"Commits:" 0(양성 대조 포함), 9/9.
 
 ## 2026-11-22 — 배포 기록: /updates (AppFarm 3 ship)
 

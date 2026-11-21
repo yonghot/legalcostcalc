@@ -6,7 +6,7 @@ import { SITE_UPDATES } from "@/lib/site-updates";
 
 const base = buildMeta({
   title: "Site Updates",
-  description: "Dated changes that went live on LegalCostCalc, with the commits that show each one.",
+  description: "Dated changes that went live on LegalCostCalc and what each one changed.",
   path: "/updates",
   skipFit: true,
 });
@@ -38,10 +38,6 @@ export default function UpdatesPage() {
                 <time dateTime={u.date}>{formatDate(u.date, "day")}</time>
               </p>
               <p className="mt-2 leading-relaxed text-slate-700">{u.body}</p>
-              <p className="mt-2 text-sm text-slate-600">
-                Commits: {u.commits.join(", ")}
-                {u.files.map((f) => `; ${f.path}`).join("")}
-              </p>
             </li>
           ))}
         </ol>

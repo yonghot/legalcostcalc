@@ -1,5 +1,12 @@
 # PROGRESS.md — LegalCostCalc
 
+## 2026-11-22 — 프로덕션 배포 기록 (AppFarm 3 ship)
+
+- 배포: HEAD 88704ce 를 `git push origin feature/mvp-prototype`(Vercel 프로덕션 브랜치 확인) 로 배포. 프로덕션 deployment dpl_Ge6iFsiufKsLHFZukig8EQ7eAcQA (legalcostcalc-bidzvgnum-actigence.vercel.app), Ready, 커밋 SHA=HEAD, legalcostcalc.co 별칭 연결.
+- 롤백 대상: dpl_9bZYvHCx2iuAr9gxJ6CnCSbBGMfB (8/31 빌드, 커밋 561d440).
+- 라이브 확인(curl): 홈+콘텐츠 URL 200, 로더 페이지당 1회·head 안, 순서 기본동의<로더<</head> 전 페이지 충족(홈 5313<5909<6075), 글루 0, ads.txt·sitemap·robots 200, Mediapartners 200 + K35 로그 확인, K13-R CSP(object-src/base-uri/frame-ancestors만) 확인, csp-live-check --strict 0건, portfolio-audit post-deploy --strict exit 0(경고 5: 유틸 페이지 로더 advice 4건·/search noindex canonical 1건).
+- 이 문서 커밋은 푸시하지 않음(푸시 시 재배포).
+
 ## 2026-11-22 — 위생 마무리: 글루·K14·K35·IndexNow·CA 이혼 문구 점검, 10/28 리더 체크리스트 HEAD 대조 (AppFarm 3 implement)
 
 - 원인: 10/28 빌드(ae6fc62)에서 글루 단어 743건(소스 패턴 7개)·로더가 기본 동의보다 앞선 페이지 111/111·K35 크롤 계측 없음이 확인됐다.

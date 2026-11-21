@@ -6,6 +6,8 @@ export interface FaqTemplate {
 export interface CategoryInfo {
   slug: string;
   displayName: string;
+  /** Noun phrase that reads after "a" or "an" in running prose. */
+  proseLabel: string;
   description: string;
   seoTitleTemplate: string;
   seoDescriptionTemplate: string;

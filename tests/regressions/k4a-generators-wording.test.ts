@@ -48,15 +48,16 @@ function checkEscalation(p: Page, text: string | null): string[] {
   }
   const branch = /multiplies the .+ total by .+x: /.test(text)
     ? "a"
-    : /breaks down as/.test(text)
+    : /comes with .+x the implied hours and /.test(text)
       ? "b"
-      : /Decomposed, that is/.test(text)
+      : /The implied hours are .+x and the rate is /.test(text)
         ? "c"
         : /the implied workload rises under 3\.9x/.test(text)
           ? "d"
           : "?";
   const want = hm >= 5 ? "a" : hm >= 4.4 ? "b" : hm >= 3.9 ? "c" : "d";
   if (branch !== want) v.push(`branch ${branch} but ${hm}x hours selects ${want}`);
+  if (/breaks down as|Decomposed|so the workload grows/.test(text)) v.push("claims the cost multiple is the product of the rounded hours and rate multiples");
   if (/most of that is hours|Hours (?:still )?carry the larger part/.test(text)) v.push(`keeps a share claim the data does not decide: ${hm}x hours against ${rm}x rate`);
   if (/almost all|not a premium hourly rate|unusually large share|senior-rate|comparatively shallow|more billed time|a higher rate:/.test(text)) {
     v.push("keeps a comparative or ratio claim the data does not support");
@@ -180,8 +181,8 @@ function checkExtra(p: Page, blocks: CalculationBlock[]): string[] {
   }
   const sH = s ? impliedHours(s) : null;
   const cH = c ? impliedHours(c) : null;
-  const versus = blocks.find((b) => b.lead === "Contested against simple.");
-  if (!!versus !== !!(s && c && s.median > 0 && sH && cH)) v.push("the contested-against-simple block does not follow the tiers' hours");
+  const versus = blocks.find((b) => b.lead === "Complex tier against simple tier.");
+  if (!!versus !== !!(s && c && s.median > 0 && sH && cH)) v.push("the complex-against-simple block does not follow the tiers' hours");
   if (versus && s && c && sH && cH) {
     const count = Math.round((c.median / s.median) * 10) / 10;
     const factor = Math.round((cH / sH) * 10) / 10;
@@ -268,8 +269,8 @@ describe("K4-a extension: escalation, overlap, band, calibration and extra calcu
     for (const p of PAGES) {
       const esc = escalationSentence(p.ctx, p.label);
       hit("escalation a", esc, /multiplies the .+ total by/);
-      hit("escalation b", esc, /breaks down as/);
-      hit("escalation c", esc, /Decomposed, that is/);
+      hit("escalation b", esc, /comes with .+x the implied hours and /);
+      hit("escalation c", esc, /The implied hours are .+x and the rate is /);
       hit("escalation d", esc, /rises under 3\.9x/);
       const ov = overlapSentence(p.ctx);
       hit("overlap both", ov, /continuous/);

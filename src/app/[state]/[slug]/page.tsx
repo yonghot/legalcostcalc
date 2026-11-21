@@ -5,7 +5,7 @@ import { getFeaturedPartners } from "@/lib/featured-partners";
 import { Disclaimer, DisclaimerNote } from "@/components/shared/disclaimer";
 import { STATES, STATE_BY_SLUG } from "@/lib/constants/states";
 import { CATEGORIES, CATEGORY_MAP } from "@/lib/constants/categories";
-import { aOrAn, formatCurrency } from "@/lib/utils/format";
+import { aOrAn, formatCurrency, lowerKeepAcronyms } from "@/lib/utils/format";
 import { getCostForPage } from "@/lib/services/cost-service";
 import { CostDisplay } from "@/components/shared/cost-display";
 import { Card, CardContent } from "@/components/ui/card";
@@ -131,21 +131,17 @@ export default async function StateCategoryPage({ params }: PageProps) {
   const faqContext = buildStateCostContext(stateInfo.code, categoryInfo.slug);
   const dataDrivenFaq =
     faqContext && moderateCost
-      ? buildStateFaq(faqContext, categoryInfo.displayName.toLowerCase())
+      ? buildStateFaq(faqContext, categoryInfo.proseLabel)
       : [];
 
   const collectingFaq = [
     costs.length === 0 && {
-      question: `How much does ${aOrAn(categoryInfo.displayName)} ${categoryInfo.displayName.toLowerCase()} cost in ${stateInfo.name}?`,
-      answer: `Cost data for ${categoryInfo.displayName.toLowerCase()} in ${stateInfo.name} is currently being collected.`,
-    },
-    !costs.some((c) => c.hourlyRate.median > 0) && {
-      question: `How much does ${aOrAn(categoryInfo.displayName)} ${categoryInfo.displayName.toLowerCase()} lawyer charge per hour in ${stateInfo.name}?`,
-      answer: `Hourly rate data for ${stateInfo.name} is currently being collected.`,
+      question: `How much does ${aOrAn(categoryInfo.proseLabel)} ${categoryInfo.proseLabel} cost in ${stateInfo.name}?`,
+      answer: `Cost data for ${lowerKeepAcronyms(categoryInfo.displayName)} in ${stateInfo.name} is currently being collected.`,
     },
     !costs.some((c) => c.typicalDuration) && {
-      question: `How long does ${aOrAn(categoryInfo.displayName)} ${categoryInfo.displayName.toLowerCase()} take in ${stateInfo.name}?`,
-      answer: `Duration data for ${categoryInfo.displayName.toLowerCase()} in ${stateInfo.name} is currently being collected.`,
+      question: `How long does ${aOrAn(categoryInfo.proseLabel)} ${categoryInfo.proseLabel} take in ${stateInfo.name}?`,
+      answer: `Duration data for ${lowerKeepAcronyms(categoryInfo.displayName)} in ${stateInfo.name} is currently being collected.`,
     },
   ].filter((entry): entry is { question: string; answer: string } => entry !== false);
 
@@ -200,7 +196,7 @@ export default async function StateCategoryPage({ params }: PageProps) {
           (root, via OrganizationSchema). */}
       <ArticleSchema
         headline={`How Much Does ${aOrAn(categoryInfo.displayName)} ${categoryInfo.displayName} Cost in ${stateInfo.name}?`}
-        description={`${categoryInfo.displayName} cost estimates in ${stateInfo.name}, including attorney fees, court costs, and other expenses.`}
+        description={`${categoryInfo.displayName} cost estimates in ${stateInfo.name}.`}
         url={canonicalUrl}
         dateModified={dateRecord?.date ?? null}
       />
@@ -213,7 +209,7 @@ export default async function StateCategoryPage({ params }: PageProps) {
       />
       <SoftwareApplicationSchema
         name={`${categoryInfo.displayName} Cost Calculator — ${stateInfo.name}`}
-        description={`Free calculator estimating ${categoryInfo.displayName.toLowerCase()} costs in ${stateInfo.name}, including attorney fees, court costs, and common fees.`}
+        description={`Free calculator estimating ${lowerKeepAcronyms(categoryInfo.displayName)} costs in ${stateInfo.name}.`}
         url={canonicalUrl}
         dateModified={dateRecord?.date ?? null}
       />
@@ -239,8 +235,7 @@ export default async function StateCategoryPage({ params }: PageProps) {
               <UpdatedBadge record={dateRecord} />
             </div>
             <p className="mt-3 text-lg text-slate-600">
-              {year} cost estimates for {categoryInfo.displayName.toLowerCase()} in {stateInfo.name},
-              including attorney fees, court costs, and other expenses.
+              {year} cost estimates for {lowerKeepAcronyms(categoryInfo.displayName)} in {stateInfo.name}.
             </p>
 
             {/* CODE-01 — GEO answer block: rendered immediately after the H1
@@ -309,6 +304,11 @@ export default async function StateCategoryPage({ params }: PageProps) {
                 </Card>
               ))}
             </div>
+          )}
+          {costs.some((cost) => cost.typicalDuration) && (
+            <p className="mt-2 text-xs text-slate-600">
+              Durations are a national assumption, the same in every state.
+            </p>
           )}
 
           {/* Data freshness */}
@@ -426,7 +426,7 @@ export default async function StateCategoryPage({ params }: PageProps) {
         stateCode={stateInfo.code}
         stateName={stateInfo.name}
         categorySlug={categoryInfo.slug}
-        matterLabel={categoryInfo.displayName.toLowerCase()}
+        matterLabel={categoryInfo.proseLabel}
         moderate={moderateCost}
         simple={costs.find((c) => c.complexity === "simple")}
         complex={costs.find((c) => c.complexity === "complex")}

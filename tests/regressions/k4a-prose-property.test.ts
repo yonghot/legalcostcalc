@@ -84,7 +84,7 @@ interface Page {
 const PAGES: Page[] = STATES.flatMap((s) =>
   CATEGORIES.flatMap((c) => {
     const ctx = buildStateCostContext(s.code, c.slug);
-    return ctx ? [{ code: s.code, state: s.name, category: c.slug, label: c.displayName.toLowerCase(), ctx }] : [];
+    return ctx ? [{ code: s.code, state: s.name, category: c.slug, label: c.proseLabel, ctx }] : [];
   }),
 );
 
@@ -296,14 +296,16 @@ describe("K4-a: tie handling in the rank statements (every state x matter page)"
       const faq = buildStateFaq(p.ctx, p.label)[0]!.answer;
       hit("faq more", faq, /recording more/);
       hit("faq less", faq, /recording less/);
-      hit("sensitivity tie", sensitivitySentence(p.ctx, p.label), /Another tracked state records exactly/);
-      hit("movement same figure", movementSentences(p.ctx, p.label).join(" "), /which all record the same/);
+      hit("sensitivity tie", sensitivitySentence(p.ctx, p.label), /(?:Another tracked state records|\d+ other tracked states record) exactly/);
+      hit("movement same figure", movementSentences(p.ctx, p.label).join(" "), /(?:records|all record) the same/);
       hit("movement nothing above", movementSentences(p.ctx, p.label).join(" "), /There is nothing above/);
       hit("category largest", categoryMixSentence(p.ctx, p.label), /carries the largest median/);
       hit("category smallest", categoryMixSentence(p.ctx, p.label), /records the smallest median/);
+      hit("category highest tied", categoryMixSentence(p.ctx, p.label), /has the highest median of the \d+ matter types tracked in .+, shared with /);
+      hit("category lowest tied", categoryMixSentence(p.ctx, p.label), /has the lowest median of the \d+ matter types tracked in .+, shared with /);
       hit("category between", categoryMixSentence(p.ctx, p.label), /between /);
       hit("consistency with denominators", consistencySentence(p.ctx, p.label), /\d(?:st|nd|rd|th) of \d+ for /);
-      hit("tier under/over", tierNeighborSentences(p.ctx, p.label).join(" "), /\b(?:under|level with) .+ and (?:over|level with)/);
+      hit("tier under/over", tierNeighborSentences(p.ctx).join(" "), /\b(?:under|level with) .+ and (?:over|level with)/);
       hit("tier up", tierAnalysisSentences(p.ctx, p.label, "simple").join(" "), /up on its moderate position/);
       hit("tier down", tierAnalysisSentences(p.ctx, p.label, "complex").join(" "), /below its moderate position/);
       hit("thirds tally", stateShapeSentences(p.ctx, p.label).join(" "), /in the upper third, \d+ in the lower/);
@@ -319,7 +321,7 @@ describe("K4-a: tie handling in the rank statements (every state x matter page)"
       "lower count", "higher count (quartile 3)", "higher count (quartile 4)", "within a percent", "trails", "neighbor tie",
       "neighbor bracket", "neighbor top edge", "neighbor bottom edge", "neighbor between", "neighbor no higher", "neighbor no lower",
       "faq more", "faq less", "sensitivity tie", "movement same figure", "movement nothing above", "category largest",
-      "category smallest", "category between", "consistency with denominators", "tier under/over", "tier up", "tier down",
+      "category smallest", "category highest tied", "category lowest tied", "category between", "consistency with denominators", "tier under/over", "tier up", "tier down",
       "thirds tally", "hourly position", "hours rank", "rate group", "cluster", "tier cluster", "trajectory", "dataset quartile",
     ])].filter((name) => !seen.get(name));
     expect(missing).toEqual([]);
@@ -454,8 +456,14 @@ describe("K4-a: every other rank, tier and matter-type claim equals the computed
       const medianOf = (name: string) => cats.find((x) => x.c.displayName === name)?.median;
       const text = categoryMixSentence(p.ctx, p.label);
       if (text === null) return cats.length < 2 ? out : [...out, "no matter-type sentence"];
-      if (/carries the largest median of the (\d+)/.test(text) !== (higher === 0 && !!p.ctx.categoryBelow)) out.push("largest-median claim wrong");
-      if (/records the smallest median/.test(text) !== (higher !== 0 && lower === 0 && !!p.ctx.categoryAbove)) out.push("smallest-median claim wrong");
+      const tiedOthers = cats.filter((x) => x.median === own).length - 1;
+      const topClaim = /carries the largest median of the \d+|has the highest median of the \d+ matter types/.test(text);
+      const bottomClaim = /records the smallest median|has the lowest median of the \d+ matter types/.test(text);
+      if (topClaim !== (higher === 0 && !!p.ctx.categoryBelow)) out.push("largest-median claim wrong");
+      if (bottomClaim !== (higher !== 0 && lower === 0 && !!p.ctx.categoryAbove)) out.push("smallest-median claim wrong");
+      if (/has the (?:highest|lowest) median/.test(text) !== (tiedOthers > 0 && (topClaim || bottomClaim))) out.push("shared-extreme wording does not follow the ties");
+      const sharedWith = text.match(/shared with (one|\d+) other matter types?/);
+      if (sharedWith && (sharedWith[1] === "one" ? 1 : Number(sharedWith[1])) !== tiedOthers) out.push(`shared with ${sharedWith[1]} but ${tiedOthers} matter types tie`);
       const stated = text.match(/(\d+)(?:st|nd|rd|th) of (\d+)(?: in| at)/);
       if (stated && (Number(stated[1]) !== higher + 1 || Number(stated[2]) !== cats.length)) out.push(`rank phrase ${stated[0]} but strict ${higher + 1} of ${cats.length}`);
       const rel = (word: string, name: string, want: (m: number) => boolean) => {
@@ -510,8 +518,8 @@ describe("K4-a: every other rank, tier and matter-type claim equals the computed
   it("the tier neighbor lines say under/over/level truthfully and rank over the tier table", () => {
     const v = collect((p) => {
       const out: string[] = [];
-      for (const line of tierNeighborSentences(p.ctx, p.label)) {
-        const tier: Tier = /straightforward/.test(line) ? "simple" : /once contested|complex tier/.test(line) ? "complex" : "simple";
+      for (const line of tierNeighborSentences(p.ctx)) {
+        const tier: Tier = /complex tier/.test(line) ? "complex" : "simple";
         const list = rows(p.category, tier);
         const s = standing(list, p.code)!;
         out.push(...figures(list, line));
@@ -625,7 +633,9 @@ describe("K4-a: every other rank, tier and matter-type claim equals the computed
       const equalOthers = list.filter((r) => r.value === s.value && r.code !== p.code).length;
       const text = sensitivitySentence(p.ctx, p.label);
       if (text) {
-        if (/Another tracked state records exactly/.test(text) !== (equalOthers > 0)) out.push(`equal-figure statement is ${/Another tracked state records exactly/.test(text)} with ${equalOthers} equal states`);
+        const tieClaim = text.match(/^(Another tracked state records|(\d+) other tracked states record) exactly/);
+        if (!!tieClaim !== (equalOthers > 0)) out.push(`equal-figure statement is ${!!tieClaim} with ${equalOthers} equal states`);
+        if (tieClaim && (tieClaim[2] === undefined ? 1 : Number(tieClaim[2])) !== equalOthers) out.push(`equal-figure statement counts ${tieClaim[2] ?? 1} but ${equalOthers} states are equal`);
         if (/tie-break|propped up|room to improve|well separated|lopsided|stable fact/.test(text)) out.push("keeps an interpretation of the surrounding states");
         const up = list.filter((r) => r.value > s.value && r.value <= s.value * 1.1).length;
         const down = list.filter((r) => r.value < s.value && r.value >= s.value * 0.9).length;
@@ -639,14 +649,14 @@ describe("K4-a: every other rank, tier and matter-type claim equals the computed
         }
       }
       const move = movementSentences(p.ctx, p.label).join(" ");
-      const climbing = move.match(/Climbing \w+ places? would mean passing (.+?)(?: and adding (\$[\d,]+) to the|, which (?:all record|records) the same)/);
+      const climbing = move.match(/Passing the (?:nearest state|\d+ nearest states) above \((.+?)\) takes an increase of more than (\$[\d,]+) on the/);
       if (climbing) {
         const values = [...climbing[1]!.matchAll(new RegExp(NAME_RE, "g"))].map((n) => valueOf(list, n[1]!)!);
         if (values.some((x) => x < s.value)) out.push("a state named as passed from below records less");
         if (climbing[2] !== undefined && money(climbing[2]) !== Math.max(...values) - s.value) out.push("climb distance is wrong");
         if (climbing[2] === undefined && values.some((x) => x !== s.value)) out.push("'all record the same' is false above");
       }
-      const falling = move.match(/[A-Z][a-z]+ places? down means passing (?:under )?(.+?)(?:: (?:a fall of more than )?(\$[\d,]+)|, which (?:all record|records) the same)/);
+      const falling = move.match(/(?:Passing under )?[Tt]he (?:nearest state|\d+ nearest states) below \((.+?)\)(?: takes a fall of more than (\$[\d,]+)\.| (?:all record|records) the same)/);
       if (falling) {
         const values = [...falling[1]!.matchAll(new RegExp(NAME_RE, "g"))].map((n) => valueOf(list, n[1]!)!);
         if (values.some((x) => x > s.value)) out.push("a state named as passed under records more");

@@ -107,7 +107,7 @@ describe("buildAnswerBlock — full indexable-page matrix", () => {
 
       // Query-phrased H2.
       expect(block.heading.toLowerCase()).toBe(
-        `how much does ${aOrAn(entry.category.displayName)} ${entry.category.displayName.toLowerCase()} cost in ${entry.state.name.toLowerCase()}?`,
+        `how much does ${aOrAn(entry.category.proseLabel)} ${entry.category.proseLabel.toLowerCase()} cost in ${entry.state.name.toLowerCase()}?`,
       );
 
       // 40-60 word answer paragraph.
@@ -129,8 +129,8 @@ describe("buildAnswerBlock — full indexable-page matrix", () => {
         expect(row).toHaveProperty("costHigh");
       }
 
-      // 5-10 item cost-factor list.
-      expect(block.factors.length).toBeGreaterThanOrEqual(5);
+      // Cost-factor list: complexity, the rate or contingency line, then the row's own common fees (r4-truth-R4-C02 removed the generic lines).
+      expect(block.factors.length).toBeGreaterThanOrEqual(2);
       expect(block.factors.length).toBeLessThanOrEqual(10);
 
       // >=2 computed stats, plus one list of the rows' sources that traces

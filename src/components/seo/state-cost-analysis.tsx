@@ -30,7 +30,7 @@ import {
   trajectorySentence,
 } from "@/lib/seo/state-context";
 import { MethodNote } from "@/components/seo/method-note";
-import { formatCurrency } from "@/lib/utils/format";
+import { formatCurrency, labelSources } from "@/lib/utils/format";
 import { costFamilyKey, dateLabel, getFamilyDate } from "@/lib/content-dates";
 import type { LegalCostData } from "@/lib/types/cost";
 
@@ -127,6 +127,7 @@ export function StateCostAnalysis({
   const usd = (value: number) => formatCurrency(Math.round(value));
 
   const sources = Array.from(new Set(moderate.sources ?? []));
+  const rateGroup = rateGroupSentences(ctx, matterLabel).filter(Boolean);
 
   const dateRecord = getFamilyDate(costFamilyKey(categorySlug));
 
@@ -273,10 +274,14 @@ export function StateCostAnalysis({
         </div>
 
         {/* 3b. The rate ranking is a different table from the cost ranking. */}
-        <h3 className="mt-8 text-lg font-semibold text-slate-900">
-          The rate table
-        </h3>
-        <Paragraphs sentences={rateGroupSentences(ctx, matterLabel)} />
+        {rateGroup.length > 0 && (
+          <>
+            <h3 className="mt-8 text-lg font-semibold text-slate-900">
+              The rate table
+            </h3>
+            <Paragraphs sentences={rateGroup} />
+          </>
+        )}
 
         {ctx.rateWindow.length > 1 && (
           <div className="mt-4 overflow-x-auto">
@@ -324,7 +329,7 @@ export function StateCostAnalysis({
         <Paragraphs
           sentences={[
             trajectorySentence(ctx),
-            ...tierNeighborSentences(ctx, matterLabel),
+            ...tierNeighborSentences(ctx),
             overlapSentence(ctx),
           ]}
         />
@@ -543,21 +548,15 @@ export function StateCostAnalysis({
         </h3>
         {sources.length > 0 ? (
           <ul className="mt-3 space-y-1.5 text-sm">
-            {sources.map((src) => (
-              <li key={src}>
+            {labelSources(sources).map(({ url, label }) => (
+              <li key={url}>
                 <a
-                  href={src}
+                  href={url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-teal-700 underline hover:text-teal-800"
                 >
-                  {(() => {
-                    try {
-                      return new URL(src).hostname.replace(/^www\./, "");
-                    } catch {
-                      return src;
-                    }
-                  })()}
+                  {label}
                 </a>
               </li>
             ))}

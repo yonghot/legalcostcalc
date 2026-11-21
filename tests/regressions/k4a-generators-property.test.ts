@@ -46,7 +46,8 @@ function checkHours(p: Page, text: string | null): string[] {
   if (added && Number(added[1]) !== Math.round((100 * own.rate) / own.median)) v.push(`one hour is ${Math.round((100 * own.rate) / own.median)}% of the median, not ${added[1]}%`);
 
   const peerSaid = text.match(/peer median is (\d+) hours/);
-  const more = text.match(/(\d+) more hours? of work sits? behind/);
+  const more = text.match(/implies (\d+) more hours? than that/);
+  if (/of work sits? behind|behind the .+ figure than behind/.test(text)) v.push("keeps the 'work behind the figure' reading the rate-derived hours cannot show");
   const fewer = text.match(/in (\d+) fewer implied hours?/);
   const same = text.match(/rounds to the same (\d+) hours as the peer median/);
   const stated = [more, fewer, same].filter(Boolean).length;

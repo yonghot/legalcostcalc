@@ -50,7 +50,7 @@ export function CostDetailsSection({
     levers.push(
       `${contingency ? "Case expenses by tier" : "Complexity tier"}: ${formatCurrency(
         simple.costRange.median,
-      )} simple to ${formatCurrency(complex.costRange.median)} contested, a ${(
+      )} at the simple tier to ${formatCurrency(complex.costRange.median)} at the complex tier, a ${(
         complex.costRange.median / simple.costRange.median
       ).toFixed(1)}x span.`,
     );
@@ -74,7 +74,7 @@ export function CostDetailsSection({
   const hoursComplex = impliedHours(complex);
   if (hoursSimple && hoursModerate && hoursComplex) {
     levers.push(
-      `Billed hours: about ${hoursSimple} implied at the simple tier, ${hoursModerate} at moderate and ${hoursComplex} once contested.`,
+      `Billed hours: about ${hoursSimple} implied at the simple tier, ${hoursModerate} at moderate and ${hoursComplex} at the complex tier.`,
     );
   }
 
@@ -126,7 +126,7 @@ export function CostDetailsSection({
                   {typicalDuration}
                 </p>
                 <p className="mt-0.5 text-sm text-slate-500">
-                  For moderate complexity cases
+                  For moderate complexity cases (a national assumption, the same in every state)
                 </p>
               </div>
             )}

@@ -4,10 +4,11 @@ export const CATEGORIES: CategoryInfo[] = [
   {
     slug: "divorce",
     displayName: "Divorce",
+    proseLabel: "divorce",
     description: "Legal costs for contested and uncontested divorce proceedings",
     seoTitleTemplate: "Divorce Cost in {state} {year} — LegalCostCalc",
     seoDescriptionTemplate:
-      "How much does a divorce cost in {state}? Get estimated costs for contested and uncontested divorce, including attorney fees, filing fees, and court costs.",
+      "How much does a divorce cost in {state}? The median estimate, the low-to-high range and hourly rates, from simple to complex, with sources and dates.",
     sortOrder: 1,
     faqTemplates: [
       {
@@ -29,10 +30,11 @@ export const CATEGORIES: CategoryInfo[] = [
   {
     slug: "dui",
     displayName: "DUI / DWI",
+    proseLabel: "DUI / DWI case",
     description: "Legal costs for DUI and DWI defense",
     seoTitleTemplate: "DUI Cost in {state} {year} — LegalCostCalc",
     seoDescriptionTemplate:
-      "How much does a DUI cost in {state}? Estimated legal fees, fines, court costs, and total expenses for DUI/DWI defense.",
+      "How much does a DUI cost in {state}? The median estimate, the low-to-high range and hourly rates for DUI/DWI cases, with sources and dates.",
     sortOrder: 2,
     faqTemplates: [
       {
@@ -48,16 +50,17 @@ export const CATEGORIES: CategoryInfo[] = [
     ],
     costFormationNotes: [
       "DUI/DWI legal cost has two parts: the attorney fee, and the non-attorney costs that can follow a conviction or plea. The attorney fee can differ depending on whether the case goes to trial or resolves through a plea agreement, and on factors such as BAC level, prior offenses, or an accident with injuries.",
-      "Beyond the attorney, a DUI case can add court fines, an alcohol education or treatment program, license reinstatement fees, and an ignition interlock device with ongoing monthly costs. Insurance premium increases are not a one-time legal cost; the figures on this page reflect legal defense costs specifically, not the lifetime cost of a conviction.",
+      "Beyond the attorney, a DUI case can add court fines, an alcohol education or treatment program, license reinstatement fees, and an ignition interlock device with ongoing monthly costs.",
     ],
   },
   {
     slug: "personal-injury",
     displayName: "Personal Injury",
+    proseLabel: "personal injury case",
     description: "Legal costs for personal injury claims and lawsuits",
     seoTitleTemplate: "Personal Injury Lawyer Cost in {state} {year} — LegalCostCalc",
     seoDescriptionTemplate:
-      "How much does a personal injury lawyer cost in {state}? Contingency fees, retainer costs, and total expense estimates.",
+      "How much does a personal injury lawyer cost in {state}? The contingency percentage and estimated case expenses, with sources and dates.",
     sortOrder: 3,
     faqTemplates: [
       {
@@ -79,10 +82,11 @@ export const CATEGORIES: CategoryInfo[] = [
   {
     slug: "bankruptcy",
     displayName: "Bankruptcy",
+    proseLabel: "bankruptcy",
     description: "Legal costs for Chapter 7 and Chapter 13 bankruptcy filings",
     seoTitleTemplate: "Bankruptcy Cost in {state} {year} — LegalCostCalc",
     seoDescriptionTemplate:
-      "How much does bankruptcy cost in {state}? Attorney fees, filing fees, and total costs for Chapter 7 and Chapter 13.",
+      "How much does bankruptcy cost in {state}? The median estimate, the low-to-high range and hourly rates, from simple to complex, with sources and dates.",
     sortOrder: 4,
     faqTemplates: [
       {
@@ -93,7 +97,7 @@ export const CATEGORIES: CategoryInfo[] = [
       {
         questionTemplate: "Which courses are required with a bankruptcy filing in {state}, and are they part of the attorney fee?",
         answerTemplate:
-          "Federal law requires an approved credit counseling course within 180 days before filing and a debtor education course after filing, in every state including {state}. The course fees are paid in addition to the attorney fee and the federal court filing fee. This is general information, not legal advice.",
+          "Federal law requires an approved credit counseling course within 180 days before filing and a debtor education course after filing. The course fees are paid in addition to the attorney fee and the federal court filing fee. This is general information, not legal advice.",
       },
     ],
     costFormationNotes: [
@@ -104,10 +108,11 @@ export const CATEGORIES: CategoryInfo[] = [
   {
     slug: "real-estate",
     displayName: "Real Estate Closing",
+    proseLabel: "real estate closing",
     description: "Legal costs for real estate transactions and closings",
     seoTitleTemplate: "Real Estate Closing Cost in {state} {year} — LegalCostCalc",
     seoDescriptionTemplate:
-      "How much does a real estate attorney cost in {state}? Closing costs, title search fees, and legal expenses.",
+      "How much does a real estate closing cost in {state}? The median estimate, the low-to-high range and hourly rates, with sources and dates.",
     sortOrder: 5,
     faqTemplates: [
       {
@@ -129,10 +134,11 @@ export const CATEGORIES: CategoryInfo[] = [
   {
     slug: "estate-planning",
     displayName: "Estate Planning / Probate",
+    proseLabel: "estate planning or probate matter",
     description: "Legal costs for wills, trusts, and probate proceedings",
     seoTitleTemplate: "Estate Planning Cost in {state} {year} — LegalCostCalc",
     seoDescriptionTemplate:
-      "How much does estate planning cost in {state}? Costs for wills, trusts, probate, and estate administration.",
+      "How much does estate planning cost in {state}? The median estimate, the low-to-high range and hourly rates, with sources and dates.",
     sortOrder: 6,
     faqTemplates: [
       {
@@ -154,10 +160,11 @@ export const CATEGORIES: CategoryInfo[] = [
   {
     slug: "criminal-defense",
     displayName: "Criminal Defense",
+    proseLabel: "criminal defense case",
     description: "Legal costs for misdemeanor and felony criminal defense",
     seoTitleTemplate: "Criminal Defense Lawyer Cost in {state} {year} — LegalCostCalc",
     seoDescriptionTemplate:
-      "How much does a criminal defense lawyer cost in {state}? Attorney fees for misdemeanor and felony charges.",
+      "How much does a criminal defense lawyer cost in {state}? The median estimate, the low-to-high range and hourly rates, with sources and dates.",
     sortOrder: 7,
     faqTemplates: [
       {
@@ -179,10 +186,11 @@ export const CATEGORIES: CategoryInfo[] = [
   {
     slug: "immigration",
     displayName: "Immigration",
+    proseLabel: "immigration matter",
     description: "Legal costs for immigration applications and proceedings",
     seoTitleTemplate: "Immigration Lawyer Cost in {state} {year} — LegalCostCalc",
     seoDescriptionTemplate:
-      "How much does an immigration lawyer cost in {state}? Visa, green card, citizenship, and deportation defense costs.",
+      "How much does an immigration lawyer cost in {state}? The median estimate, the low-to-high range and hourly rates, with sources and dates.",
     sortOrder: 8,
     faqTemplates: [
       {

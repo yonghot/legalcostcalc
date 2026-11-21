@@ -8,6 +8,7 @@ import { STATES, STATE_BY_SLUG } from "@/lib/constants/states";
 import { INDEXABLE_PAGES, getModerateMedianCost } from "@/lib/page-index";
 import { buildMeta } from "@/lib/seo";
 import { FOCUS_RING } from "@/lib/utils/styles";
+import { lowerKeepAcronyms } from "@/lib/utils/format";
 import Link from "next/link";
 import { GuideAndCompareLine } from "@/components/seo/guide-and-compare-line";
 
@@ -33,7 +34,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!stateInfo) return { title: "Not Found", robots: { index: false, follow: false } };
 
   const listed = hubPagesFor(stateInfo.code);
-  const named = listed.slice(0, 3).map((p) => p.category.displayName.toLowerCase());
+  const named = listed.slice(0, 3).map((p) => lowerKeepAcronyms(p.category.displayName));
   return buildMeta({
     title: `Legal Costs in ${stateInfo.name}`,
     description: `Compare legal costs across ${matterTypes(listed.length)} in ${stateInfo.name}${named.length > 0 ? `, including ${named.join(", ")}` : ""}. Free cost estimates, sourced and dated.`,
@@ -82,8 +83,7 @@ export default async function StateHubPage({ params }: PageProps) {
             Legal Costs in {stateInfo.name}
           </h1>
           <p className="mt-3 text-lg text-slate-600">
-            Compare estimated legal costs for {matterTypes(rows.length)} in {stateInfo.name},
-            including attorney fees, court costs, and typical case duration.
+            Compare estimated legal costs for {matterTypes(rows.length)} in {stateInfo.name}: the median estimate for each.
           </p>
         </div>
       </section>

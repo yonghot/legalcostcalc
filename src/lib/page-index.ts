@@ -40,6 +40,7 @@ import costsSeed from "@/data/seed/costs.json";
 import { STATES } from "@/lib/constants/states";
 import { CATEGORIES } from "@/lib/constants/categories";
 import { StateInfo } from "@/lib/types/state";
+import { median } from "@/lib/utils/median";
 import { CategoryInfo } from "@/lib/types/category";
 
 interface SeedRow {
@@ -245,6 +246,13 @@ export function getNationalAverage(categorySlug: string): number | null {
   const medians = INDEXABLE_MEDIANS_BY_CATEGORY.get(categorySlug);
   if (!medians || medians.length === 0) return null;
   return medians.reduce((sum, value) => sum + value, 0) / medians.length;
+}
+
+/** Median of the same state medians; the table midpoint the per-state analysis ranks against. */
+export function getNationalMidpoint(categorySlug: string): number | null {
+  const medians = INDEXABLE_MEDIANS_BY_CATEGORY.get(categorySlug);
+  if (!medians || medians.length === 0) return null;
+  return median(medians);
 }
 
 export function getNationalAverageStateCount(categorySlug: string): number {

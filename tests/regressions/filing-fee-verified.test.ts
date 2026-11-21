@@ -87,7 +87,8 @@ describe("K4: rendered divorce pages", () => {
     expect(html).toContain("Court filing fee ($435-$450)");
     expect(html).toContain("selfhelp.courts.ca.gov");
     expect(html).toMatch(/[Cc]hecked October 7, 2026/);
-    expect(html).toMatch(/Court filing fee runs \$435–\$450, or \d+%–\d+% of the California median/);
+    expect(html).toMatch(/Court filing fee runs \$435–\$450, or \d+%(?:–\d+%)? of the California median/);
+    expect(html).not.toMatch(/(\d+)%–\1%/);
     expect(html).not.toMatch(/itemised lines come to/);
   });
 

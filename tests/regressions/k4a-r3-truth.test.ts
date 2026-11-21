@@ -125,14 +125,13 @@ describe("r3-truth-R3-TXT-02: the rate-versus-total sentence states no cause the
 
 describe("r3-truth-R3-TXT-03 / R3C-01: the tier trajectory sentence prices each tier against its own midpoint", () => {
   const midpointOf = (p: Page, tier: Tier) => middle(seedTable(p.category, tier).map((r) => r.median));
-  const CLIMB_BIG = /it climbs \d+ places as the matter gets harder/;
-  const FALL_BIG = /a fall of \d+ places as the matter becomes harder/;
+  const BIG = /, a net difference of \d+ places? between the simple and complex tiers\. Against the tier midpoints/;
 
   it("no page calls a tier ordinary or expensive: the claim is printed as dollar gaps to the midpoints", () => {
     let seen = 0;
     const v = collect((p) => {
       const text = trajectorySentence(p.ctx) ?? "";
-      if (CLIMB_BIG.test(text) || FALL_BIG.test(text)) seen++;
+      if (BIG.test(text)) seen++;
       return /ordinary|expensive|contested work is not|already sits at or below|rank is not stable|very differently/.test(text) ? [text] : [];
     });
     expect(seen).toBeGreaterThan(30);
@@ -145,7 +144,7 @@ describe("r3-truth-R3-TXT-03 / R3C-01: the tier trajectory sentence prices each 
     let seen = 0;
     const v = collect((p) => {
       const text = trajectorySentence(p.ctx) ?? "";
-      if (!CLIMB_BIG.test(text) && !FALL_BIG.test(text)) return [];
+      if (!BIG.test(text)) return [];
       seen++;
       const out: string[] = [];
       for (const tier of ["simple", "complex"] as const) {
@@ -165,6 +164,32 @@ describe("r3-truth-R3-TXT-03 / R3C-01: the tier trajectory sentence prices each 
       return out;
     });
     expect(seen).toBeGreaterThan(40);
+    expect(v).toEqual([]);
+  });
+
+  it("no page says which way the rank moves or why: no climb, slide, fall, 'as complexity rises' or 'as the matter gets harder'", () => {
+    const v = collect((p) => {
+      const text = trajectorySentence(p.ctx) ?? "";
+      return /climb|slide|slides|fall of|moves up|downward|as complexity rises|gets harder|becomes harder/.test(text) ? [text] : [];
+    });
+    expect(v).toEqual([]);
+  });
+
+  it("a page whose net difference is 4 to 9 places states the three ranks and the net difference between the simple and complex ranks", () => {
+    let seen = 0;
+    const v = collect((p) => {
+      const text = trajectorySentence(p.ctx) ?? "";
+      const m = text.match(/^Rank by tier: (\d+)(?:st|nd|rd|th) at the simple tier, (\d+)(?:st|nd|rd|th) at moderate, (\d+)(?:st|nd|rd|th) at complex of \d+, a net difference of (\d+) places between the simple and complex tiers\.$/);
+      if (!m) return [];
+      seen++;
+      const net = Math.abs(Number(m[1]) - Number(m[3]));
+      const ranks = (["simple", "moderate", "complex"] as const).map((tier) => {
+        const table = seedTable(p.category, tier);
+        return strictRank(table, table.find((r) => r.code === p.code)!.median);
+      });
+      return Number(m[4]) === net && net >= 4 && net < 10 && ranks[0] === Number(m[1]) && ranks[2] === Number(m[3]) ? [] : [`says ${m[4]} for ranks ${ranks.join("/")}`];
+    });
+    expect(seen).toBeGreaterThan(20);
     expect(v).toEqual([]);
   });
 
@@ -318,56 +343,57 @@ describe("r3-truth-R3-TXT-07: one section never gives two counts of the same set
 });
 
 describe("r3-truth-R3-W1: movement counts follow the strict rank the page prints", () => {
-  const NUMBER_WORDS: Record<string, number> = { one: 1, two: 2, three: 3, four: 4, five: 5 };
   const nameRe = () => new RegExp(NAME_RE, "g");
   const table = (p: Page) => seedTable(p.category, "moderate");
   const rankWith = (p: Page, value: number) => 1 + table(p).filter((r) => r.code !== p.code && r.median > value).length;
   const medianOf = (p: Page, name: string) => table(p).find((r) => r.code === nameToCode.get(name))!.median;
 
-  it("'Climbing N places' names N states that all record more than this state, and adding the stated sum climbs at least N", () => {
+  it("the climb sentence prints no place count: it names the nearest states that all record more than this state, and the sum that passes the furthest", () => {
     let seen = 0;
     const v = collect((p) => {
       const text = movementSentences(p.ctx, p.label).join(" ");
-      const m = text.match(/Climbing (\w+) places? would mean passing (.+?)(?: and adding (\$[\d,]+) to the|, which (?:all record|records) the same)/);
+      if (/\bplaces?\b|Climbing/.test(text)) return [`prints a place count: ${text}`];
+      const m = text.match(/Passing the (nearest state|\d+ nearest states) above \((.+?)\) takes an increase of more than (\$[\d,]+) on the/);
       if (!m) return [];
       seen++;
       const own = tierRow(p, "moderate")!.median;
       const names = [...m[2]!.matchAll(nameRe())].map((x) => x[1]!);
       const out: string[] = [];
-      const n = NUMBER_WORDS[m[1]!]!;
-      if (names.length !== n) out.push(`names ${names.length} for ${n}`);
+      const higherCount = table(p).filter((r) => r.code !== p.code && r.median > own).length;
+      const n = m[1] === "nearest state" ? 1 : Number(m[1]!.match(/\d+/)![0]);
+      if (names.length !== n || n !== Math.min(5, higherCount)) out.push(`names ${names.length}, says ${n}, ${higherCount} states record more`);
       const tied = names.filter((name) => medianOf(p, name) <= own);
-      if (tied.length) out.push(`${tied.join(", ")} record no more than ${usd(own)}, so passing them climbs nothing`);
-      if (m[3] === undefined) out.push(`tie wording on a climb: ${m[0]}`);
-      else {
-        const target = own + money(m[3]);
-        const climbed = rankWith(p, own) - rankWith(p, target);
-        if (climbed < n) out.push(`adding ${m[3]} climbs ${climbed}, sentence says ${n}`);
-      }
+      if (tied.length) out.push(`${tied.join(", ")} record no more than ${usd(own)}`);
+      const furthest = Math.max(...names.map((name) => medianOf(p, name)));
+      if (money(m[3]!) !== furthest - own) out.push(`says ${m[3]} but the furthest named state is ${usd(furthest - own)} above`);
+      const namedCodes = new Set(names.map((name) => nameToCode.get(name)));
+      const skipped = table(p).filter((r) => r.code !== p.code && r.median > own && r.median < furthest && !namedCodes.has(r.code));
+      if (skipped.length) out.push(`${skipped.length} states between ${usd(own)} and ${usd(furthest)} are not named`);
       return out;
     });
     expect(seen).toBeGreaterThan(300);
     expect(v).toEqual([]);
   });
 
-  it("'N places down' names N states that record no more than this state, and a fall beyond the stated sum drops at least N", () => {
+  it("the fall sentence prints no place count: it names the nearest states that record no more than this state, and the sum that passes under the furthest", () => {
     let seen = 0;
     const v = collect((p) => {
       const text = movementSentences(p.ctx, p.label).join(" ");
-      const m = text.match(/(\w+) places? down means passing under (.+?)(?:: (a fall of more than )?(\$[\d,]+)|, which (?:all record|records) the same)/i);
+      const m = text.match(/(?:Passing under )?[Tt]he (nearest state|\d+ nearest states) below \((.+?)\)(?: takes a fall of more than (\$[\d,]+)\.| (?:all record|records) the same)/);
       if (!m) return [];
       seen++;
       const own = tierRow(p, "moderate")!.median;
       const names = [...m[2]!.matchAll(nameRe())].map((x) => x[1]!);
       const out: string[] = [];
-      const n = NUMBER_WORDS[m[1]!.toLowerCase()]!;
-      if (names.length !== n) out.push(`names ${names.length} for ${n}`);
+      const atOrBelow = table(p).filter((r) => r.code !== p.code && r.median <= own).length;
+      const n = m[1] === "nearest state" ? 1 : Number(m[1]!.match(/\d+/)![0]);
+      if (names.length !== n || n !== Math.min(5, atOrBelow)) out.push(`names ${names.length}, says ${n}, ${atOrBelow} states record no more`);
       const higher = names.filter((name) => medianOf(p, name) > own);
       if (higher.length) out.push(`${higher.join(", ")} record more than ${usd(own)}`);
-      const drop = m[4] === undefined ? 1 : money(m[4]) + (m[3] ? 1 : 0);
-      if (m[4] === undefined && names.some((name) => medianOf(p, name) !== own)) out.push(`'same figure' wording but ${m[2]} differ`);
-      const fell = rankWith(p, own - drop) - rankWith(p, own);
-      if (fell < n) out.push(`falling ${usd(drop)} drops ${fell}, sentence says ${n}`);
+      const lowest = Math.min(...names.map((name) => medianOf(p, name)));
+      if (m[3] === undefined && names.some((name) => medianOf(p, name) !== own)) out.push(`'same figure' wording but ${m[2]} differ`);
+      if (m[3] !== undefined && money(m[3]) !== own - lowest) out.push(`says ${m[3]} but the lowest named state is ${usd(own - lowest)} below`);
+      if (m[3] !== undefined && lowest === own) out.push("a fall of more than $0 stated for states level with this one");
       return out;
     });
     expect(seen).toBeGreaterThan(300);

@@ -15,7 +15,7 @@
  * /[state]/[slug] page and the /embed/[state]/[slug] page (CODE-01
  * acceptance criterion: "Wire the same block into app/embed pages").
  */
-import { aOrAn, formatCurrency } from "@/lib/utils/format";
+import { aOrAn, formatCurrency, labelSources, lowerKeepAcronyms } from "@/lib/utils/format";
 import type { CategoryInfo } from "@/lib/types/category";
 import type { StateInfo } from "@/lib/types/state";
 import type { CostRange, LegalCostData } from "@/lib/types";
@@ -72,15 +72,6 @@ export interface AnswerBlock {
   costBasisNote: string | null;
 }
 
-function sourceHostLabel(url: string): string {
-  try {
-    const host = new URL(url).hostname.replace(/^www\./, "");
-    return host;
-  } catch {
-    return "cited source";
-  }
-}
-
 function isContingencyMatter(
   moderate: LegalCostData | undefined,
 ): moderate is LegalCostData & { contingencyFee: CostRange } {
@@ -102,10 +93,10 @@ function buildAnswerParagraph(
   moderate: LegalCostData | undefined,
   dateRecord: FamilyDate | null,
 ): string {
-  const catLower = category.displayName.toLowerCase();
+  const catLower = lowerKeepAcronyms(category.displayName);
   const asOf = dateRecord?.basis === "sources-rechecked" ? `As of ${formatDate(dateRecord.date, "day")}, ` : "";
   const sentence = (lead: string) => (asOf ? `${asOf}${lead}` : lead.charAt(0).toUpperCase() + lead.slice(1));
-  const article = /^[aeiou]/.test(catLower) ? "an" : "a";
+  const article = aOrAn(category.proseLabel);
 
   if (!moderate) {
     return (
@@ -142,16 +133,16 @@ function buildAnswerParagraph(
         : "";
 
   const duration = moderate.typicalDuration
-    ? ` A moderate-complexity case typically takes ${moderate.typicalDuration} to resolve.`
+    ? ` The duration assumed for a moderate-complexity case is ${moderate.typicalDuration} (a national assumption, the same in every state).`
     : "";
 
   const feesClause =
     moderate.commonFees.length > 0
-      ? ` Common related costs include ${moderate.commonFees.slice(0, 2).join(" and ").toLowerCase()}.`
+      ? ` Common related costs include ${moderate.commonFees.slice(0, 2).join(" and ").split(" ").map((word) => lowerKeepAcronyms(word)).join(" ")}.`
       : "";
 
   const opening = sentence(
-    `${article} ${catLower} in ${state.name} has a median cost of ${formatCurrency(moderate.costRange.median)}, ` +
+    `${article} ${category.proseLabel} in ${state.name} has a median cost of ${formatCurrency(moderate.costRange.median)}, ` +
       `typically ${formatCurrency(moderate.costRange.low)}-${formatCurrency(moderate.costRange.high)} ` +
       `for a moderate-complexity case, a modeled estimate from published fee guides.`,
   );
@@ -187,15 +178,15 @@ function fitAnswerWordRange(paragraph: string): string {
   return text;
 }
 
-function buildFactors(category: CategoryInfo, costs: LegalCostData[]): string[] {
+function buildFactors(costs: LegalCostData[]): string[] {
   const moderate = costs.find((c) => c.complexity === "moderate");
   const factors: string[] = [];
 
   factors.push("Case complexity (simple, moderate, or complex)");
   factors.push(
     isContingencyMatter(moderate)
-      ? "Contingency fee percentage, which can rise if the case goes to trial"
-      : "Attorney hourly rate, which varies by state and experience level",
+      ? "Contingency fee percentage"
+      : "Attorney hourly rate",
   );
 
   if (moderate?.commonFees?.length) {
@@ -207,9 +198,6 @@ function buildFactors(category: CategoryInfo, costs: LegalCostData[]): string[] 
   if (moderate?.contingencyFee) {
     factors.push("Fee arrangement (hourly vs. flat fee vs. contingency)");
   }
-
-  factors.push(`Whether the ${category.displayName.toLowerCase()} matter proceeds to trial`);
-  factors.push("Court filing fees and county-specific administrative costs");
 
   // Deduplicate while preserving order, cap at 10 per acceptance criteria.
   return Array.from(new Set(factors)).slice(0, 10);
@@ -229,9 +217,9 @@ function buildStats(
   if (moderate && moderate.sources.length > 0) {
     stats.push({
       text: contingency
-        ? `The median estimated case expense for a moderate-complexity ${category.displayName.toLowerCase()} case in ${state.name} is ` +
+        ? `The median estimated case expense for a moderate-complexity ${lowerKeepAcronyms(category.displayName)} case in ${state.name} is ` +
           `${formatCurrency(moderate.costRange.median)}.`
-        : `The median ${category.displayName.toLowerCase()} cost in ${state.name} is ` +
+        : `The median ${lowerKeepAcronyms(category.displayName)} cost in ${state.name} is ` +
           `${formatCurrency(moderate.costRange.median)} for a moderate-complexity case.`,
     });
   }
@@ -244,11 +232,9 @@ function buildStats(
     stats.push({
       text: contingency
         ? `Estimated case expenses run ${formatCurrency(simple.costRange.median)} for a simple case versus ` +
-          `${formatCurrency(complex.costRange.median)} for a complex case — a difference tied mainly ` +
-          "to the experts and depositions a contested matter requires."
+          `${formatCurrency(complex.costRange.median)} for a complex case.`
         : `A simple case runs ${formatCurrency(simple.costRange.median)} versus ` +
-          `${formatCurrency(complex.costRange.median)} for a complex case — a difference driven ` +
-          "mainly by attorney hours and whether the matter is contested.",
+          `${formatCurrency(complex.costRange.median)} for a complex case.`,
     });
   }
 
@@ -257,7 +243,8 @@ function buildStats(
 
 function buildSources(costs: LegalCostData[]): AnswerBlockSource[] {
   const urls = [...new Set(costs.flatMap((c) => c.sources))];
-  return urls.map((url) => ({ label: sourceHostLabel(url), url }));
+  const labeled = urls.map((url) => ({ url, label: labelSources([url])[0]!.label }));
+  return labeled.filter((source, i) => labeled.findIndex((other) => other.label === source.label) === i);
 }
 
 function buildTableRows(costs: LegalCostData[]): AnswerBlockRow[] {
@@ -288,11 +275,11 @@ export function buildAnswerBlock(entity: AnswerBlockEntity): AnswerBlock {
   const answer = fitAnswerWordRange(rawAnswer);
 
   return {
-    heading: `How much does ${aOrAn(category.displayName)} ${category.displayName.toLowerCase()} cost in ${state.name}?`,
+    heading: `How much does ${aOrAn(category.proseLabel)} ${category.proseLabel} cost in ${state.name}?`,
     answer,
     answerWordCount: countWords(answer),
     tableRows: buildTableRows(costs),
-    factors: buildFactors(category, costs),
+    factors: buildFactors(costs),
     stats: buildStats(category, state, costs),
     sources: buildSources(costs),
     freshnessLabel,
@@ -321,11 +308,14 @@ export function buildBenchmarkSynthesis(params: {
   localMedian: number | null | undefined;
   nationalAverage: number | null | undefined;
   stateCount?: number;
+  /** What nationalAverage holds: the mean of the state medians (default) or their midpoint. */
+  baselineKind?: "average" | "midpoint";
 }): string | null {
-  const { categoryDisplayName, stateName, localMedian, nationalAverage, stateCount } = params;
+  const { categoryDisplayName, stateName, localMedian, nationalAverage, stateCount, baselineKind = "average" } = params;
+  const baseline = baselineKind === "midpoint" ? "midpoint of state medians" : "average of state medians";
   if (!localMedian || localMedian <= 0 || !nationalAverage || nationalAverage <= 0) return null;
 
-  const catLower = categoryDisplayName.toLowerCase();
+  const catLower = lowerKeepAcronyms(categoryDisplayName);
   const diffRatio = (localMedian - nationalAverage) / nationalAverage;
   const pctAbs = Math.round(Math.abs(diffRatio) * 100);
   const nationalFormatted = formatCurrency(Math.round(nationalAverage));
@@ -337,19 +327,19 @@ export function buildBenchmarkSynthesis(params: {
   if (pctAbs < 3) {
     return (
       `At ${localFormatted}, the median ${catLower} cost in ${stateName} is in line with the ` +
-      `${nationalFormatted} average of state medians across ${population}.`
+      `${nationalFormatted} ${baseline} across ${population}.`
     );
   }
 
   if (diffRatio > 0) {
     return (
       `At ${localFormatted}, the median ${catLower} cost in ${stateName} runs ${pctAbs}% above the ` +
-      `${nationalFormatted} average of state medians across ${population}.`
+      `${nationalFormatted} ${baseline} across ${population}.`
     );
   }
 
   return (
     `At ${localFormatted}, the median ${catLower} cost in ${stateName} runs ${pctAbs}% below the ` +
-    `${nationalFormatted} average of state medians across ${population}.`
+    `${nationalFormatted} ${baseline} across ${population}.`
   );
 }

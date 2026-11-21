@@ -108,7 +108,7 @@ describe("K4: personal injury answer block leads with the contingency fee and la
       dateRecord: getFamilyDate(costFamilyKey("divorce")) ?? null,
     });
     expect(block.answer).toMatch(/Typical attorney rates run \$\d/);
-    expect(block.factors).toContain("Attorney hourly rate, which varies by state and experience level");
+    expect(block.factors).toContain("Attorney hourly rate");
     expect(block.costBasisNote).toBeNull();
   });
 });

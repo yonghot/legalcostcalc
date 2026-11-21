@@ -65,6 +65,7 @@ import {
   type SeedTierFigures,
 } from "@/lib/page-index";
 import { aOrAn, formatCurrency } from "@/lib/utils/format";
+import { median } from "@/lib/utils/median";
 
 type Complexity = "simple" | "moderate" | "complex";
 
@@ -230,13 +231,6 @@ export interface StateCostContext {
   rankEdges: { higher: PeerState | null; lower: PeerState | null; tied: number };
   /** Rows a +/-10% revision to this median could cross, upward and downward. */
   rowsWithinTenPercent: { up: number; down: number };
-}
-
-function median(values: number[]): number {
-  if (!values.length) return 0;
-  const sorted = [...values].sort((a, b) => a - b);
-  const mid = Math.floor(sorted.length / 2);
-  return sorted.length % 2 ? sorted[mid]! : Math.round((sorted[mid - 1]! + sorted[mid]!) / 2);
 }
 
 /**
@@ -879,7 +873,7 @@ export function hoursSentence(ctx: StateCostContext): string | null {
     peerMedianHours === null
       ? ""
       : hours > peerMedianHours
-        ? ` The peer median is ${peerMedianHours} hours, so ${hours - peerMedianHours} more ${hourWord(hours - peerMedianHours)} of work ${hours - peerMedianHours === 1 ? "sits" : "sit"} behind the ${stateName} figure than behind the typical state's.`
+        ? ` The peer median is ${peerMedianHours} hours; the ${stateName} figure implies ${hours - peerMedianHours} more ${hourWord(hours - peerMedianHours)} than that.`
         : hours < peerMedianHours
           ? ` The peer median is ${peerMedianHours} hours: ${stateName} reaches its total in ${
               peerMedianHours - hours
@@ -928,18 +922,18 @@ export function escalationSentence(ctx: StateCostContext, matterLabel: string): 
   )}`;
 
   if (hoursMultiple >= 5) {
-    return `Moving from a simple to a complex ${matterLabel} multiplies the ${stateName} total by ${costMultiple}x: ${arithmetic}, so the workload grows ${hoursMultiple}x while the rate grows ${rateMultiple}x.`;
+    return `Moving from a simple to a complex ${matterLabel} multiplies the ${stateName} total by ${costMultiple}x: ${arithmetic}. The implied hours grow ${hoursMultiple}x and the rate grows ${rateMultiple}x.`;
   }
   if (hoursMultiple >= 4.4) {
-    return `The ${costMultiple}x step from the simple to the complex tier breaks down as ${hoursMultiple}x the hours against ${rateMultiple}x the rate — ${arithmetic}.`;
+    return `The ${costMultiple}x step from the simple to the complex tier comes with ${hoursMultiple}x the implied hours and ${rateMultiple}x the rate — ${arithmetic}.`;
   }
   if (hoursMultiple >= 3.9) {
-    return `${stateName} records a ${costMultiple}x gap between its simple and complex ${matterLabel} medians. Decomposed, that is ${hoursMultiple}x the billed time at ${rateMultiple}x the rate: ${arithmetic}.`;
+    return `${stateName} records a ${costMultiple}x gap between its simple and complex ${matterLabel} medians. The implied hours are ${hoursMultiple}x and the rate is ${rateMultiple}x: ${arithmetic}.`;
   }
   return `A complex ${matterLabel} costs ${costMultiple}x a simple one in ${stateName}, and the implied workload rises under 3.9x — ${hoursMultiple}x, as ${arithmetic} — against a ${rateMultiple}x rise in the rate.`;
 }
 
-/** How the state's rank moves as complexity rises — the strongest differentiator. */
+/** The state's rank at each tier and the net difference between the simple and complex ranks. */
 export function trajectorySentence(ctx: StateCostContext): string | null {
   const simple = ctx.tiers.simple;
   const moderate = ctx.tiers.moderate!;
@@ -951,19 +945,12 @@ export function trajectorySentence(ctx: StateCostContext): string | null {
     complex.rank,
   )} at complex`;
 
-  if (tierRankShift >= 10) {
-    return `${stateName} runs ${path} of ${rankedOutOf} — it climbs ${tierRankShift} places as the matter gets harder. ${tierMidpointClosing(simple, complex)}`;
+  const net = `a net difference of ${countPlaces(Math.abs(tierRankShift))} between the simple and complex tiers`;
+  if (Math.abs(tierRankShift) >= 10) {
+    return `${stateName} is ${path} of ${rankedOutOf}, ${net}. ${tierMidpointClosing(simple, complex)}`;
   }
-  if (tierRankShift >= 4) {
-    return `${stateName} moves up the table as complexity rises: ${path}, a climb of ${tierRankShift} places.`;
-  }
-  if (tierRankShift <= -10) {
-    return `${stateName} is ${path} of ${rankedOutOf} — a fall of ${Math.abs(
-      tierRankShift,
-    )} places as the matter becomes harder. ${tierMidpointClosing(simple, complex)}`;
-  }
-  if (tierRankShift <= -4) {
-    return `Ranked tier by tier, ${stateName} slides ${Math.abs(tierRankShift)} places downward: ${path}.`;
+  if (Math.abs(tierRankShift) >= 4) {
+    return `Rank by tier: ${path} of ${rankedOutOf}, ${net}.`;
   }
   const spread = ctx.tierRankSpread ?? 0;
   return `Rank by tier: ${path} of ${rankedOutOf}, ${
@@ -1073,31 +1060,39 @@ export function categoryMixSentence(ctx: StateCostContext, matterLabel: string):
   if (!categoryRankInState || categoryCountInState < 2) return null;
   const ownMedian = ctx.tiers.moderate!.median;
   const level = (name: string | null) => ctx.categoryTable.find((row) => row.name === name)?.median === ownMedian;
+  const tiedCount = ctx.categoryTable.filter((row) => row.median === ownMedian).length - 1;
+  const sharedWith = tiedCount === 1 ? "one other matter type" : `${tiedCount} other matter types`;
 
   if (categoryHigherInState === 0 && categoryBelow) {
+    if (tiedCount > 0) {
+      return `At ${usd(ownMedian)}, ${aOrAn(matterLabel)} ${matterLabel} has the highest median of the ${categoryCountInState} matter types tracked in ${stateName}, shared with ${sharedWith}.`;
+    }
     return `Against the other matter types tracked in ${stateName}, ${aOrAn(matterLabel)} ${matterLabel} carries the largest median of the ${categoryCountInState} at ${usd(
       ownMedian,
-    )} — ${level(categoryBelow) ? "level with" : "ahead of"} ${categoryBelow}, the next line down.`;
+    )} — ahead of ${categoryBelow}, the next line down.`;
   }
   if (categoryLowerInState === 0 && categoryAbove) {
+    if (tiedCount > 0) {
+      return `At ${usd(ownMedian)}, ${aOrAn(matterLabel)} ${matterLabel} has the lowest median of the ${categoryCountInState} matter types tracked in ${stateName}, shared with ${sharedWith}.`;
+    }
     return `Among the ${categoryCountInState} matter types tracked in ${stateName}, ${aOrAn(matterLabel)} ${matterLabel} records the smallest median at ${usd(
       ownMedian,
-    )}, ${level(categoryAbove) ? "level with" : "below"} ${categoryAbove} on the line above.`;
+    )}, below ${categoryAbove} on the line above.`;
   }
   const shareClause =
     topCategory && topCategory.median > 0
-      ? ` At ${Math.round((ownMedian / topCategory.median) * 100)}% of ${topCategory.name} (${usd(
+      ? `, at ${Math.round((ownMedian / topCategory.median) * 100)}% of ${topCategory.name} (${usd(
           topCategory.median,
-        )}).`
+        )})`
       : "";
   if (categoryRankInState <= Math.ceil(categoryCountInState / 3)) {
     return `${usd(ownMedian)} ranks ${aOrAn(matterLabel)} ${matterLabel} ${ordinal(
       categoryRankInState,
-    )} of ${categoryCountInState} in ${stateName}, ${level(categoryAbove) ? "level with" : "under"} ${categoryAbove}, ${level(categoryBelow) ? "level with" : "over"} ${categoryBelow}.${shareClause}`;
+    )} of ${categoryCountInState} in ${stateName}, ${level(categoryAbove) ? "level with" : "under"} ${categoryAbove}, ${level(categoryBelow) ? "level with" : "over"} ${categoryBelow}${shareClause}.`;
   }
   return `In ${stateName} ${aOrAn(matterLabel)} ${matterLabel} is ${ordinal(categoryRankInState)} of ${categoryCountInState} at ${usd(
     ownMedian,
-  )}, between ${categoryAbove} and ${categoryBelow}.${shareClause}`;
+  )}, between ${categoryAbove} and ${categoryBelow}${shareClause}.`;
 }
 
 /** How consistently the state ranks across the matter types it is tracked for. */
@@ -1128,7 +1123,8 @@ export function sensitivitySentence(ctx: StateCostContext, matterLabel: string):
   const { up, down } = rowsWithinTenPercent;
 
   if (toPassAbove === 0 || toDropBelow === 0) {
-    return `Another tracked state records exactly ${usd(
+    const tied = Math.max(ctx.rankEdges.tied, 1);
+    return `${tied === 1 ? "Another tracked state records" : `${tied} other tracked states record`} exactly ${usd(
       ctx.tiers.moderate!.median,
     )} for ${aOrAn(matterLabel)} ${matterLabel}. Within ten percent of that figure the field holds ${up} above and ${down} below.`;
   }
@@ -1370,7 +1366,7 @@ export function datasetSentences(ctx: StateCostContext): string[] {
  * ones — so these sentences carry names and figures that the moderate-tier
  * paragraphs above do not.
  */
-export function tierNeighborSentences(ctx: StateCostContext, matterLabel: string): string[] {
+export function tierNeighborSentences(ctx: StateCostContext): string[] {
   const out: string[] = [];
   const simple = ctx.tiers.simple;
   const complex = ctx.tiers.complex;
@@ -1381,7 +1377,7 @@ export function tierNeighborSentences(ctx: StateCostContext, matterLabel: string
     out.push(
       `${usd(simple.median)} is ${ordinal(simple.rank)} of ${
         ctx.rankedOutOf
-      } on a straightforward ${matterLabel}, ${above.median === simple.median ? "level with" : "under"} ${above.name} (${usd(
+      } at the simple tier, ${above.median === simple.median ? "level with" : "under"} ${above.name} (${usd(
         above.median,
       )}) and ${below.median === simple.median ? "level with" : "over"} ${below.name} (${usd(below.median)}), ${tierMidpointGap(
         simple.median,
@@ -1403,7 +1399,7 @@ export function tierNeighborSentences(ctx: StateCostContext, matterLabel: string
     out.push(
       `${usd(complex.median)} is ${ordinal(complex.rank)} of ${
         ctx.rankedOutOf
-      } once contested, between ${above.name} (${usd(above.median)}) and ${below.name} (${usd(
+      } at the complex tier, between ${above.name} (${usd(above.median)}) and ${below.name} (${usd(
         below.median,
       )}), ${tierMidpointGap(complex.median, complex.peerMedian, "off")}.`,
     );
@@ -1672,7 +1668,7 @@ export function tierAnalysisSentences(
   const moderate = ctx.tiers.moderate!;
   if (!tier || !tier.rank) return [];
   const out: string[] = [];
-  const label = tierKey === "simple" ? "straightforward" : "contested";
+  const where = `at the ${tierKey} tier`;
 
   const gap = tier.median - tier.peerMedian;
   const pct = tier.peerMedian > 0 ? Math.round(Math.abs(gap / tier.peerMedian) * 100) : 0;
@@ -1684,21 +1680,21 @@ export function tierAnalysisSentences(
 
   if (drift === 0) {
     out.push(
-      `${usd(tier.median)} keeps ${ctx.stateName} at ${ordinal(
+      `${usd(tier.median)} keeps ${ctx.stateName} ${ordinal(
         tier.rank,
-      )} on ${label} matters, the same place it holds on the headline figure, ${midpointClause}.`,
+      )} ${where}, the same place it holds on the headline figure, ${midpointClause}.`,
     );
   } else if (drift < 0) {
     out.push(
       `${usd(tier.median)} puts ${ctx.stateName} ${ordinal(tier.rank)} of ${
         ctx.rankedOutOf
-      } on ${label} matters, ${Math.abs(drift)} up on its moderate position, and ${midpointClause}.`,
+      } ${where}, ${Math.abs(drift)} up on its moderate position, and ${midpointClause}.`,
     );
   } else {
     out.push(
       `${usd(tier.median)} drops ${ctx.stateName} to ${ordinal(tier.rank)} of ${
         ctx.rankedOutOf
-      } on ${label} matters, ${drift} below its moderate position and ${midpointClause}.`,
+      } ${where}, ${drift} below its moderate position and ${midpointClause}.`,
     );
   }
 
@@ -1787,15 +1783,16 @@ export function movementSentences(ctx: StateCostContext, matterLabel: string): s
   const moderate = ctx.tiers.moderate!;
   const out: string[] = [];
   const { up, down } = ctx.fivePlaces;
-  const places = (n: number) => `${["no", "one", "two", "three", "four", "five"][n]} ${n === 1 ? "place" : "places"}`;
+  const nearest = (n: number, side: "above" | "below") =>
+    n === 1 ? `the nearest state ${side}` : `the ${n} nearest states ${side}`;
 
   if (up.length > 0) {
     const target = up[0]!;
     const upNames = up.map((state) => state.name).join(", ");
     out.push(
-      `Climbing ${places(up.length)} would mean passing ${upNames} and adding ${usd(
+      `Passing ${nearest(up.length, "above")} (${upNames}) takes an increase of more than ${usd(
         target.median - moderate.median,
-      )} to the ${usd(moderate.median)} estimate here.`,
+      )} on the ${usd(moderate.median)} estimate here.`,
     );
   } else {
     out.push(
@@ -1808,13 +1805,12 @@ export function movementSentences(ctx: StateCostContext, matterLabel: string): s
   if (down.length > 0) {
     const target = down[down.length - 1]!;
     const downNames = down.map((state) => state.name).join(", ");
-    const lead = places(down.length).replace(/^./, (c) => c.toUpperCase());
     out.push(
       target.median === moderate.median
-        ? `${lead} down means passing under ${downNames}, which ${down.length === 1 ? "records" : "all record"} the same ${usd(
+        ? `${nearest(down.length, "below")} (${downNames}) ${down.length === 1 ? "records" : "all record"} the same ${usd(
             moderate.median,
-          )} as ${ctx.stateName}.`
-        : `${lead} down means passing under ${downNames}: a fall of more than ${usd(moderate.median - target.median)}.`,
+          )} as ${ctx.stateName}.`.replace(/^./, (c) => c.toUpperCase())
+        : `Passing under ${nearest(down.length, "below")} (${downNames}) takes a fall of more than ${usd(moderate.median - target.median)}.`,
     );
   } else {
     out.push(
@@ -1948,7 +1944,7 @@ export function extraCalculations(ctx: StateCostContext, matterLabel: string): C
     const count = Math.round((complex.median / simple.median) * 10) / 10;
     const factor = Math.round((complex.hours / simple.hours) * 10) / 10;
     out.push({
-      lead: "Contested against simple.",
+      lead: "Complex tier against simple tier.",
       body: `At ${ctx.stateName}'s own estimates, ${usd(
         complex.median,
       )} buys ${count} matters at the ${usd(simple.median)} simple median — or, counted in time, ${

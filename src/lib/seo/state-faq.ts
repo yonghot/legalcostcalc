@@ -108,7 +108,7 @@ export function buildStateFaq(ctx: StateCostContext, matterLabel: string): FaqEn
       simple?.hourlyMedian && complex?.hourlyMedian
         ? ` Across the tiers the median rate runs ${usd(simple.hourlyMedian)} for a simple matter, ${usd(
             moderate.hourlyMedian,
-          )} for a moderate one and ${usd(complex.hourlyMedian)} once it is contested.`
+          )} for a moderate one and ${usd(complex.hourlyMedian)} for a complex one.`
         : "";
     entries.push({
       question: `How much does ${aOrAn(matterLabel)} ${matterLabel} lawyer charge per hour in ${stateName}?`,

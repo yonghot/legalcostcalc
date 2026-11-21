@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Disclaimer, DisclaimerNote } from "@/components/shared/disclaimer";
 import { MethodNote } from "@/components/seo/method-note";
+import { lowerKeepAcronyms } from "@/lib/utils/format";
 import { BreadcrumbSchema } from "@/components/seo/breadcrumb-schema";
 import { Breadcrumbs } from "@/components/seo/breadcrumbs";
 import { HubLinks, type HubLinkRow } from "@/components/seo/hub-links";
@@ -37,7 +38,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   return buildMeta({
     title: `${categoryInfo.displayName} Cost by State`,
-    description: `Compare ${categoryInfo.displayName.toLowerCase()} costs across ${
+    description: `Compare ${lowerKeepAcronyms(categoryInfo.displayName)} costs across ${
       listedStateCount(categoryInfo.slug) === STATES.length ? "all 50 states and DC" : `${listedStateCount(categoryInfo.slug)} states`
     }. Free, sourced, and dated cost estimates by state.`,
     path: `/category/${categoryInfo.slug}`,
@@ -86,7 +87,7 @@ export default async function CategoryHubPage({ params }: PageProps) {
             {categoryInfo.displayName} Cost by State
           </h1>
           <p className="mt-3 text-lg text-slate-600">
-            Compare estimated {categoryInfo.displayName.toLowerCase()} costs across{" "}
+            Compare estimated {lowerKeepAcronyms(categoryInfo.displayName)} costs across{" "}
             {rows.length === STATES.length ? "all 50 states and the District of Columbia" : `${rows.length} states`}.
           </p>
           <MethodNote scope="each state" />
@@ -98,14 +99,14 @@ export default async function CategoryHubPage({ params }: PageProps) {
           <PopularPages
             className="mb-10"
             heading={`Popular ${categoryInfo.displayName} cost pages`}
-            intro={`${categoryInfo.displayName} cost estimates that visitors open most often.`}
+            intro={`${categoryInfo.displayName} cost estimates ranked by page views.`}
             pages={popular}
           />
           {rows.length > 0 ? (
             <HubLinks rows={rows} labelHeader="State" />
           ) : (
             <p className="text-sm text-slate-500">
-              Cost data for {categoryInfo.displayName.toLowerCase()} is currently being collected.
+              Cost data for {lowerKeepAcronyms(categoryInfo.displayName)} is currently being collected.
             </p>
           )}
 

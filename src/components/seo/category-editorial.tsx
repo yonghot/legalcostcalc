@@ -1,8 +1,8 @@
-import { formatCurrency } from "@/lib/utils/format";
+import { formatCurrency, lowerKeepAcronyms } from "@/lib/utils/format";
 import { buildBenchmarkSynthesis } from "@/lib/seo/geo";
 import { sumFeeRanges } from "@/lib/seo/state-faq";
+import { getNationalAverageStateCount, getNationalMidpoint } from "@/lib/page-index";
 import { verifiedFeeForLine } from "@/lib/verified-fees";
-import { getNationalAverage, getNationalAverageStateCount } from "@/lib/page-index";
 import type { CategoryInfo } from "@/lib/types/category";
 import type { StateInfo } from "@/lib/types/state";
 import type { LegalCostData } from "@/lib/types";
@@ -41,6 +41,12 @@ export function CategoryEditorial({
   faqQuestions,
 }: CategoryEditorialProps) {
   const moderate = costs.find((c) => c.complexity === "moderate");
+  const simpleRow = costs.find((c) => c.complexity === "simple");
+  const complexRow = costs.find((c) => c.complexity === "complex");
+  const tierFigures =
+    simpleRow && complexRow
+      ? `The same state records a simple-tier median of ${formatCurrency(simpleRow.costRange.median)} (range ${formatCurrency(simpleRow.costRange.low)}–${formatCurrency(simpleRow.costRange.high)}) and a complex-tier median of ${formatCurrency(complexRow.costRange.median)} (range ${formatCurrency(complexRow.costRange.low)}–${formatCurrency(complexRow.costRange.high)}).`
+      : null;
   const notes = categoryInfo.costFormationNotes ?? [];
   const hourlyBilled = Boolean(moderate && moderate.hourlyRate.median > 0);
   const contingencyBilled = Boolean(moderate && !hourlyBilled && moderate.contingencyFee);
@@ -59,25 +65,22 @@ export function CategoryEditorial({
       const highPct = (parsed.high / moderate.costRange.median) * 100;
       const fmt = (value: number) => (value < 1 ? value.toFixed(1) : String(Math.round(value)));
       return [
-        `${label} runs ${formatCurrency(parsed.low)}–${formatCurrency(parsed.high)}, or ${fmt(
-          lowPct,
-        )}%–${fmt(highPct)}% of the ${stateInfo.name} median.`,
+        `${label} runs ${formatCurrency(parsed.low)}–${formatCurrency(parsed.high)}, or ${
+          fmt(lowPct) === fmt(highPct) ? `${fmt(lowPct)}%` : `${fmt(lowPct)}%–${fmt(highPct)}%`
+        } of the ${stateInfo.name} median.`,
       ];
     });
   })();
 
-  // CODE-06 — data-derived synthesis sentence comparing this page's own
-  // median against the category's real national average (conditional
-  // "above"/"below"/"in line with" phrasing driven by the actual numbers,
-  // never a fixed template sentence).
+  // One national baseline per page: the table midpoint the per-state analysis ranks against, not the average of state medians (r4-truth-R4-W06).
   const benchmarkSynthesis = buildBenchmarkSynthesis({
     categoryDisplayName: categoryInfo.displayName,
     stateName: stateInfo.name,
     localMedian: moderate?.costRange.median,
-    nationalAverage: getNationalAverage(categoryInfo.slug),
+    nationalAverage: getNationalMidpoint(categoryInfo.slug),
     stateCount: getNationalAverageStateCount(categoryInfo.slug),
+    baselineKind: "midpoint",
   });
-
   // Nothing real to interpolate — render nothing rather than a thin/fabricated section.
   if (!moderate && notes.length === 0) {
     return null;
@@ -106,7 +109,7 @@ export function CategoryEditorial({
             </h2>
             <div className="rounded-lg border border-slate-200 bg-slate-50 p-6 text-sm leading-relaxed text-slate-700 sm:text-base">
               <p>
-                Take a moderate-complexity {categoryInfo.displayName.toLowerCase()} matter in{" "}
+                Take a moderate-complexity {lowerKeepAcronyms(categoryInfo.displayName)} matter in{" "}
                 {stateInfo.name}. The estimated median {contingencyBilled ? "of estimated case expenses" : "total"} is{" "}
                 <span className="font-mono font-semibold text-teal-700">
                   {formatCurrency(moderate.costRange.median)}
@@ -118,6 +121,7 @@ export function CategoryEditorial({
                 .
                 {contingencyBilled &&
                   " The attorney's own fee on a contingency matter is a percentage of any recovery and is not part of these dollar figures."}
+                {tierFigures && ` ${tierFigures}`}
                 {feeShares.length > 0 && " Fees with a dated primary source are sized against that median below."}
               </p>
               {feeShares.length > 0 && (
@@ -127,12 +131,7 @@ export function CategoryEditorial({
                   ))}
                 </ul>
               )}
-              {benchmarkSynthesis && (
-                // CODE-06 — analytical-synthesis sentence, data-derived, with
-                // phrasing conditional on the real comparison direction (see
-                // buildBenchmarkSynthesis: "above"/"below"/"in line with").
-                <p className="mt-3">{benchmarkSynthesis}</p>
-              )}
+              {benchmarkSynthesis && <p className="mt-3">{benchmarkSynthesis}</p>}
             </div>
           </div>
         )}

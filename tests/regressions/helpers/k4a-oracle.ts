@@ -78,7 +78,7 @@ export interface Page {
 export const PAGES: Page[] = STATES.flatMap((s) =>
   CATEGORIES.flatMap((c) => {
     const ctx = buildStateCostContext(s.code, c.slug);
-    return ctx ? [{ code: s.code, state: s.name, category: c.slug, label: c.displayName.toLowerCase(), ctx }] : [];
+    return ctx ? [{ code: s.code, state: s.name, category: c.slug, label: c.proseLabel, ctx }] : [];
   }),
 );
 

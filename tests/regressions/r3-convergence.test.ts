@@ -29,6 +29,20 @@ const REMOVED: [string, RegExp, string][] = [
   ["calibration", /outside anything estimated|typical tracked state's figure is higher/, "would be outside anything estimated for this state."],
   ["hours rank", /third ordering|more work behind|fewer implied hours|agree even though/, "the total arriving on fewer implied hours."],
   ["extra calculations", /ratios differing|because the rate rises/, "the two ratios differing because the rate rises with the tier"],
+  // Round 4 (2026-10-28): the seed has simple, moderate and complex tiers; nothing in it says contested or straightforward, and
+  // the bankruptcy, real-estate and estate-planning rows contradict those labels.
+  ["tier neighbors", /straightforward|once contested|contested/, "$3,400 is 43rd of 46 once contested, between Alaska ($3,300) and Utah ($3,450)"],
+  ["tier neighbors", /straightforward/, "$800 is 12th of 46 on a straightforward bankruptcy, under Texas ($900)"],
+  ["tier analysis", /straightforward|contested/, "$3,400 puts Alabama 43rd of 46 on contested matters, 3 up on its moderate position"],
+  ["extra calculations", /Contested against simple/, "Contested against simple. At Alabama's own estimates, $3,400 buys 4.3 matters"],
+  ["movement", /Climbing|places? down means|places? would mean/, "Climbing five places would mean passing A, B, C, D, E and adding $200 to the $5,000 estimate here."],
+  ["movement", /\w+ places? down means/i, "Five places down means passing under A, B, C, D, E: a fall of more than $300."],
+  ["trajectory", /climbs \d+ places|moves up the table|slides \d+ places|a fall of \d+ places|as complexity rises|gets harder|becomes harder/, "it climbs 6 places as the matter gets harder"],
+  ["trajectory", /slides \d+ places downward|a climb of \d+ places/, "Ranked tier by tier, Texas slides 4 places downward: 11th at the simple tier"],
+  ["escalation", /breaks down as|Decomposed|so the workload grows/, "The 5.7x step from the simple to the complex tier breaks down as 3.9x the hours against 1.55x the rate"],
+  ["hours", /of work sits? behind|sit behind/, "so 3 more hours of work sit behind the California figure than behind the typical state's."],
+  ["faq", /once it is contested/, "$235 for a moderate one and $400 once it is contested."],
+  ["category mix", /\. At \d+% of/, "level with Divorce, over DUI / DWI. At 36% of Criminal Defense ($12,050)."],
   ["faq", /poor predictor|Substantially|more distinctive|concentrated in straightforward|similar position|rather than at either end|does not stand for every tier|moves the price/, "so it is more distinctive on contested matters than on straightforward ones"],
 ];
 
@@ -58,7 +72,7 @@ const sentencesOf = (p: (typeof PAGES)[number]) => {
     "extra calculations": blocks(G.extraCalculations(c, l)),
     faq: buildStateFaq(c, l).map((f) => f.answer),
     dataset: G.datasetSentences(c),
-    "tier neighbors": G.tierNeighborSentences(c, l),
+    "tier neighbors": G.tierNeighborSentences(c),
     "tier analysis": [...G.tierAnalysisSentences(c, l, "simple"), ...G.tierAnalysisSentences(c, l, "complex")],
     "tier cluster": [G.tierClusterSentence(c, "simple"), G.tierClusterSentence(c, "complex")],
     movement: G.movementSentences(c, l),

@@ -4,6 +4,7 @@ import StateCategoryPage from "@/app/[state]/[slug]/page";
 import { CATEGORIES } from "@/lib/constants/categories";
 import { STATES } from "@/lib/constants/states";
 import { hasUniqueData } from "@/lib/page-index";
+import { lowerKeepAcronyms } from "@/lib/utils/format";
 import { seedRow, type Tier } from "./helpers/k4a-oracle";
 
 const TIERS: Tier[] = ["simple", "moderate", "complex"];
@@ -20,7 +21,7 @@ describe("r3-truth-R3-W8: a page that shows seed figures never says that same da
     for (const { s, c } of gated) {
       const rows = TIERS.flatMap((tier) => seedRow(c.slug, tier, s.code) ?? []);
       const html = await renderPage(StateCategoryPage, { state: s.slug, slug: `${c.slug}-cost` });
-      const label = c.displayName.toLowerCase();
+      const label = lowerKeepAcronyms(c.displayName);
       const says = {
         cost: html.includes(`Cost data for ${label} in ${s.name} is currently being collected.`),
         hourly: html.includes(`Hourly rate data for ${s.name} is currently being collected.`),
@@ -29,15 +30,16 @@ describe("r3-truth-R3-W8: a page that shows seed figures never says that same da
       const missing = { cost: rows.length === 0, hourly: !rows.some((r) => r.rate > 0), duration: !rows.some((r) => r.duration) };
       if (rows.length > 0) withRows++;
       if (rows.length > 0 && !says.cost) costClaimsWithheld++;
-      if (says.hourly && missing.hourly) hourlyClaimsKept++;
+      if (says.hourly) hourlyClaimsKept++;
       if (rows.some((r) => r.duration) && !says.duration) durationClaimsWithheld++;
-      for (const key of ["cost", "hourly", "duration"] as const) {
+      for (const key of ["cost", "duration"] as const) {
         if (says[key] !== missing[key]) bad.push(`${s.name}/${c.slug}: ${key} says collecting=${says[key]} but data missing=${missing[key]}`);
       }
     }
     expect(withRows).toBeGreaterThan(30);
     expect(costClaimsWithheld).toBe(withRows);
-    expect(hourlyClaimsKept).toBeGreaterThan(5);
+    // r4-truth-R4-W08: personal injury is billed by contingency, so no page says hourly data is being collected
+    expect(hourlyClaimsKept).toBe(0);
     expect(durationClaimsWithheld).toBeGreaterThan(30);
     expect(bad).toEqual([]);
   }, 120_000);

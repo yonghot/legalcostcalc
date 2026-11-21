@@ -1,4 +1,4 @@
-import { formatCurrency } from "@/lib/utils/format";
+import { formatCurrency, lowerKeepAcronyms } from "@/lib/utils/format";
 import { topTrafficPages } from "@/lib/top-traffic";
 import type { NextStep } from "@/lib/next-steps";
 
@@ -14,7 +14,7 @@ interface PageStepsInput {
 
 export function pageNextSteps(input: PageStepsInput): NextStep[] {
   const { stateSlug, stateName, categorySlug, categoryName, moderateMedian, moderateLow, moderateHigh } = input;
-  const matter = categoryName.toLowerCase();
+  const matter = lowerKeepAcronyms(categoryName);
   const steps: NextStep[] = [];
 
   if (categorySlug === "personal-injury") {
@@ -73,8 +73,8 @@ export function homeNextSteps(): NextStep[] {
     steps.push({
       id: "top_page",
       href: top.path,
-      title: `See ${top.categoryName.toLowerCase()} cost in ${top.stateName}`,
-      hint: "The estimate visitors open most often.",
+      title: `See ${lowerKeepAcronyms(top.categoryName)} cost in ${top.stateName}`,
+      hint: "Ranked by page views.",
     });
   }
   steps.push({

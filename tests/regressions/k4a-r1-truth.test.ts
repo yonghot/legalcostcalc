@@ -32,7 +32,6 @@ import {
  */
 
 const ownMedian = (p: Page, tier: Tier = "moderate") => tierRow(p, tier)?.median;
-const NUMBER_WORDS: Record<string, number> = { one: 1, two: 2, three: 3, four: 4, five: 5 };
 const namesIn = (text: string) => [...text.matchAll(new RegExp(NAME_RE, "g"))].map((m) => m[1]!);
 
 function descending(p: Page) {
@@ -102,22 +101,22 @@ describe("r1-truth-TXT-04: the number of places matches the states named", () =>
       const { sorted } = descending(p);
       const text = movementSentences(p.ctx, p.label).join(" ");
       const out: string[] = [];
-      const up = text.match(/Climbing (\w+) places? would mean passing (.+?)(?: and adding |, which (?:all record|records))/);
+      const up = text.match(/Passing the (nearest state|(\d+) nearest states) above \((.+?)\) takes an increase of more than/);
       const upExpected = Math.min(5, sorted.filter((r) => r.median > ownMedian(p)!).length);
       if (upExpected > 0) {
         checked++;
         if (!up) out.push("climbing sentence missing");
-        else if (NUMBER_WORDS[up[1]!] !== upExpected || namesIn(up[2]!).length !== upExpected) {
-          out.push(`climbing ${up[1]} places names ${namesIn(up[2]!).length}, expected ${upExpected}`);
+        else if (Number(up[2] ?? 1) !== upExpected || namesIn(up[3]!).length !== upExpected) {
+          out.push(`climbing sentence says ${up[1]} and names ${namesIn(up[3]!).length}, expected ${upExpected}`);
         }
       }
-      const down = text.match(/(\w+) places? down means passing under (.+?)(?:, which (?:all record|records)|:)/i);
+      const down = text.match(/[Tt]he (nearest state|(\d+) nearest states) below \((.+?)\) (?:takes a fall of more than|all record|records)/);
       const downExpected = Math.min(5, sorted.filter((r) => r.code !== p.code && r.median <= ownMedian(p)!).length);
       if (downExpected > 0) {
         checked++;
         if (!down) out.push("down sentence missing");
-        else if (NUMBER_WORDS[down[1]!.toLowerCase()] !== downExpected || namesIn(down[2]!).length !== downExpected) {
-          out.push(`${down[1]} places down names ${namesIn(down[2]!).length}, expected ${downExpected}`);
+        else if (Number(down[2] ?? 1) !== downExpected || namesIn(down[3]!).length !== downExpected) {
+          out.push(`down sentence says ${down[1]} and names ${namesIn(down[3]!).length}, expected ${downExpected}`);
         }
       }
       return out;
@@ -263,7 +262,7 @@ describe("r1-truth-TXT-07/08/09: tier-trajectory claims agree with the tier tabl
     let seen = 0;
     const v = collect((p) => {
       const text = trajectorySentence(p.ctx) ?? "";
-      if (/a fall of \d+ places as the matter becomes harder/.test(text)) seen++;
+      if (/, a net difference of \d+ places? between the simple and complex tiers\. Against the tier midpoints/.test(text)) seen++;
       return /expensive to start|comparatively ordinary|already sits at or below/.test(text) ? [text] : [];
     });
     expect(seen).toBeGreaterThan(0);

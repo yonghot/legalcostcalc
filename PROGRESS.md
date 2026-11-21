@@ -1,5 +1,17 @@
 # PROGRESS.md — LegalCostCalc
 
+## 2026-11-22 — 위생 마무리: 글루·K14·K35·IndexNow·CA 이혼 문구 점검, 10/28 리더 체크리스트 HEAD 대조 (AppFarm 3 implement)
+
+- 원인: 10/28 빌드(ae6fc62)에서 글루 단어 743건(소스 패턴 7개)·로더가 기본 동의보다 앞선 페이지 111/111·K35 크롤 계측 없음이 확인됐다.
+- 조치(글루): 7개 패턴(주 이름 뒤 "by tier"·"court's own schedule", "uncontested/contested</strong>figure", "Manage Consent</strong>link", "not</strong>sell", "legalcostcalc.co</strong>(the Site)")은 모두 e5ff5cb 의 `{" "}` 로 소스에서 이미 고쳐졌음을 확인했다(해당 문자열 소스 grep 0, 추가 수정 없음).
+- 조치(K14): a2ab2d2·dddc722 로 루트 레이아웃 head 에서 defaults < loader < </head> 순서가 고정됐고 k14-default-before-loader 테스트 통과(추가 수정 없음).
+- 조치(K35): 루트 middleware.ts 에서 UA 가 Mediapartners-Google|AdsBot-Google 이면 `adsense-crawl {"p","d","ua"}` 한 줄만 로그(IP·쿼리·쿠키 없음, 응답 불변). matcher 는 HTML 페이지 경로 포함. 커밋 54f7c39.
+- 조치(IndexNow): scripts/indexnow.mjs 가 공유 템플릿(8ebf498)과 바이트 동일, tests/regressions/indexnow-delta.test.ts 는 CONFIG 경로 한 줄만 다르고 동일 — 이식 완료(추가 수정 없음).
+- 조치(CA 이혼 "4%–4%"): category-editorial.tsx 가 하한·상한이 같은 반올림이면 단일 퍼센트로 쓰고 r4-truth 가 CA 이혼 렌더에 `(\d+)%–\1%` 부재를 단정한다(HEAD 에 이미 반영, 추가 수정 없음).
+- 회귀 테스트: tests/regressions/k35-adsense-crawl-log.test.ts(신규 4건), jsx-entity-leading-space·k14-default-before-loader·indexnow* 단일 파일 55건 통과.
+- 10/28 리더 체크리스트 HEAD 상태(grep 근거): Terms — footer 링크 `/terms` + src/app/terms/page.tsx 존재. reviewer pending — reviewer.ts 가 env 미설정 시 null 반환, 날조 이름 없음("pending" 문자열 0). quarterly — src 코드 0건(content-dates.json 증거문에만 "quarterly-review promise 교체" 언급). Actigence — constants/publisher.ts 발행자. 형제 사이트 링크 0 — no-sibling-links 테스트. 'based on sourced' — src·tests 0건(content-dates.json 의 "unsourced" 는 별개). CA 이혼 $435–$450 — verified-fees.json 이 selfhelp.courts.ca.gov 출처·fetchedOn 2026-10-07. DUI — 시드의 "Court filing fee ($100-$300)" 는 cost-service 가 제거하며 51개 주 DUI 페이지 렌더에 없음.
+- 보류: DUI 페이지 51개 모두에 시드의 "License reinstatement fee ($100-$300)" 가 "전국 단위 일반 범위" 문구 아래 계속 표시된다(리더 체크리스트의 "DUI $100-$300 removed" 가 이 줄까지 포함하는지는 확인 필요, 포함이면 검증 출처 없이 제거해야 함). 전체 suite·빌드·§4.6a 는 게이트에서.
+
 ## 2026-11-22 — r4 적대 검토 수정: 미커밋 WIP 50개 분류·커밋 (AppFarm 3 implement, r4:truth CRITICAL 7·WARNING 14 / r4:contract CRITICAL 3·WARNING 4)
 
 - 원인: 2026-10-28 에 끊긴 fixer 가 r4 수정을 미커밋 파일 50개로 남겼다. 각 hunk 를 finding 에 대응시키고 테스트로 검증했다. 되돌릴 hunk 는 없었다(모두 finding 을 충족하고 테스트 통과, 백업 `.claude/work/AppFarm3/legal/` 에 diff 보관).

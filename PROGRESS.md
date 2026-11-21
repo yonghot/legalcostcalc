@@ -2137,3 +2137,19 @@ assumed. No Supabase/data-layer code touched (the local-only 500 issue
 documented above was diagnosed, not "fixed" — out of scope for U-03/U-05
 and orchestrator guardrails). No commit/deploy performed (orchestrator-
 owned).
+
+## 2026-11-22 K28 라이브 검증 (dpl_Ge6iFsiufKsLHFZukig8EQ7eAcQA, legalcostcalc.co)
+
+하네스: `.claude/work/AppFarm3/legal/k28/k28.cjs`, 결과 `results.json`. 로드 3회(대조 1 + 프로덕션 첫 방문 1 + 같은 컨텍스트 재방문 1), `?crew=1`, 약 15초, 스크롤·광고 클릭 없음. GA collect 전 변형과 doubleclick pagead/ads·gen_204·ama_stats는 URL 기록 후 abort, pagead2.googlesyndication.com은 통과.
+
+| 항목 | 결과 |
+|---|---|
+| 양성 대조 | 이전 프로덕션 dpl_9bZYvHCx는 SSO 보호(302)라 접근 불가(`vercel curl` 금지). 대체: 라이브 문서를 route.fulfill 로 재작성(구 허용목록 CSP 헤더 + 로더를 기본값 앞으로 이동). 하네스가 순서 위반(default 18 > loader 17)과 CSP 위반 3건(connect-src ep1.adtrafficquality sodar, img-src googletagmanager, connect-src www.google.com/g/collect)을 검출 -> 하네스 유효. 한계: 실제 구 배포 본문이 아닌 합성 대조 |
+| GA tid | G-GQC29BN7K7 (STRATEGY.md 기록; 코드엔 env 로만 존재) — 첫 방문·재방문 collect 전부 일치 |
+| gcs | 첫 방문 G111, 재방문 G111 |
+| tt=internal | 첫 hit 에 존재 |
+| sodar2 | 로드됨 y (ep2.adtrafficquality.google/sodar/sodar2.js, runner.html) |
+| CSP 위반 | 첫 방문 0, 재방문 0 (securitypolicyviolation·콘솔 Refused 0). 헤더 `object-src 'none'; base-uri 'none'; frame-ancestors 'none'` |
+| React #418 | 첫 방문·재방문 모두 없음 (대조 문서에서만 발생: 재작성 부산물) |
+| head 순서 | DOM 상 consent default(17) < 로더(18), 로더는 head 내 1개·body 0 |
+| K14-c | 국가 쿠키 XX + Manage Consent 클릭 동일 동기 단계 -> 0.5초 시점 공지 없음, 약 3초 시점 거부 전용 공지 1개, 버튼 "Decline" 하나(Accept 없음), 이중 UI 없음 |

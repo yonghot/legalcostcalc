@@ -1,5 +1,12 @@
 # PROGRESS.md — LegalCostCalc
 
+## 2026-11-22 — 배포 기록: /updates (AppFarm 3 ship)
+
+- 배포: dpl_6fvBFYxxeRLhQL7PEHuovV47TbCL (legalcostcalc-3g1yzg4lh-actigence.vercel.app) Ready, HEAD 906351f, 브랜치 feature/mvp-prototype 푸시(ed6c634·d3756f8 docs 커밋 동반). 롤백 대상: dpl_Ge6iFsiufKsLHFZukig8EQ7eAcQA(88704ce).
+- 게이트·신규 리뷰(CRITICAL 0): 906351f 기준 통과(리더 승인).
+- 라이브 확인: /updates 200·noindex 없음·항목 6개 전부 노출, feed.xml 200 application/atom+xml·well-formed·entry 6, 푸터 링크 / 및 콘텐츠 3페이지, 사이트맵 /updates lastmod 2026-11-22(최신 항목), /updates 글루 정규식 0, /ads.txt 200, 홈 consent default(5223) < 로더(5909) < </head>(6075).
+
+
 ## 2026-11-22 — K39 /updates 페이지 + Atom 피드 (AppFarm 3 implement)
 
 - 추가: `/updates`(src/app/updates/page.tsx), `/updates/feed.xml`(정적 Atom), 데이터 `src/lib/site-updates.ts`, 피드 빌더 `src/lib/updates-feed.ts`. 푸터 Resources 에 "Updates" 링크(형제 사이트 링크 없음), 사이트맵에 /updates 추가(lastmod = 최신 항목 날짜), 페이지 metadata 에 피드 alternate.

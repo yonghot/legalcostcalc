@@ -1,5 +1,12 @@
 # PROGRESS.md — LegalCostCalc
 
+## 2026-11-22 — r4 적대 검토 수정: 미커밋 WIP 50개 분류·커밋 (AppFarm 3 implement, r4:truth CRITICAL 7·WARNING 14 / r4:contract CRITICAL 3·WARNING 4)
+
+- 원인: 2026-10-28 에 끊긴 fixer 가 r4 수정을 미커밋 파일 50개로 남겼다. 각 hunk 를 finding 에 대응시키고 테스트로 검증했다. 되돌릴 hunk 는 없었다(모두 finding 을 충족하고 테스트 통과, 백업 `.claude/work/AppFarm3/legal/` 에 diff 보관).
+- 조치(WIP 분류): (1) 동의·GA — ga-gate.ts 순수 함수 추출(R4-W4), 로더 없는 페이지에서 Manage Consent 가 거부 전용 공지로 폴백(R4-W3). (2) 생성기 — "contested/straightforward" 라벨 삭제·proseLabel(R4-C01, W10), 일반 factor 줄·원인절 삭제(R4-C02, C03), 다섯 칸 이동 문장을 "가장 가까운 N개 주"로(R4-C06), hours·trajectory·escalation 인과·분해 문구 삭제(R4-W01, W02, W12), 기간은 "전국 단일 가정" 표기(R4-W05), 기준선을 표 중앙값 하나로(R4-W06), PI 시급 FAQ 삭제(R4-W08), 동률 개수 표기(R4-W11, S01), 메타 설명이 행에 없는 내용을 약속하지 않게(R4-W04), DUI "specifically" 문장 삭제(R4-W14). (3) 표면 — 통계·비교의 "differs from every other state" 를 실제 게이트 서술로(R4-C04), 비교 예시의 최상급을 퍼센트 기준으로(R4-C05), 홈 FAQ 보편 주장 정정(R4-C07), PI 는 "(case expenses)" 표기(R4-W03), OG 이미지 중앙값 공유 함수·라벨(R4-W07), 홈·소개·푸터·가이드의 보편·비교·인과 문장 삭제(R4-W13), 정산 추정기 title 질문형 제거(R4-S2). 글루(R4-C2, C3, W1, W2, W09)·로더 순서(R4-C1)는 e5ff5cb 이전 커밋에서 해결.
+- 회귀 테스트: tests/regressions/r4-truth.test.ts(신규 29건), ga-gate.test.ts(8건), k14c-decline-only-fallback.test.ts, k4a-r1·r2·r3·prose-property·generators-*, r3-convergence, stats-consistency 갱신. 단일 파일 vitest 전부 통과(부하 시 5s 타임아웃 2건은 `--testTimeout=60000` 직렬로 통과), 바뀐 파일 eslint 0, 전체 tsc --noEmit 0.
+- 보류: R4-S1(content-dates cost:* 증거 SHA 및 가족 날짜 갱신, 제안), R4-W03 의 카테고리·주 허브 PI 표기(허브에 PI 순위 비교 없음), R4-W13 가이드의 출처 있는 보편 서술(오프라인 검증 불가, 계약상 출처 링크 있음). 전체 suite·빌드·§4.6a 빌드 HTML 감사는 게이트에서.
+
 ## 2026-10-11 — 적대 검토 3회차 수정 + 수렴 지시 반영 (AppFarm 3 fixer, findings: CRITICAL 7 + WARNING 11, 커밋 3f42b75..0ddd2af)
 
 - 원인(CRITICAL 7건, r3-truth-R3-TXT-01~07 / r3-contract-R3C-01·02): 생성기 문장의 결론절이 분기 조건만 보고 같은 쪽 수치와 다른 관계를 단정했다. TXT-01 hoursRank "more work behind"·"fewer implied hours"(hoursSentence 와 모순, 123쪽), TXT-02 hourlyPosition "not an unusually high rate"·"rather than higher prices"(시급·시간 수치와 반대, 43쪽), TXT-03/R3C-01 trajectory 큰 이동 "ordinary prices here; contested work is not"(단순 티어가 티어 중간값 -27%, 복합 티어가 중간값 위/아래인 13쪽), TXT-04/R3C-02 FAQ "more distinctive on contested matters"(복합 순위가 중앙에 더 가까운 36쪽), TXT-05 FAQ "premium ... concentrated in straightforward matters"(복합 프리미엄이 단순 이상 9쪽), TXT-06 "ambiguous by N places"(N 이 같은 줄 세 순위의 폭보다 작음 41쪽), TXT-07 "tracked" 매터 수 7 대 8(201쪽). 같은 부류가 1·2회차에 "후속 웨이브" 로 남겨져 있었다.

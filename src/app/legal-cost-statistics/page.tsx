@@ -9,7 +9,7 @@ import { DatasetSchema } from "@/components/seo/dataset-schema";
 import { buildStatisticsAggregate } from "@/lib/seo/statistics";
 import { buildMeta, CANONICAL_ORIGIN } from "@/lib/seo";
 import { getFamilyDate } from "@/lib/content-dates";
-import { aOrAn, formatCurrency } from "@/lib/utils/format";
+import { aOrAn, formatCurrency, lowerKeepAcronyms } from "@/lib/utils/format";
 
 export const revalidate = 604800; // 7 days
 
@@ -88,7 +88,7 @@ export default function LegalCostStatisticsPage() {
                 {formatCurrency(headline.nationalAverage)}
               </span>{" "}
               — the average of state median costs for {aOrAn(headline.categoryDisplayName)}{" "}
-              {headline.categoryDisplayName.toLowerCase()}, the most expensive of the{" "}
+              {lowerKeepAcronyms(headline.categoryDisplayName)}, the most expensive of the{" "}
               {categoryRows.length} legal matter types tracked. It averages the {headline.stateCount}{" "}
               states with estimates for that matter type; the page covers {totalDataPoints} state-level
               estimates in all.
@@ -121,11 +121,13 @@ export default function LegalCostStatisticsPage() {
           <StatisticsTable rows={categoryRows} />
           <p className="mt-3 text-xs text-slate-600">
             Each average is the mean of the moderate-complexity state median estimates for that
-            matter type, taken over the states counted in the &ldquo;States&rdquo; column. A state is
-            counted only when it has a sourced estimate that differs from every other state&apos;s
-            figure, so the count varies by matter type. See each matter type&apos;s individual state
+            matter type, taken over the states counted in the &ldquo;States&rdquo; column. States whose
+            moderate-tier figures (the low, median and high estimate, the low, median and high rate, and the duration) are all identical to another state&apos;s figures are not counted. See each matter type&apos;s individual state
             pages for the sources behind the estimates. Figures are estimates modeled from published
             national fee guides and rate surveys, shown as ranges, not quotes from firms in each state.
+            Where states tie for the highest or lowest median, the table names one and counts the others.
+            Personal injury figures are estimated case expenses, not attorney fees; the attorney&apos;s fee
+            is a contingency percentage of any recovery.
           </p>
         </div>
       </section>

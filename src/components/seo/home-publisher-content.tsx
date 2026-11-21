@@ -59,8 +59,7 @@ export function HomePublisherContent() {
               {" "}{money(caModerate.median)} median, and a complex-tier median of
               {" "}{money(caComplex.median)}. The calculator reports the selected tier; it does not
               average the three tiers. The distance between those medians illustrates why choosing
-              a tier is a scenario comparison, not a diagnosis. It also explains why one national
-              “average divorce price” would hide more information than it reveals.
+              a tier is a scenario comparison, not a diagnosis.
             </p>
             <p className="leading-7">
               <strong className="text-slate-900">Example 2 — checking the hourly figure.</strong>{" "}
@@ -93,7 +92,7 @@ export function HomePublisherContent() {
             <p>
               A result near the low or high edge is not evidence that a quote is fair or unfair. A
               quote may cover work that our estimates do not, and a low initial retainer may not be
-              the final bill. The most useful comparison is item by item: what work is included,
+              the final bill. Items in a fee agreement include which work is covered,
               which costs are advanced separately, how often invoices are issued, what happens if
               the scope changes, and whether unused funds are refundable under the agreement.
             </p>

@@ -19,15 +19,33 @@ import { INDEXABLE_PAGES, getNationalAverage, getModerateMedianCost } from "@/li
 import { CATEGORIES } from "@/lib/constants/categories";
 import { formatCurrency } from "@/lib/utils/format";
 
+export interface StatState {
+  code: string;
+  name: string;
+  slug: string;
+  median: number;
+  /** How many other counted states record exactly this median. */
+  tiedWith: number;
+}
+
+/** Matter types whose seed rows carry a contingency percentage and case expenses, with no hourly rate. */
+export const CASE_EXPENSE_MATTERS: ReadonlySet<string> = new Set(["personal-injury"]);
+
+export function stateWithTies(state: Pick<StatState, "name" | "tiedWith">): string {
+  return state.tiedWith === 0
+    ? state.name
+    : `${state.name} (tied with ${state.tiedWith} other ${state.tiedWith === 1 ? "state" : "states"})`;
+}
+
 export interface CategoryStatRow {
   categorySlug: string;
   categoryDisplayName: string;
   /** Average of the moderate-complexity state medians over the `stateCount` states below, rounded. */
   nationalAverage: number;
   /** Highest-cost indexable state for this category. */
-  highestState: { code: string; name: string; slug: string; median: number };
+  highestState: StatState;
   /** Lowest-cost indexable state for this category. */
-  lowestState: { code: string; name: string; slug: string; median: number };
+  lowestState: StatState;
   /** Number of indexable (state, category) pairs backing this row — transparency on sample size. */
   stateCount: number;
   /** Percent the highest-cost state runs above the lowest-cost state, rounded. */
@@ -85,12 +103,14 @@ function buildCategoryRow(categorySlug: string, categoryDisplayName: string): Ca
       name: highest.state.name,
       slug: highest.state.slug,
       median: highest.median,
+      tiedWith: withMedian.filter((x) => x.median === highest.median).length - 1,
     },
     lowestState: {
       code: lowest.state.code,
       name: lowest.state.name,
       slug: lowest.state.slug,
       median: lowest.median,
+      tiedWith: withMedian.filter((x) => x.median === lowest.median).length - 1,
     },
     stateCount: withMedian.length,
     highVsLowPercent,
@@ -140,8 +160,8 @@ export function buildStatisticsAggregate(): StatisticsAggregate {
   if (biggestSpread) {
     findings.push(
       `${biggestSpread.categoryDisplayName} costs ${biggestSpread.highVsLowPercent}% more in ` +
-        `${biggestSpread.highestState.name} than in ${biggestSpread.lowestState.name} — the widest ` +
-        "state-to-state gap of any matter type tracked.",
+        `${stateWithTies(biggestSpread.highestState)} than in ${stateWithTies(biggestSpread.lowestState)} — the ` +
+        "largest percentage gap between the highest and lowest state of any matter type tracked.",
     );
   }
 
@@ -151,8 +171,8 @@ export function buildStatisticsAggregate(): StatisticsAggregate {
   for (const row of categoryRows.slice(0, 2)) {
     if (row.highVsLowPercent <= 0) continue;
     findings.push(
-      `${row.categoryDisplayName} costs ${row.highVsLowPercent}% more in ${row.highestState.name} ` +
-        `(${formatCurrency(row.highestState.median)}) than in ${row.lowestState.name} ` +
+      `${row.categoryDisplayName} costs ${row.highVsLowPercent}% more in ${stateWithTies(row.highestState)} ` +
+        `(${formatCurrency(row.highestState.median)}) than in ${stateWithTies(row.lowestState)} ` +
         `(${formatCurrency(row.lowestState.median)}).`,
     );
   }

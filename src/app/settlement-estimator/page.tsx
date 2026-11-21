@@ -10,7 +10,7 @@ import { FOCUS_RING } from "@/lib/utils/styles";
 import { buildMeta } from "@/lib/seo";
 
 export const metadata: Metadata = buildMeta({
-  title: "Settlement Net Estimator — How Much Will I Actually Receive?",
+  title: "Settlement Net Estimator — Net Amount After Fees and Costs",
   description:
     "Estimate your net settlement after attorney contingency fees and case costs. " +
     "Illustrative calculator only — actual amounts are determined by your attorney agreement.",

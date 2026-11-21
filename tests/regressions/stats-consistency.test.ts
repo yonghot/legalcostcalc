@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import seed from "@/data/seed/costs.json";
 import { renderPage } from "./helpers/render";
 import { CATEGORIES } from "@/lib/constants/categories";
-import { INDEXABLE_PAGES, getNationalAverage } from "@/lib/page-index";
+import { INDEXABLE_PAGES, getNationalAverage, getNationalMidpoint } from "@/lib/page-index";
 import { buildStatisticsAggregate } from "@/lib/seo/statistics";
 import { formatCurrency } from "@/lib/utils/format";
 import StatisticsPage from "@/app/legal-cost-statistics/page";
@@ -73,10 +73,11 @@ describe("K4: every statistics surface shows the average of the population it st
     for (const finding of aggregate.findings.slice(0, 2)) expect(finding).toMatch(/average state median/i);
   });
 
-  it("state pages quote the same average without claiming all 50 states and DC", async () => {
+  it("state pages compare against the midpoint of the same population, and say how many states, without claiming all 50 states and DC", async () => {
     const row = aggregate.categoryRows.find((r) => r.categorySlug === "personal-injury")!;
     const html = await renderPage(StateCategoryPage, { state: "texas", slug: "personal-injury-cost" });
-    expect(html).toContain(formatCurrency(row.nationalAverage));
+    expect(html).toContain(formatCurrency(getNationalMidpoint("personal-injury")!));
+    expect(html).not.toContain("average of state medians across");
     expect(html).not.toMatch(/across all 50 states and DC/);
     expect(html).toContain(`${row.stateCount} states`);
   });

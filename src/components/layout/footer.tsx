@@ -36,7 +36,7 @@ export function Footer() {
             </div>
             <p className="text-sm text-slate-400">
               Free legal cost estimates for every US state. Helping you understand the
-              real costs of legal matters.
+              estimated costs of legal matters.
             </p>
             <PublishedBy
               className="mt-3 text-sm text-slate-400"

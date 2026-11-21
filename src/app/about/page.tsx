@@ -80,11 +80,8 @@ export default function AboutPage() {
                   <h2 className="text-xl font-semibold text-slate-900">Our Mission</h2>
                 </div>
                 <p className="mt-3 text-slate-600">
-                  Legal costs in America lack transparency. Hiring an attorney is one of the
-                  most stressful financial decisions people face, and most go in without any
-                  idea of what to expect. LegalCostCalc exists to change that by providing
-                  clear, researched cost ranges for common legal matters across all 50 states
-                  and the District of Columbia.
+                  LegalCostCalc provides modeled cost ranges for common legal matters across
+                  all 50 states and the District of Columbia, each shown with its sources and date.
                 </p>
               </div>
 

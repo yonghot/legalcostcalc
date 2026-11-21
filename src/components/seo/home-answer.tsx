@@ -1,5 +1,5 @@
 import { buildStatisticsAggregate } from "@/lib/seo/statistics";
-import { formatCurrency } from "@/lib/utils/format";
+import { formatCurrency, lowerKeepAcronyms } from "@/lib/utils/format";
 import { HOURLY_RATE_BENCHMARK } from "@/lib/constants/benchmarks";
 
 export function HomeAnswer() {
@@ -20,7 +20,7 @@ export function HomeAnswer() {
         {HOURLY_RATE_BENCHMARK.sourceLabel}
       </a>
       {costliest && cheapest && costliest !== cheapest
-        ? `, and in our modeled estimates the average of the state medians runs from ${formatCurrency(cheapest.nationalAverage)} for ${cheapest.categoryDisplayName.toLowerCase()} to ${formatCurrency(costliest.nationalAverage)} for ${costliest.categoryDisplayName.toLowerCase()}`
+        ? `, and in our modeled estimates the average of the state medians runs from ${formatCurrency(cheapest.nationalAverage)} for ${lowerKeepAcronyms(cheapest.categoryDisplayName)} to ${formatCurrency(costliest.nationalAverage)} for ${lowerKeepAcronyms(costliest.categoryDisplayName)}`
         : ""}
       . Choose a state and matter below for a low, median and high estimate with its sources.
       General information, not legal advice.

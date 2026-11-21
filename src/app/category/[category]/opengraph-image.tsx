@@ -2,6 +2,7 @@ import { ImageResponse } from "next/og";
 import { CATEGORY_MAP } from "@/lib/constants/categories";
 import { INDEXABLE_PAGES, getModerateMedianCost } from "@/lib/page-index";
 import { formatCurrency } from "@/lib/utils/format";
+import { median } from "@/lib/utils/median";
 import { getOgAsOfLabel } from "@/lib/seo/og-freshness";
 import { costFamilyKey } from "@/lib/content-dates";
 
@@ -29,8 +30,7 @@ export default async function OGImage({
         .filter((v): v is number => typeof v === "number")
     : [];
   const stateCount = stateCosts.length;
-  const overallMedian =
-    stateCount > 0 ? [...stateCosts].sort((a, b) => a - b)[Math.floor(stateCount / 2)] : null;
+  const overallMedian = stateCount > 0 ? median(stateCosts) : null;
   const asOfLabel = getOgAsOfLabel(categoryInfo ? [costFamilyKey(categoryInfo.slug)] : []);
 
   return new ImageResponse(
@@ -119,7 +119,7 @@ export default async function OGImage({
             >
               {formatCurrency(overallMedian)}
             </span>
-            <span style={{ fontSize: "20px", color: "#64748B" }}>nationwide median</span>
+            <span style={{ fontSize: "20px", color: "#64748B" }}>median of state medians</span>
           </div>
         )}
 

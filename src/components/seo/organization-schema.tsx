@@ -28,7 +28,7 @@ export function OrganizationSchema() {
         name: "LegalCostCalc",
         url: CANONICAL_ORIGIN,
         description:
-          "Free legal cost calculator providing estimated attorney fees and court costs across all 50 US states for 8 legal categories.",
+          "Free legal cost calculator providing modeled cost estimates across all 50 US states for 8 legal categories.",
         ...(homeDate ? { dateModified: homeDate } : {}),
         potentialAction: {
           "@type": "SearchAction",

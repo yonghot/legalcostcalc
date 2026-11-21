@@ -67,7 +67,7 @@ export default function HomePage() {
       <OrganizationSchema />
       <SoftwareApplicationSchema
         name="LegalCostCalc — Legal Cost Calculator"
-        description="Free legal cost calculator for all 50 US states. Estimate attorney fees, court costs, and total expenses for divorce, DUI, bankruptcy, personal injury, and more."
+        description="Free legal cost calculator for all 50 US states. Modeled cost estimates for divorce, DUI, bankruptcy, personal injury, and more."
         url="https://legalcostcalc.co/"
         dateModified={getFamilyDate("page:home")?.date ?? null}
       />
@@ -192,7 +192,7 @@ export default function HomePage() {
               heading="Popular legal cost estimates"
               intro={
                 <>
-                  Cost estimates that visitors open most often. To see how fees are billed first, read{" "}
+                  Cost estimates ranked by page views. To see how fees are billed first, read{" "}
                   <Link
                     href="/how-legal-fees-work"
                     className={`font-medium text-teal-700 underline hover:text-teal-800 ${FOCUS_RING} rounded-sm`}
@@ -334,7 +334,8 @@ export default function HomePage() {
                 We currently cover 8 legal categories across all 50 US states plus DC:
                 Divorce, DUI/DWI, Personal Injury, Bankruptcy, Real Estate Closing, Estate
                 Planning/Probate, Criminal Defense, and Immigration. Each category includes
-                cost ranges, hourly rates, typical duration, and common fees.
+                cost ranges, typical duration and common fees, plus hourly rates (or contingency
+                percentages for personal injury).
               </dd>
             </div>
           </dl>

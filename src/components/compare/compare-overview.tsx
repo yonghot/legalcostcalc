@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { MethodNote } from "@/components/seo/method-note";
 import { UpdatedBadge } from "@/components/shared/updated-badge";
-import { buildStatisticsAggregate, widestSpreadRow } from "@/lib/seo/statistics";
+import { CASE_EXPENSE_MATTERS, buildStatisticsAggregate, stateWithTies, widestSpreadRow } from "@/lib/seo/statistics";
 import { getFamilyDate } from "@/lib/content-dates";
-import { formatCurrency } from "@/lib/utils/format";
+import { formatCurrency, lowerKeepAcronyms } from "@/lib/utils/format";
 import { FOCUS_RING } from "@/lib/utils/styles";
 
 const linkClass = `font-medium text-teal-700 underline hover:text-teal-800 ${FOCUS_RING} rounded-sm`;
@@ -34,13 +34,14 @@ export function CompareOverview() {
         Example: {matter} in {widest.highestState.name} and {widest.lowestState.name}
       </h3>
       <p className="mt-2 text-slate-700">
-        {matter} shows the widest gap of the {categoryRows.length} matter types. The median estimate is{" "}
+        {matter} has the largest percentage gap between its highest and lowest state of the{" "}
+        {categoryRows.length} matter types. The median estimate is{" "}
         <span className="font-mono font-semibold">{formatCurrency(widest.highestState.median)}</span> in{" "}
-        {widest.highestState.name} and{" "}
+        {stateWithTies(widest.highestState)} and{" "}
         <span className="font-mono font-semibold">{formatCurrency(widest.lowestState.median)}</span> in{" "}
-        {widest.lowestState.name}, a difference of {formatCurrency(gap)}, or {widest.highVsLowPercent}% more
+        {stateWithTies(widest.lowestState)}, a difference of {formatCurrency(gap)}, or {widest.highVsLowPercent}% more
         in {widest.highestState.name} than in {widest.lowestState.name}. The average of state medians for{" "}
-        {matter.toLowerCase()} is {formatCurrency(widest.nationalAverage)}, taken over the{" "}
+        {lowerKeepAcronyms(matter)} is {formatCurrency(widest.nationalAverage)}, taken over the{" "}
         {widest.stateCount} states counted.
       </p>
 
@@ -51,7 +52,8 @@ export function CompareOverview() {
             <Link href={`/category/${row.categorySlug}`} className={linkClass}>
               {row.categoryDisplayName}
             </Link>
-            : {row.highestState.name} {formatCurrency(row.highestState.median)}, {row.lowestState.name}{" "}
+            {CASE_EXPENSE_MATTERS.has(row.categorySlug) ? " (case expenses)" : ""}: {stateWithTies(row.highestState)}{" "}
+            {formatCurrency(row.highestState.median)}, {stateWithTies(row.lowestState)}{" "}
             {formatCurrency(row.lowestState.median)}, {row.stateCount} states counted.
           </li>
         ))}
@@ -60,8 +62,7 @@ export function CompareOverview() {
       <h3 className="mt-8 text-lg font-semibold text-slate-900">How to read these figures</h3>
       <p className="mt-2 text-slate-700">
         Each figure is the median estimate for a state at moderate complexity, shown as one number so states
-        can be lined up. A state is counted for a matter type only when its estimate is sourced and differs
-        from every other state&apos;s figure, so the number of states counted varies by matter type.
+        can be lined up. States whose moderate-tier figures (the low, median and high estimate, the low, median and high rate, and the duration) are all identical to another state&apos;s figures are not counted for that matter type.
       </p>
       <MethodNote scope="each state" className="mt-3 text-slate-700" />
       <p className="mt-3 text-slate-700">

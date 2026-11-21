@@ -2,6 +2,7 @@ import { ImageResponse } from "next/og";
 import { STATE_BY_SLUG } from "@/lib/constants/states";
 import { INDEXABLE_PAGES, getModerateMedianCost } from "@/lib/page-index";
 import { formatCurrency } from "@/lib/utils/format";
+import { median } from "@/lib/utils/median";
 import { getOgAsOfLabel } from "@/lib/seo/og-freshness";
 import { allCostFamilyKeys } from "@/lib/content-dates";
 
@@ -29,10 +30,7 @@ export default async function OGImage({
         .filter((v): v is number => typeof v === "number")
     : [];
   const categoryCount = stateCategoryCosts.length;
-  const overallMedian =
-    categoryCount > 0
-      ? [...stateCategoryCosts].sort((a, b) => a - b)[Math.floor(categoryCount / 2)]
-      : null;
+  const overallMedian = categoryCount > 0 ? median(stateCategoryCosts) : null;
   const asOfLabel = getOgAsOfLabel(allCostFamilyKeys());
 
   return new ImageResponse(
@@ -121,7 +119,7 @@ export default async function OGImage({
             >
               {formatCurrency(overallMedian)}
             </span>
-            <span style={{ fontSize: "20px", color: "#64748B" }}>typical median cost</span>
+            <span style={{ fontSize: "20px", color: "#64748B" }}>median of matter-type medians</span>
           </div>
         )}
 

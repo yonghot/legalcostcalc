@@ -45,7 +45,7 @@ export const GUIDE_FACTS: GuideFact[] = [
   {
     fact: "Lawyers bill four basic ways: hourly, flat, contingency, or a retainer against hourly work",
     detail:
-      "Which one applies to a given matter depends mainly on how predictable the work is and whether the matter produces a cash recovery to take a percentage of — not on which lawyer is hired.",
+      "Which one applies to a given matter depends on how predictable the work is and whether the matter produces a cash recovery to take a percentage of.",
     sourceUrl: "https://www.nolo.com/legal-encyclopedia/attorneys-fees-basics-30196.html",
   },
   {
@@ -94,7 +94,7 @@ export const GUIDE_FACTS: GuideFact[] = [
     sourceUrl: "https://www.nysenate.gov/legislation/laws/JUD/474-A",
   },
   {
-    fact: "Every state allows a lawyer to handle just part of a case (\"limited-scope\" or \"unbundled\" representation)",
+    fact: "ABA Model Rule 1.2(c) permits a lawyer to handle just part of a case (\"limited-scope\" or \"unbundled\" representation)",
     detail:
       "Model Rule 1.2(c) permits this when the limitation is reasonable and the client gives informed consent — commonly billed as a flat fee for the specific task rather than the full matter.",
     sourceUrl:
@@ -136,14 +136,14 @@ export const GUIDE_SECTIONS: GuideSection[] = [
   },
   {
     heading:
-      "What makes a fee \"reasonable\"? Inside the professional-conduct rule every state has adopted a version of",
+      "What makes a fee \"reasonable\"? Inside ABA Model Rule 1.5",
     prose:
-      "Every U.S. jurisdiction's rules of professional conduct include a version of ABA Model Rule 1.5, which prohibits a lawyer from charging or collecting an unreasonable fee. Rather than setting a specific dollar cap, the rule lists factors regulators and courts weigh when a fee is disputed: the time, labor, and skill the work actually required; the difficulty and novelty of the legal questions; whether taking the case precluded other work; the fee customarily charged for similar services in that locality; the amount at stake and the result obtained; any time pressure imposed by the client or circumstances; the length of the attorney-client relationship; the attorney's experience and reputation; and whether the fee is fixed or contingent. No single factor controls, and the rule states explicitly that not every factor is relevant in every matter — it is a multi-factor reasonableness test, not a formula. The same rule also requires that the scope of representation and the basis of the fee be communicated to the client, preferably in writing, before or within a reasonable time after the representation begins — the disclosure obligation covered in state-specific detail in the next section.",
+      "ABA Model Rule 1.5 prohibits a lawyer from charging or collecting an unreasonable fee. Rather than setting a specific dollar cap, the rule lists factors regulators and courts weigh when a fee is disputed: the time, labor, and skill the work actually required; the difficulty and novelty of the legal questions; whether taking the case precluded other work; the fee customarily charged for similar services in that locality; the amount at stake and the result obtained; any time pressure imposed by the client or circumstances; the length of the attorney-client relationship; the attorney's experience and reputation; and whether the fee is fixed or contingent. No single factor controls, and the rule states explicitly that not every factor is relevant in every matter — it is a multi-factor reasonableness test, not a formula. The same rule also requires that the scope of representation and the basis of the fee be communicated to the client, preferably in writing, before or within a reasonable time after the representation begins — the disclosure obligation covered in state-specific detail in the next section.",
   },
   {
     heading: "The written fee agreement: what the law requires you to get in writing",
     prose:
-      "Beyond the general Model Rule 1.5 disclosure requirement, many states impose specific, mandatory writing rules once a matter crosses a certain size or fee type. California is a concrete, sourced example: Business & Professions Code §6148 requires a written fee contract whenever the total expected cost — including attorney fees — is reasonably foreseeable to exceed $1,000, and that contract must state the basis of compensation (hourly rate, flat fee, or other), the general scope of services, and each party's responsibilities; skipping this requirement makes the agreement voidable at the client's option. Contingency fee agreements face an even stricter, near-universal writing requirement under Model Rule 1.5(c) — the percentage, expense handling, and a post-case written accounting are all required elements, not optional disclosures. These rules exist because the fee agreement is one of the most common sources of later attorney-client disputes, and a clear written record — rather than a verbal understanding — is what regulators, fee-arbitration panels, and courts look to if a disagreement arises.",
+      "Beyond the general Model Rule 1.5 disclosure requirement, many states impose specific, mandatory writing rules once a matter crosses a certain size or fee type. California is a concrete, sourced example: Business & Professions Code §6148 requires a written fee contract whenever the total expected cost — including attorney fees — is reasonably foreseeable to exceed $1,000, and that contract must state the basis of compensation (hourly rate, flat fee, or other), the general scope of services, and each party's responsibilities; skipping this requirement makes the agreement voidable at the client's option. Contingency fee agreements face an even stricter, near-universal writing requirement under Model Rule 1.5(c) — the percentage, expense handling, and a post-case written accounting are all required elements, not optional disclosures.",
   },
   {
     heading: "Why some states cap the lawyer's percentage in certain contingency cases",

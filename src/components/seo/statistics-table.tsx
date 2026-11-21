@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { formatCurrency } from "@/lib/utils/format";
 import { FOCUS_RING } from "@/lib/utils/styles";
-import type { CategoryStatRow } from "@/lib/seo/statistics";
+import { CASE_EXPENSE_MATTERS, stateWithTies, type CategoryStatRow } from "@/lib/seo/statistics";
 
 interface StatisticsTableProps {
   rows: CategoryStatRow[];
@@ -71,6 +71,9 @@ export function StatisticsTable({ rows }: StatisticsTableProps) {
                 >
                   {row.categoryDisplayName}
                 </Link>
+                {CASE_EXPENSE_MATTERS.has(row.categorySlug) && (
+                  <span className="ml-1 font-normal text-slate-600">(case expenses)</span>
+                )}
               </td>
               <td className="px-4 py-3 font-mono font-semibold text-slate-800">
                 {formatCurrency(row.nationalAverage)}
@@ -81,7 +84,7 @@ export function StatisticsTable({ rows }: StatisticsTableProps) {
                   href={`/${row.highestState.slug}/${row.categorySlug}-cost`}
                   className={`font-mono text-slate-700 hover:text-teal-700 hover:underline ${FOCUS_RING} rounded-sm`}
                 >
-                  {row.highestState.name}: {formatCurrency(row.highestState.median)}
+                  {stateWithTies(row.highestState)}: {formatCurrency(row.highestState.median)}
                 </Link>
               </td>
               <td className="px-4 py-3">
@@ -89,7 +92,7 @@ export function StatisticsTable({ rows }: StatisticsTableProps) {
                   href={`/${row.lowestState.slug}/${row.categorySlug}-cost`}
                   className={`font-mono text-slate-700 hover:text-teal-700 hover:underline ${FOCUS_RING} rounded-sm`}
                 >
-                  {row.lowestState.name}: {formatCurrency(row.lowestState.median)}
+                  {stateWithTies(row.lowestState)}: {formatCurrency(row.lowestState.median)}
                 </Link>
               </td>
               <td className="px-4 py-3 font-mono text-slate-600">+{row.highVsLowPercent}%</td>

@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 import { buildStatisticsAggregate } from "@/lib/seo/statistics";
-import { formatCurrency } from "@/lib/utils/format";
+import { formatCurrency, lowerKeepAcronyms } from "@/lib/utils/format";
 import { getOgAsOfLabel } from "@/lib/seo/og-freshness";
 
 export const runtime = "edge";
@@ -94,7 +94,7 @@ export default function OGImage() {
               {formatCurrency(headline.nationalAverage)}
             </span>
             <span style={{ fontSize: "18px", color: "#64748B" }}>
-              average state median {headline.categoryDisplayName.toLowerCase()} cost — most expensive matter type
+              average state median {lowerKeepAcronyms(headline.categoryDisplayName)} cost — most expensive matter type
             </span>
           </div>
         )}

@@ -17,7 +17,7 @@ export async function GET() {
     dateUpdated: getFamilyDate("page:legal-cost-statistics")?.date ?? null,
     source: "https://legalcostcalc.co/legal-cost-statistics",
     averageDefinition:
-      "nationalAverageMedianCost is the mean of the moderate-complexity median cost across the stateCount states listed for that category; only states with a sourced estimate that differs from every other state's figure are counted.",
+      "nationalAverageMedianCost is the mean of the moderate-complexity median cost across the stateCount states listed for that category; states whose moderate-tier figures (the low, median and high estimate, the low, median and high rate, and the duration) are all identical to another state's figures are not counted.",
     totalDataPoints: aggregate.totalDataPoints,
     findings: aggregate.findings,
     categories: aggregate.categoryRows.map((row) => ({
@@ -29,11 +29,13 @@ export async function GET() {
         code: row.highestState.code,
         name: row.highestState.name,
         medianCost: row.highestState.median,
+        otherStatesAtSameMedian: row.highestState.tiedWith,
       },
       lowestCostState: {
         code: row.lowestState.code,
         name: row.lowestState.name,
         medianCost: row.lowestState.median,
+        otherStatesAtSameMedian: row.lowestState.tiedWith,
       },
       highVsLowPercent: row.highVsLowPercent,
     })),

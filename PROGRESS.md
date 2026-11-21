@@ -1,5 +1,13 @@
 # PROGRESS.md — LegalCostCalc
 
+## 2026-11-22 — K39 /updates 페이지 + Atom 피드 (AppFarm 3 implement)
+
+- 추가: `/updates`(src/app/updates/page.tsx), `/updates/feed.xml`(정적 Atom), 데이터 `src/lib/site-updates.ts`, 피드 빌더 `src/lib/updates-feed.ts`. 푸터 Resources 에 "Updates" 링크(형제 사이트 링크 없음), 사이트맵에 /updates 추가(lastmod = 최신 항목 날짜), 페이지 metadata 에 피드 alternate.
+- 날짜 원칙: 라이브는 8/31 빌드(561d440)였고 dpl_Ge6iFsiufKsLHFZukig8EQ7eAcQA(88704ce)가 11/22 에 게시됐으므로 그 사이 변경은 전부 2026-11-22 로 기록(커밋 날짜 아님). 항목 6개: 생성 문장 정정·삭제 / 근거 없는 주장 제거(모델 추정 표기) / CA 이혼 법원 접수비 출처 표시 / 동의 컨트롤 / 폼·정책 페이지·링크 블록 / 페이지 날짜가 실제 변경을 따름. 각 항목은 커밋 SHA(날짜 ≤ 항목 날짜) 또는 파일+마커를 증거로 가지며, 수치는 CA 접수비 $435-$450(verified-fees.json) 하나뿐. 갱신 주기 약속 문장 없음.
+- 테스트: tests/regressions/k39-updates.test.ts(고유 id·최신순·날짜 유효·증거 커밋 존재 및 날짜 ≤ 항목 날짜·주기어 금지·Atom 유효성·페이지 전 항목 렌더·사이트맵 lastmod 일치, 양성 대조 포함). k24 고아 검사는 푸터로만 링크되는 /updates 를 제외, k8 사이트맵 개수는 +1.
+- 검증: k39·k24·k3-no-global-lastmod·k3-visible-dates·ad-eligibility-parity·k8 및 인접 테스트 통과, 변경 파일 eslint 0건. /updates 는 AdSense 로더 대상 아님(AD_STATIC_PATHS 불변).
+- 로컬 docs 커밋 ed6c634·d3756f8 은 그대로 두고 이번 푸시에 함께 나간다.
+
 ## 2026-11-22 — 프로덕션 배포 기록 (AppFarm 3 ship)
 
 - 배포: HEAD 88704ce 를 `git push origin feature/mvp-prototype`(Vercel 프로덕션 브랜치 확인) 로 배포. 프로덕션 deployment dpl_Ge6iFsiufKsLHFZukig8EQ7eAcQA (legalcostcalc-bidzvgnum-actigence.vercel.app), Ready, 커밋 SHA=HEAD, legalcostcalc.co 별칭 연결.

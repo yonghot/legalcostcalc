@@ -124,12 +124,12 @@ describe("K8: shipped policy keeps traffic-earning and sourced pages, noindexes 
     }
   });
 
-  it("the sitemap lists the 41 kept template pages and every hub, guide and tool page unchanged", () => {
+  it("the sitemap lists the 41 kept template pages and every hub, guide, tool page and the updates page", () => {
     const urls = sitemap().map((e) => e.url);
     expect(templatePaths(urls)).toEqual(KEPT);
     const nonTemplate = urls.filter((u) => !/^\/[a-z-]+\/[a-z-]+-cost$/.test(new URL(u).pathname));
-    expect(nonTemplate).toHaveLength(8 + STATES.length + CATEGORIES.length);
-    expect(urls).toHaveLength(8 + STATES.length + CATEGORIES.length + 41);
+    expect(nonTemplate).toHaveLength(9 + STATES.length + CATEGORIES.length);
+    expect(urls).toHaveLength(9 + STATES.length + CATEGORIES.length + 41);
   });
 
   it("robots meta is index for kept pages and noindex,follow for every other page, 408 pages", async () => {

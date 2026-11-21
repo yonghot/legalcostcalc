@@ -103,6 +103,11 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/updates" className={footerLink}>
+                  Updates
+                </Link>
+              </li>
+              <li>
                 <Link href="/contact" className={footerLink}>
                   Contact
                 </Link>

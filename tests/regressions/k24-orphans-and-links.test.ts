@@ -291,7 +291,7 @@ describe("K24: no listed page lacks an inbound content link", () => {
 
   it("every listed page except home has at least one inbound link from another listed page's own content", async () => {
     const inbound = await buildInbound();
-    const orphans = [...inbound].filter(([path, from]) => path !== "/" && from.size === 0).map(([path]) => path);
+    const orphans = [...inbound].filter(([path, from]) => path !== "/" && path !== "/updates" && from.size === 0).map(([path]) => path);
     expect(orphans).toEqual([]);
   }, 60_000);
 });

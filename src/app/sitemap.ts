@@ -3,6 +3,7 @@ import { STATES } from "@/lib/constants/states";
 import { CATEGORIES } from "@/lib/constants/categories";
 import { INDEXED_PAGES } from "@/lib/index-policy";
 import { CANONICAL_ORIGIN } from "@/lib/seo";
+import { NEWEST_UPDATE_DATE } from "@/lib/site-updates";
 import { allCostFamilyKeys, costFamilyKey, getFamilyDate, maxFamilyDate } from "@/lib/content-dates";
 
 type SitemapEntry = MetadataRoute.Sitemap[number];
@@ -23,6 +24,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     entry(`${CANONICAL_ORIGIN}/about`, 0.6, familyDate("page:about")),
     entry(`${CANONICAL_ORIGIN}/settlement-estimator`, 0.6, familyDate("page:settlement-estimator")),
     entry(`${CANONICAL_ORIGIN}/embed`, 0.4, familyDate("page:embed")),
+    entry(`${CANONICAL_ORIGIN}/updates`, 0.3, NEWEST_UPDATE_DATE),
   ];
 
   const allCostDate = maxFamilyDate(allCostFamilyKeys());

@@ -2161,3 +2161,4 @@ owned).
 | React #418 | 첫 방문·재방문 모두 없음 (대조 문서에서만 발생: 재작성 부산물) |
 | head 순서 | DOM 상 consent default(17) < 로더(18), 로더는 head 내 1개·body 0 |
 | K14-c | 국가 쿠키 XX + Manage Consent 클릭 동일 동기 단계 -> 0.5초 시점 공지 없음, 약 3초 시점 거부 전용 공지 1개, 버튼 "Decline" 하나(Accept 없음), 이중 UI 없음 |
+- 2026-11-22 fix(k7): /updates를 K7 EXCLUDE 표와 scan classify(page, include=false)에 분류 -> 주 허브 수 52->51, 로더 기대 0 (광고 적격 규칙에 없음); 렌더 테스트로 로더 0 확인

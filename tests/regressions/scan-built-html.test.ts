@@ -398,3 +398,10 @@ describe("scan-built-html: positive controls (each defect is caught)", () => {
     expect(r.violations.some((v) => v.check === "unknown-params")).toBe(true);
   });
 });
+
+describe("scan classify: /updates", () => {
+  it("is a loader-free page, not a state hub", async () => {
+    const { classify } = await import(pathToFileURL(scriptPath).href);
+    expect(classify("updates", new Set())).toMatchObject({ kind: "page", route: "/updates", include: false });
+  });
+});

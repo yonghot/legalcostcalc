@@ -22,6 +22,7 @@ import TermsPage from "@/app/terms/page";
 import EmbedIndexPage from "@/app/embed/page";
 import SettlementEstimatorPage from "@/app/settlement-estimator/page";
 import SearchPage from "@/app/search/page";
+import UpdatesPage from "@/app/updates/page";
 import EmbedCalculatorPage from "@/app/embed/[state]/[slug]/page";
 import NotFound from "@/app/not-found";
 import ErrorBoundary from "@/app/error";
@@ -46,7 +47,7 @@ const INCLUDE_ROUTES = [
   "/embed",
   "/settlement-estimator",
 ];
-const EXCLUDE_ROUTES = ["/embed/[state]/[slug]", "/search"];
+const EXCLUDE_ROUTES = ["/embed/[state]/[slug]", "/search", "/updates"];
 
 function walk(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {
@@ -110,6 +111,7 @@ const EXCLUDED: Array<[string, string, () => ReactNode | Promise<ReactNode>]> = 
     "/search",
     () => SearchPage({ searchParams: Promise.resolve({ q: "zzzzqq" }) }),
   ],
+  ["/updates", "/updates", () => UpdatesPage()],
   ["404 (not-found)", "/texas/not-a-real-cost", () => NotFound()],
   [
     "error boundary (the gate is by path, so an eligible path keeps the document-level loader)",

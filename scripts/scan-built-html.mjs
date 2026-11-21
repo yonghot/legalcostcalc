@@ -121,6 +121,7 @@ export function classify(rel, hubNames) {
       return { kind: "error", route: `/${parts[0]}`, include: false };
     }
     if (LOADER_PAGES.includes(parts[0])) return { kind: "page", route: `/${parts[0]}`, include: true };
+    if (parts[0] === "updates") return { kind: "page", route: "/updates", include: false };
     return { kind: "state-hub", route: `/${parts[0]}`, include: true };
   }
   if (parts.length === 2 && parts[0] === "category") {

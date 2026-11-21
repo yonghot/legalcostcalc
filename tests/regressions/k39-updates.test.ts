@@ -98,6 +98,15 @@ describe("K39: feed, page and sitemap agree", () => {
     expect(html).toContain('href="/updates/feed.xml"');
   });
 
+  it("entry wording matches what the cited commits did (fresh review 2026-11-22 W1-W3)", () => {
+    const byId = (id: string) => SITE_UPDATES.find((u) => u.id === id)!;
+    const consent = byId("consent-controls").body;
+    expect(consent).toMatch(/EEA, the UK and Switzerland/);
+    expect(consent).not.toMatch(/Outside the EEA no/);
+    expect(byId("forms-and-policy-pages").title).not.toMatch(/footer/i);
+    expect(byId("page-dates-follow-changes").body).not.toMatch(/per-page/i);
+  });
+
   it("sitemap lists /updates with lastmod equal to the newest entry", () => {
     const entry = sitemap().find((e) => e.url === `${CANONICAL_ORIGIN}/updates`);
     const lastmod = entry?.lastModified instanceof Date ? entry.lastModified.toISOString().slice(0, 10) : entry?.lastModified;

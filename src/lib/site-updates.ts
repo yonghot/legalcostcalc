@@ -40,14 +40,14 @@ export const SITE_UPDATES: readonly SiteUpdate[] = [
     date: "2026-11-22",
     title: "Consent controls changed",
     body:
-      "The consent default for ads and analytics is now set in the page HTML by region before the ad script. Outside the EEA no consent banner opens automatically, in the EEA the choice is handled by Google's consent dialog, and Decline withdraws consent. If Manage consent cannot open Google's dialog, a decline-only notice opens instead.",
+      "The consent default for ads and analytics is now set in the page HTML by region before the ad script. Outside the EEA, the UK and Switzerland no consent banner opens automatically; in those regions the choice is handled by Google's consent dialog, and Decline withdraws consent. If Manage consent cannot open Google's dialog, a decline-only notice opens instead.",
     commits: ["d7cad0a", "ae95dd9", "5a767b6", "140a992", "66aaa4c"],
     files: [],
   },
   {
     id: "forms-and-policy-pages",
     date: "2026-11-22",
-    title: "Forms, policy pages and footer links brought in line with what the site does",
+    title: "Forms, policy pages and links to unrelated sites brought in line with what the site does",
     body:
       "The contact and feedback forms no longer report success when nothing was delivered. The Privacy page was rewritten to match the analytics, ads, forms and cookies in use. A Terms section with placeholder text was removed, and a block of links to unrelated sites was removed.",
     commits: ["16324d6", "df71c0a", "8aad6d9", "89c635a"],
@@ -58,9 +58,9 @@ export const SITE_UPDATES: readonly SiteUpdate[] = [
     date: "2026-11-22",
     title: "Page dates now follow the day a page's content changed",
     body:
-      "The dates shown on pages, the dates in the sitemap and the dates in structured data now come from a per-page record of when the content last changed, instead of one sitewide date.",
+      "The dates shown on pages, the dates in the sitemap and the dates in structured data now come from a record, kept for each group of pages, of when the content last changed, instead of one sitewide date.",
     commits: ["49a17d9", "bf4f96e", "6a61260"],
-    files: [{ path: "src/data/content-dates.json", marker: "evidence" }],
+    files: [{ path: "src/data/content-dates.json", marker: '"basis": "content-changed"' }],
   },
 ];
 

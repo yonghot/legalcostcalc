@@ -1,5 +1,11 @@
 # PROGRESS.md — LegalCostCalc
 
+## 2026-11-22 — /updates 항목 문구 정정 (fresh 리뷰 WARNING 3 + SUGGESTION 1, AppFarm 3)
+
+- 원인: 배포된 /updates 항목 문구가 인용 커밋보다 넓거나 좁게 말했다. W1 "footer links"(89c635a는 홈·주/매터 페이지의 형제 링크 블록 삭제, 푸터 아님), W2 "Outside the EEA"(동의 지역 목록은 EEA+UK+CH 32개 코드), W3 "per-page record"(content-dates.json은 페이지 그룹(패밀리) 단위). S1 증거 마커 "evidence"가 JSON 키라 공허했다.
+- 조치: src/lib/site-updates.ts 문구 3곳 정정, 마커를 '"basis": "content-changed"'로.
+- 회귀 테스트: tests/regressions/k39-updates.test.ts에 문구 단언 1건 추가(옛 문구면 실패), 8/8 통과.
+
 ## 2026-11-22 — 배포 기록: /updates (AppFarm 3 ship)
 
 - 배포: dpl_6fvBFYxxeRLhQL7PEHuovV47TbCL (legalcostcalc-3g1yzg4lh-actigence.vercel.app) Ready, HEAD 906351f, 브랜치 feature/mvp-prototype 푸시(ed6c634·d3756f8 docs 커밋 동반). 롤백 대상: dpl_Ge6iFsiufKsLHFZukig8EQ7eAcQA(88704ce).

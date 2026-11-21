@@ -16,8 +16,15 @@ import type { NextRequest } from "next/server";
  */
 
 const COUNTRY_COOKIE = "visitor_country";
+const ADSENSE_CRAWLER = /Mediapartners-Google|AdsBot-Google/i;
 
 export function middleware(request: NextRequest) {
+  const crawlerUa = request.headers.get("user-agent") ?? "";
+  if (ADSENSE_CRAWLER.test(crawlerUa)) {
+    const ua = /Mediapartners-Google/i.test(crawlerUa) ? "mp" : "adsbot";
+    console.log("adsense-crawl " + JSON.stringify({ p: request.nextUrl.pathname, d: process.env.VERCEL_DEPLOYMENT_ID ?? null, ua }));
+  }
+
   const response = NextResponse.next();
 
   // Vercel injects this header at the edge. Absent locally / off-Vercel.

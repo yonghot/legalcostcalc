@@ -405,3 +405,11 @@ describe("scan classify: /updates", () => {
     expect(classify("updates", new Set())).toMatchObject({ kind: "page", route: "/updates", include: false });
   });
 });
+
+describe("scan-built-html: a built /updates page", () => {
+  it("is not counted as a state hub", async () => {
+    const result = await mutated((dir) => cpSync(path.join(dir, "about.html"), path.join(dir, "updates.html")));
+    expect(result.stats).toMatchObject({ stateHubs: 5 });
+    expect(result.violations.some((v) => v.check === "count")).toBe(false);
+  });
+});

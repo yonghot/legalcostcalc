@@ -158,7 +158,7 @@ export function scanBuiltHtml({ appDir, expect = DEFAULT_EXPECT, samples = SAMPL
   });
 
   const stateHubs = new Set(
-    pages.filter((p) => !p.rel.includes("/") && p.rel !== "index" && !p.rel.startsWith("_") && !LOADER_PAGES.includes(p.rel)).map((p) => p.rel),
+    pages.filter((p) => !p.rel.includes("/") && p.rel !== "index" && !p.rel.startsWith("_") && p.rel !== "updates" && !LOADER_PAGES.includes(p.rel)).map((p) => p.rel),
   );
   const categoryHubs = new Set(pages.filter((p) => p.rel.startsWith("category/")).map((p) => p.rel.slice("category/".length)));
 

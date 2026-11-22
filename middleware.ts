@@ -17,12 +17,16 @@ import type { NextRequest } from "next/server";
 
 const COUNTRY_COOKIE = "visitor_country";
 const ADSENSE_CRAWLER = /Mediapartners-Google|AdsBot-Google/i;
+const SEARCH_CRAWLER = /Googlebot|bingbot|Google-InspectionTool|GoogleOther/i;
 
 export function middleware(request: NextRequest) {
   const crawlerUa = request.headers.get("user-agent") ?? "";
   if (ADSENSE_CRAWLER.test(crawlerUa)) {
     const ua = /Mediapartners-Google/i.test(crawlerUa) ? "mp" : "adsbot";
     console.log("adsense-crawl " + JSON.stringify({ p: request.nextUrl.pathname, d: process.env.VERCEL_DEPLOYMENT_ID ?? null, ua }));
+  } else if (SEARCH_CRAWLER.test(crawlerUa)) {
+    const ua = /bingbot/i.test(crawlerUa) ? "bing" : "google";
+    console.log("search-crawl " + JSON.stringify({ p: request.nextUrl.pathname, d: process.env.VERCEL_DEPLOYMENT_ID ?? null, ua }));
   }
 
   const response = NextResponse.next();

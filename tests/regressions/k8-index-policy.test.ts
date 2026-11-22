@@ -9,6 +9,7 @@ import { INDEXABLE_PAGES, PAGE_INDEX } from "@/lib/page-index";
 import { INDEXED_PAGES, createIndexPolicy, isIndexable } from "@/lib/index-policy";
 import policyData from "@/data/index-policy.json";
 import evidence from "@/data/k8-evidence.json";
+import evidenceNov from "@/data/k8-evidence-2026-11.json";
 import sitemap from "@/app/sitemap";
 import StateCategoryPage, { generateMetadata } from "@/app/[state]/[slug]/page";
 import StateHubPage from "@/app/[state]/page";
@@ -91,22 +92,25 @@ describe("K8: createIndexPolicy semantics", () => {
 });
 
 const DIVORCE_EXCEPTIONS = ["/new-york/divorce-cost", "/california/divorce-cost"];
-const EVIDENCE_PATHS = evidence.paths.map((p) => p.path);
+const EVIDENCE_PATHS = [...evidence.paths.map((p) => p.path), ...evidenceNov.paths.map((p) => p.path)];
 const KEPT = new Set([...EVIDENCE_PATHS, ...DIVORCE_EXCEPTIONS]);
 
 describe("K8: shipped policy keeps traffic-earning and sourced pages, noindexes the rest", () => {
-  it("keeps the 39 evidence paths, the two divorce exceptions and lists nothing else", () => {
+  it("keeps the 67 evidence paths (39 from the 90-day file, 28 from the 2026-11 landing file), the two divorce exceptions and lists nothing else", () => {
     expect(new Set(policyData.keep)).toEqual(new Set(EVIDENCE_PATHS));
-    expect(policyData.keep).toHaveLength(39);
+    expect(policyData.keep).toHaveLength(67);
+    expect(evidenceNov.paths).toHaveLength(28);
+    for (const p of evidenceNov.paths) expect(p.organicSessions, p.path).toBeGreaterThanOrEqual(1);
+    expect(evidenceNov.paths.filter((p) => evidence.paths.some((q) => q.path === p.path))).toEqual([]);
     expect(policyData.exceptions).toEqual(DIVORCE_EXCEPTIONS);
     expect(policyData.noindex).toEqual([]);
   });
 
-  it("counts: 369 pass the information-gain gate, 41 stay indexable, 328 become noindex,follow", () => {
+  it("counts: 369 pass the information-gain gate, 69 stay indexable, 300 become noindex,follow", () => {
     expect(INDEXABLE_PAGES).toHaveLength(369);
-    expect(INDEXED_PAGES).toHaveLength(41);
+    expect(INDEXED_PAGES).toHaveLength(69);
     const dropped = INDEXABLE_PAGES.filter((p) => !isIndexable(p.state.code, p.category.slug));
-    expect(dropped).toHaveLength(328);
+    expect(dropped).toHaveLength(300);
     expect(INDEXED_PAGES.map((p) => p.path).sort()).toEqual([...KEPT].sort());
   });
 
@@ -124,12 +128,12 @@ describe("K8: shipped policy keeps traffic-earning and sourced pages, noindexes 
     }
   });
 
-  it("the sitemap lists the 41 kept template pages and every hub, guide, tool page and the updates page", () => {
+  it("the sitemap lists the 69 kept template pages and every hub, guide, tool page and the updates page", () => {
     const urls = sitemap().map((e) => e.url);
     expect(templatePaths(urls)).toEqual(KEPT);
     const nonTemplate = urls.filter((u) => !/^\/[a-z-]+\/[a-z-]+-cost$/.test(new URL(u).pathname));
     expect(nonTemplate).toHaveLength(9 + STATES.length + CATEGORIES.length);
-    expect(urls).toHaveLength(9 + STATES.length + CATEGORIES.length + 41);
+    expect(urls).toHaveLength(9 + STATES.length + CATEGORIES.length + 69);
   });
 
   it("robots meta is index for kept pages and noindex,follow for every other page, 408 pages", async () => {

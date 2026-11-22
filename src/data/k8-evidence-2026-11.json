@@ -1,0 +1,180 @@
+{
+  "generatedFrom": "ga4-landing-2026-11-22.tsv",
+  "source": "GA4 property 543449434, sessions by hostname and landing page, rows with host legalcostcalc.co, state/matter paths with at least one organic search session that the 90-day evidence file does not list",
+  "host": "legalcostcalc.co",
+  "window": {
+    "start": "2026-10-25",
+    "end": "2026-11-21"
+  },
+  "note": "Sessions without analytics consent are not counted, so every figure is a lower bound. The site served the 2026-08-31 build for this whole window, when these pages were indexable. Evidence only: nothing reads this file to decide indexing.",
+  "paths": [
+    {
+      "path": "/georgia/real-estate-cost",
+      "sessions": 4,
+      "engagedSessions": 3,
+      "organicSessions": 3
+    },
+    {
+      "path": "/north-carolina/bankruptcy-cost",
+      "sessions": 3,
+      "engagedSessions": 3,
+      "organicSessions": 3
+    },
+    {
+      "path": "/georgia/criminal-defense-cost",
+      "sessions": 2,
+      "engagedSessions": 2,
+      "organicSessions": 2
+    },
+    {
+      "path": "/illinois/bankruptcy-cost",
+      "sessions": 2,
+      "engagedSessions": 2,
+      "organicSessions": 2
+    },
+    {
+      "path": "/kentucky/bankruptcy-cost",
+      "sessions": 2,
+      "engagedSessions": 2,
+      "organicSessions": 2
+    },
+    {
+      "path": "/michigan/bankruptcy-cost",
+      "sessions": 2,
+      "engagedSessions": 2,
+      "organicSessions": 2
+    },
+    {
+      "path": "/connecticut/divorce-cost",
+      "sessions": 2,
+      "engagedSessions": 2,
+      "organicSessions": 1
+    },
+    {
+      "path": "/alaska/bankruptcy-cost",
+      "sessions": 1,
+      "engagedSessions": 1,
+      "organicSessions": 1
+    },
+    {
+      "path": "/arkansas/real-estate-cost",
+      "sessions": 2,
+      "engagedSessions": 1,
+      "organicSessions": 1
+    },
+    {
+      "path": "/connecticut/criminal-defense-cost",
+      "sessions": 2,
+      "engagedSessions": 1,
+      "organicSessions": 1
+    },
+    {
+      "path": "/delaware/personal-injury-cost",
+      "sessions": 1,
+      "engagedSessions": 1,
+      "organicSessions": 1
+    },
+    {
+      "path": "/georgia/bankruptcy-cost",
+      "sessions": 1,
+      "engagedSessions": 1,
+      "organicSessions": 1
+    },
+    {
+      "path": "/georgia/divorce-cost",
+      "sessions": 2,
+      "engagedSessions": 1,
+      "organicSessions": 1
+    },
+    {
+      "path": "/maryland/estate-planning-cost",
+      "sessions": 1,
+      "engagedSessions": 1,
+      "organicSessions": 1
+    },
+    {
+      "path": "/massachusetts/criminal-defense-cost",
+      "sessions": 2,
+      "engagedSessions": 1,
+      "organicSessions": 1
+    },
+    {
+      "path": "/massachusetts/dui-cost",
+      "sessions": 1,
+      "engagedSessions": 1,
+      "organicSessions": 1
+    },
+    {
+      "path": "/north-carolina/estate-planning-cost",
+      "sessions": 2,
+      "engagedSessions": 1,
+      "organicSessions": 1
+    },
+    {
+      "path": "/oklahoma/bankruptcy-cost",
+      "sessions": 1,
+      "engagedSessions": 1,
+      "organicSessions": 1
+    },
+    {
+      "path": "/oregon/bankruptcy-cost",
+      "sessions": 2,
+      "engagedSessions": 1,
+      "organicSessions": 1
+    },
+    {
+      "path": "/south-carolina/bankruptcy-cost",
+      "sessions": 1,
+      "engagedSessions": 1,
+      "organicSessions": 1
+    },
+    {
+      "path": "/south-carolina/divorce-cost",
+      "sessions": 3,
+      "engagedSessions": 1,
+      "organicSessions": 1
+    },
+    {
+      "path": "/tennessee/bankruptcy-cost",
+      "sessions": 1,
+      "engagedSessions": 1,
+      "organicSessions": 1
+    },
+    {
+      "path": "/tennessee/criminal-defense-cost",
+      "sessions": 1,
+      "engagedSessions": 1,
+      "organicSessions": 1
+    },
+    {
+      "path": "/vermont/bankruptcy-cost",
+      "sessions": 1,
+      "engagedSessions": 1,
+      "organicSessions": 1
+    },
+    {
+      "path": "/virginia/dui-cost",
+      "sessions": 1,
+      "engagedSessions": 1,
+      "organicSessions": 1
+    },
+    {
+      "path": "/washington/bankruptcy-cost",
+      "sessions": 2,
+      "engagedSessions": 1,
+      "organicSessions": 1
+    },
+    {
+      "path": "/wisconsin/criminal-defense-cost",
+      "sessions": 1,
+      "engagedSessions": 1,
+      "organicSessions": 1
+    },
+    {
+      "path": "/ohio/bankruptcy-cost",
+      "sessions": 2,
+      "engagedSessions": 0,
+      "organicSessions": 1
+    }
+  ]
+}

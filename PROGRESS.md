@@ -1,5 +1,13 @@
 # PROGRESS.md — LegalCostCalc
 
+## 2026-11-22 — K8/K29 복원: 최근 28일 검색 유입이 있던 28쪽을 index로 되돌림 (AppFarm 3)
+
+- 원인: K8 keep 목록(39쪽)은 2026-07-08~10-05 90일 증거로 만들었다. 11/22 배포(8/31 빌드 → 1742b65)가 그 밖의 인스턴스를 noindex로 바꿨는데, 리더의 GA4 호스트×랜딩 표(2026-10-25~11-21, `.claude/work/AppFarm1/ga4-landing-2026-11-22.tsv`)를 대조하니 noindex가 된 쪽 중 28쪽이 그 28일에 유기 검색 세션을 받았다. 합계 36세션으로 legal 유기 69세션의 52%이고, 참여 세션도 36이다. 상위는 /georgia/real-estate-cost 3, /north-carolina/bankruptcy-cost 3, 파산 12쪽이다.
+- 조치(계약 K29 복원 절차): `src/data/index-policy.json` keep에 28쪽 추가(39 → 67, 색인 인스턴스 41 → 69, noindex 328 → 300). 증거는 `src/data/k8-evidence-2026-11.json`(경로·세션·참여·유기 세션, 기존 90일 증거와 겹치는 경로 없음). 기준은 기존과 같다(유기·AI·추천 유입 1 이상, 기존 39쪽 중 20쪽이 1건).
+- 회귀 테스트: tests/regressions/k8-index-policy.test.ts — keep = 두 증거 파일의 합집합, 개수 67/69/300, 사이트맵 템플릿 69쪽, 11월 증거 28쪽은 전부 유기 1 이상·90일 증거와 무중복(38/38). 이웃 7개 파일(ad-eligibility-parity·k24·k3·k7·related-links·ux-next-steps·related-matters) 통과.
+- 부수: tests/regressions/k39-updates.test.ts의 커밋 날짜 조회를 커밋당 git 1회에서 `git log` 1회로 바꿨다(머신 부하 때 5초 제한 초과 — 22초 관측. 제한 시간은 그대로).
+- 보류(리더 결정): 허브 59쪽 noindex. 같은 표에서 허브는 28일간 10쪽에 12세션(참여 2·유기 3)뿐이다.
+
 ## 2026-11-22 — /updates 항목 문구 정정 (fresh 리뷰 WARNING 3 + SUGGESTION 1, AppFarm 3)
 
 - 원인: 배포된 /updates 항목 문구가 인용 커밋보다 넓거나 좁게 말했다. W1 "footer links"(89c635a는 홈·주/매터 페이지의 형제 링크 블록 삭제, 푸터 아님), W2 "Outside the EEA"(동의 지역 목록은 EEA+UK+CH 32개 코드), W3 "per-page record"(content-dates.json은 페이지 그룹(패밀리) 단위). S1 증거 마커 "evidence"가 JSON 키라 공허했다.

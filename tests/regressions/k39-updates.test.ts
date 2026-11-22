@@ -14,12 +14,14 @@ import { buildUpdatesFeed } from "@/lib/updates-feed";
 const ISO = /^\d{4}-\d{2}-\d{2}$/;
 const CADENCE = /\b(weekly|monthly|quarterly|biweekly|annually|regularly|periodically|every\s+(\d+|week|month|quarter|day|year|other))\b/i;
 
+// One git spawn for all commits: a spawn per commit timed out at 5 s when the machine was loaded.
+let commitDates: [string, string][] | null = null;
 const commitDate = (sha: string): string | null => {
-  try {
-    return execFileSync("git", ["show", "-s", "--format=%cs", sha], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
-  } catch {
-    return null;
-  }
+  commitDates ??= execFileSync("git", ["log", "--format=%H %cs"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], maxBuffer: 16 * 1024 * 1024 })
+    .split("\n")
+    .filter(Boolean)
+    .map((l) => l.split(" ") as [string, string]);
+  return commitDates.find(([hash]) => hash.startsWith(sha))?.[1] ?? null;
 };
 
 export function evidenceProblems(u: SiteUpdate): string[] {

@@ -86,11 +86,18 @@ describe("convergence: the interpretive clauses removed from the generators stay
     for (const [name, pattern, earlier] of REMOVED) expect(earlier, name).toMatch(pattern);
   });
 
-  it("no generator prints any removed clause on any of the 369 pages", () => {
+  // Split by matter so no single test body walks all 369 pages: the one-body version ran 4.5 s idle and timed out at 5 s under gate load.
+  const printed = new Map<string, number>();
+  const MATTERS = [...new Set(PAGES.map((p) => p.category))];
+
+  it("covers the 369 pages", () => {
     expect(PAGES.length).toBe(369);
-    const printed = new Map<string, number>();
+    expect(MATTERS.length).toBe(8);
+  });
+
+  it.each(MATTERS)("no generator prints any removed clause on the %s pages", (matter) => {
     const bad: string[] = [];
-    for (const p of PAGES) {
+    for (const p of PAGES.filter((x) => x.category === matter)) {
       const all = sentencesOf(p);
       for (const [name, texts] of Object.entries(all)) {
         for (const text of texts) {
@@ -104,8 +111,11 @@ describe("convergence: the interpretive clauses removed from the generators stay
         }
       }
     }
+    expect(bad).toEqual([]);
+  });
+
+  it("every generator group printed sentences across the pages", () => {
     expect([...printed.keys()].length).toBeGreaterThanOrEqual(26);
     for (const [name, n] of printed) expect(n, name).toBeGreaterThan(20);
-    expect(bad).toEqual([]);
   });
 });
